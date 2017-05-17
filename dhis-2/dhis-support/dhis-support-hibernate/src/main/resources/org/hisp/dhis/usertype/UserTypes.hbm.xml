@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+  "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+  "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+
+  <!-- AES-128 encrypted string type -->
+
+  <typedef class="org.hisp.dhis.hibernate.encryption.type.EncryptedStringUserType" name="Aes128EncryptedString">
+    <!-- Must be registered in the org.hisp.dhis.hibernate.encryption.HibernateEncryptorRegistry bean -->
+    <param name="encryptor">aes128StringEncryptor</param>
+  </typedef>
+
+</hibernate-mapping>
