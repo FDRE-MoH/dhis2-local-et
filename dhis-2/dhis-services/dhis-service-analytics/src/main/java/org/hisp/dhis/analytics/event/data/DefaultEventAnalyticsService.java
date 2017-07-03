@@ -28,52 +28,10 @@ package org.hisp.dhis.analytics.event.data;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.hisp.dhis.common.DimensionalObject.ORGUNIT_DIM_ID;
-import static org.hisp.dhis.common.DimensionalObject.PERIOD_DIM_ID;
-import static org.hisp.dhis.common.DimensionalObjectUtils.getDimensionalItemIds;
-import static org.hisp.dhis.common.DimensionalObjectUtils.asTypedList;
-import static org.hisp.dhis.organisationunit.OrganisationUnit.getParentGraphMap;
-import static org.hisp.dhis.organisationunit.OrganisationUnit.getParentNameGraphMap;
-import static org.hisp.dhis.analytics.DataQueryParams.NUMERATOR_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.DENOMINATOR_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.FACTOR_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.VALUE_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.NUMERATOR_HEADER_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.DENOMINATOR_HEADER_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.FACTOR_HEADER_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.VALUE_HEADER_NAME;
-import static org.hisp.dhis.common.IdentifiableObjectUtils.getLocalPeriodIdentifiers;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.hisp.dhis.analytics.AnalyticsMetaDataKey;
-import org.hisp.dhis.analytics.AnalyticsSecurityManager;
-import org.hisp.dhis.analytics.AnalyticsUtils;
-import org.hisp.dhis.analytics.DataQueryParams;
-import org.hisp.dhis.analytics.MetadataItem;
-import org.hisp.dhis.analytics.Rectangle;
-import org.hisp.dhis.analytics.event.EnrollmentAnalyticsManager;
-import org.hisp.dhis.analytics.event.EventAnalyticsManager;
-import org.hisp.dhis.analytics.event.EventAnalyticsService;
-import org.hisp.dhis.analytics.event.EventDataQueryService;
-import org.hisp.dhis.analytics.event.EventQueryParams;
-import org.hisp.dhis.analytics.event.EventQueryPlanner;
+import org.hisp.dhis.analytics.*;
+import org.hisp.dhis.analytics.event.*;
 import org.hisp.dhis.calendar.Calendar;
-import org.hisp.dhis.common.AnalyticalObject;
-import org.hisp.dhis.common.DhisApiVersion;
-import org.hisp.dhis.common.DimensionalObject;
-import org.hisp.dhis.common.EventAnalyticalObject;
-import org.hisp.dhis.common.Grid;
-import org.hisp.dhis.common.GridHeader;
-import org.hisp.dhis.common.IdentifiableObjectUtils;
-import org.hisp.dhis.common.IllegalQueryException;
-import org.hisp.dhis.common.Pager;
-import org.hisp.dhis.common.QueryItem;
-import org.hisp.dhis.common.ValueType;
+import org.hisp.dhis.common.*;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.system.database.DatabaseInfo;
@@ -81,6 +39,20 @@ import org.hisp.dhis.system.grid.ListGrid;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.util.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.collect.Lists;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.hisp.dhis.analytics.DataQueryParams.*;
+import static org.hisp.dhis.common.DimensionalObject.ORGUNIT_DIM_ID;
+import static org.hisp.dhis.common.DimensionalObject.PERIOD_DIM_ID;
+import static org.hisp.dhis.common.DimensionalObjectUtils.asTypedList;
+import static org.hisp.dhis.common.DimensionalObjectUtils.getDimensionalItemIds;
+import static org.hisp.dhis.common.IdentifiableObjectUtils.getLocalPeriodIdentifiers;
+import static org.hisp.dhis.organisationunit.OrganisationUnit.getParentGraphMap;
+import static org.hisp.dhis.organisationunit.OrganisationUnit.getParentNameGraphMap;
 
 /**
  * @author Lars Helge Overland
@@ -90,7 +62,7 @@ public class DefaultEventAnalyticsService
 {
     private static final String NAME_EVENT = "Event";
     private static final String NAME_PROGRAM_STAGE = "Program stage";
-    private static final String NAME_EXECUTION_DATE = "Event date";
+    private static final String NAME_EVENT_DATE = "Event date";
     private static final String NAME_LONGITUDE = "Longitude";
     private static final String NAME_LATITUDE = "Latitude";
     private static final String NAME_ORG_UNIT_NAME = "Organisation unit name";
@@ -210,8 +182,8 @@ public class DefaultEventAnalyticsService
             // Limit and sort, done again due to potential multiple partitions
             // -----------------------------------------------------------------
 
-            if ( params.hasSortOrder() )
-            {            
+            if ( params.hasSortOrder() && grid.getHeight() > 0 )
+            {
                 grid.sortGrid( 1, params.getSortOrderAsInt() );
             }
             
@@ -257,7 +229,7 @@ public class DefaultEventAnalyticsService
 
         grid.addHeader( new GridHeader( ITEM_EVENT, NAME_EVENT, ValueType.TEXT, String.class.getName(), false, true ) )
             .addHeader( new GridHeader( ITEM_PROGRAM_STAGE, NAME_PROGRAM_STAGE, ValueType.TEXT, String.class.getName(), false, true ) )
-            .addHeader( new GridHeader( ITEM_EXECUTION_DATE, NAME_EXECUTION_DATE, ValueType.TEXT, String.class.getName(), false, true ) )
+            .addHeader( new GridHeader( ITEM_EVENT_DATE, NAME_EVENT_DATE, ValueType.DATE, Date.class.getName(), false, true ) )
             .addHeader( new GridHeader( ITEM_LONGITUDE, NAME_LONGITUDE, ValueType.NUMBER, Double.class.getName(), false, true ) )
             .addHeader( new GridHeader( ITEM_LATITUDE, NAME_LATITUDE, ValueType.NUMBER, Double.class.getName(), false, true ) )
             .addHeader( new GridHeader( ITEM_ORG_UNIT_NAME, NAME_ORG_UNIT_NAME, ValueType.TEXT, String.class.getName(), false, true ) )
@@ -425,15 +397,35 @@ public class DefaultEventAnalyticsService
                 }
             }
             
-            for ( QueryItem item : params.getItemsAndItemFilters() )
+            for ( QueryItem item : params.getItems() )
             {
-                if ( item.hasLegendSet() )
-                {
-                    dimensionItems.put( item.getItemId(), IdentifiableObjectUtils.getUids( item.getLegendSet().getSortedLegends() ) );
-                }
-                else if ( item.hasOptionSet() )
+                if ( item.hasOptionSet() )
                 {
                     dimensionItems.put( item.getItemId(), item.getQueryFilterItems() );
+                }
+                else if ( item.hasLegendSet() )
+                {
+                    dimensionItems.put( item.getItemId(), item.getLegendSetFilterItemsOrAll() );
+                }
+                else
+                {
+                    dimensionItems.put( item.getItemId(), Lists.newArrayList() );
+                }
+            }
+
+            for ( QueryItem item : params.getItemFilters() )
+            {
+                if ( item.hasOptionSet() )
+                {
+                    dimensionItems.put( item.getItemId(), item.getQueryFilterItems() );
+                }
+                else if ( item.hasLegendSet() )
+                {
+                    dimensionItems.put( item.getItemId(), item.getLegendSetFilterItemsOrAll() );
+                }
+                else
+                {
+                    dimensionItems.put( item.getItemId(), Lists.newArrayList( item.getFiltersAsString() ) );
                 }
             }
 

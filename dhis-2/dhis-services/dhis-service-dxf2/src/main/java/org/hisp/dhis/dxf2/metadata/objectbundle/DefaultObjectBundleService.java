@@ -37,10 +37,13 @@ import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.common.IdentifiableObjectUtils;
 import org.hisp.dhis.common.MergeMode;
+import org.hisp.dhis.common.MetadataObject;
 import org.hisp.dhis.dbms.DbmsManager;
+import org.hisp.dhis.deletedobject.DeletedObjectQuery;
+import org.hisp.dhis.deletedobject.DeletedObjectService;
 import org.hisp.dhis.dxf2.metadata.FlushMode;
-import org.hisp.dhis.dxf2.metadata.MergeParams;
-import org.hisp.dhis.dxf2.metadata.MergeService;
+import org.hisp.dhis.schema.MergeParams;
+import org.hisp.dhis.schema.MergeService;
 import org.hisp.dhis.dxf2.metadata.objectbundle.feedback.ObjectBundleCommitReport;
 import org.hisp.dhis.feedback.ObjectReport;
 import org.hisp.dhis.feedback.TypeReport;
@@ -95,6 +98,9 @@ public class DefaultObjectBundleService implements ObjectBundleService
     @Autowired
     private MergeService mergeService;
 
+    @Autowired
+    private DeletedObjectService deletedObjectService;
+
     @Autowired( required = false )
     private List<ObjectBundleHook> objectBundleHooks = new ArrayList<>();
 
@@ -132,7 +138,7 @@ public class DefaultObjectBundleService implements ObjectBundleService
         List<Class<? extends IdentifiableObject>> klasses = getSortedClasses( bundle );
         Session session = sessionFactory.getCurrentSession();
 
-        objectBundleHooks.forEach( hook -> hook.preImport( bundle ) );
+        objectBundleHooks.forEach( hook -> hook.preCommit( bundle ) );
 
         for ( Class<? extends IdentifiableObject> klass : klasses )
         {
@@ -169,7 +175,7 @@ public class DefaultObjectBundleService implements ObjectBundleService
 
         if ( !bundle.getImportMode().isDelete() )
         {
-            objectBundleHooks.forEach( hook -> hook.postImport( bundle ) );
+            objectBundleHooks.forEach( hook -> hook.postCommit( bundle ) );
         }
 
         dbmsManager.clearSession();
@@ -216,6 +222,11 @@ public class DefaultObjectBundleService implements ObjectBundleService
             preheatService.connectReferences( object, bundle.getPreheat(), bundle.getPreheatIdentifier() );
 
             session.save( object );
+
+            if ( MetadataObject.class.isInstance( object ) )
+            {
+                deletedObjectService.deleteDeletedObjects( new DeletedObjectQuery( object ) );
+            }
 
             bundle.getPreheat().replace( bundle.getPreheatIdentifier(), object );
 
@@ -278,6 +289,11 @@ public class DefaultObjectBundleService implements ObjectBundleService
             }
 
             session.update( persistedObject );
+
+            if ( MetadataObject.class.isInstance( object ) )
+            {
+                deletedObjectService.deleteDeletedObjects( new DeletedObjectQuery( object ) );
+            }
 
             objectBundleHooks.forEach( hook -> hook.postUpdate( persistedObject, bundle ) );
 

@@ -30,14 +30,14 @@ package org.hisp.dhis.dxf2.adx;
 
 import java.util.Set;
 
-import org.amplecode.staxwax.factory.XMLFactory;
-import org.amplecode.staxwax.reader.XMLReader;
-import org.amplecode.staxwax.writer.XMLWriter;
 import org.hisp.dhis.common.IdScheme;
 import org.hisp.dhis.commons.collection.CachingMap;
 import org.hisp.dhis.dxf2.importsummary.ImportCount;
 import org.hisp.dhis.scheduling.TaskCategory;
 import org.hisp.dhis.system.callable.IdentifiableObjectCallable;
+import org.hisp.staxwax.factory.XMLFactory;
+import org.hisp.staxwax.reader.XMLReader;
+import org.hisp.staxwax.writer.XMLWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,7 +57,7 @@ import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.datavalue.DataValue;
 import org.hisp.dhis.datavalue.DataValueService;
 import org.hisp.dhis.dxf2.common.ImportOptions;
-import org.hisp.dhis.dxf2.datavalueset.DataExportParams;
+import org.hisp.dhis.datavalue.DataExportParams;
 import org.hisp.dhis.dxf2.datavalueset.DataValueSetService;
 import org.hisp.dhis.dxf2.importsummary.ImportConflict;
 import org.hisp.dhis.dxf2.importsummary.ImportStatus;
@@ -294,8 +294,8 @@ public class DefaultAdxDataService
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        // Give the DXF import a different notification task ID so it doesn't conflict with notifications from this level.
-        TaskId dxfTaskId = new TaskId( TaskCategory.DATAVALUE_IMPORT_INTERNAL, id.getUser() );
+        // For Async runs, give the DXF import a different notification task ID so it doesn't conflict with notifications from this level.
+        TaskId dxfTaskId = ( id == null ) ? null : new TaskId( TaskCategory.DATAVALUE_IMPORT_INTERNAL, id.getUser() );
 
         int groupCount = 0;
 
@@ -372,7 +372,7 @@ public class DefaultAdxDataService
     {
         List<ImportConflict> adxConflicts = new LinkedList<>();
 
-        IdentifiableProperty dataElementIdScheme = importOptions.getIdSchemes().getDataElementIdScheme().getIdentifiableProperty();
+        IdScheme categoryOptionComboIdScheme = importOptions.getIdSchemes().getCategoryOptionComboIdScheme();
 
         Map<String, String> groupAttributes = adxReader.readAttributes();
 
@@ -403,13 +403,13 @@ public class DefaultAdxDataService
 
             if ( dataSet == null )
             {
-                throw new AdxException(
-                    "No data set matching identifier: " + groupAttributes.get( AdxDataService.DATASET ) );
+                throw new AdxException( "No data set matching " + dataSetCallable.getIdScheme().name().toLowerCase()
+                    + " '" + groupAttributes.get( AdxDataService.DATASET ) + "'" );
             }
 
             groupAttributes.put( AdxDataService.DATASET, dataSet.getUid() );
             DataElementCategoryCombo attributeCombo = dataSet.getCategoryCombo();
-            convertAttributesToDxf( groupAttributes, AdxDataService.ATTOPTCOMBO, attributeCombo, dataElementIdScheme );
+            convertAttributesToDxf( groupAttributes, AdxDataService.ATTOPTCOMBO, attributeCombo, categoryOptionComboIdScheme );
         }
 
         // process the dataValues
@@ -450,15 +450,15 @@ public class DefaultAdxDataService
             throw new AdxException( AdxDataService.VALUE + " attribute is required on 'dataValue'" );
         }
 
-        IdentifiableProperty dataElementIdScheme = importOptions.getIdSchemes().getDataElementIdScheme()
-            .getIdentifiableProperty();
+        IdScheme categoryOptionComboIdScheme = importOptions.getIdSchemes().getCategoryOptionComboIdScheme();
 
         String dataElementStr = trimToNull( dvAttributes.get( AdxDataService.DATAELEMENT ) );
         final DataElement dataElement = dataElementMap.get( dataElementStr, dataElementCallable.setId( dataElementStr ) );
 
         if ( dataElement == null )
         {
-            throw new AdxException( dvAttributes.get( AdxDataService.DATAELEMENT ), "No matching dataElement" );
+            throw new AdxException( "No data element matching " + dataElementCallable.getIdScheme().name().toLowerCase()
+                + " '" + dataElementStr + "'" );
         }
 
         // process ADX data value attributes
@@ -470,7 +470,7 @@ public class DefaultAdxDataService
 
             DataElementCategoryCombo categoryCombo = dataElement.getDataElementCategoryCombo();
 
-            convertAttributesToDxf( dvAttributes, AdxDataService.CATOPTCOMBO, categoryCombo, dataElementIdScheme );
+            convertAttributesToDxf( dvAttributes, AdxDataService.CATOPTCOMBO, categoryCombo, categoryOptionComboIdScheme );
         }
 
         // if data element type is not numeric we need to pick out the
@@ -581,7 +581,7 @@ public class DefaultAdxDataService
     }
 
     private void convertAttributesToDxf( Map<String, String> attributes, String optionComboName, DataElementCategoryCombo catCombo,
-        IdentifiableProperty scheme )
+        IdScheme idScheme )
         throws AdxException
     {
         log.debug( "ADX attributes: " + attributes );
@@ -609,9 +609,9 @@ public class DefaultAdxDataService
             }
         }
 
-        DataElementCategoryOptionCombo catOptCombo = getCatOptComboFromAttributes( attributeOptions, catCombo, scheme );
+        DataElementCategoryOptionCombo catOptCombo = getCatOptComboFromAttributes( attributeOptions, catCombo, idScheme.getIdentifiableProperty() );
 
-        attributes.put( optionComboName, catOptCombo.getUid() );
+        attributes.put( optionComboName, catOptCombo.getPropertyValue( idScheme ) );
 
         log.debug( "DXF attributes: " + attributes );
     }

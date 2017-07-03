@@ -32,6 +32,16 @@ function filterUsers() {
 // -----------------------------------------------------------------------------
 // View details
 // -----------------------------------------------------------------------------
+function checkPasswordForUsername() {
+
+	checkPassword("username", "rawPassword");
+
+}
+
+function checkPasswordForEmail() {
+	checkPassword("email", "rawPassword");
+
+}
 
 function showUpdateUserForm( context ) {
   location.href = 'showUpdateUserForm.action?id=' + context.id;
@@ -95,6 +105,7 @@ function changeAccountAction()
 
         $('.account').show();
         $('.invite').hide();
+      	checkValueIsExist("rawPassword", "validateUser.action",{ newUser: true });
     }
     else
     {
@@ -114,6 +125,8 @@ function changeAccountAction()
         $('#firstName').val( 'validFirstName' );
         $('#inviteEmail').val( $('#email').val() );
         $('#email').val( '' );
+
+        $("#rawPassword").rules("remove","remote");
     }
 }
 

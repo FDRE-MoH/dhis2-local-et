@@ -37,7 +37,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.hisp.dhis.common.DxfNamespaces;
+import org.hisp.dhis.common.EmbeddedObject;
 import org.hisp.dhis.common.IdentifiableObject;
+import org.hisp.dhis.common.MetadataObject;
 import org.hisp.dhis.common.NameableObject;
 import org.hisp.dhis.security.Authority;
 import org.hisp.dhis.security.AuthorityType;
@@ -60,31 +62,41 @@ public class Schema implements Ordered, Klass
     /**
      * Class that is described in this schema.
      */
-    private Class<?> klass;
+    private final Class<?> klass;
 
     /**
      * Is this class a sub-class of IdentifiableObject
      *
      * @see org.hisp.dhis.common.IdentifiableObject
      */
-    private boolean identifiableObject;
+    private final boolean identifiableObject;
 
     /**
      * Is this class a sub-class of NameableObject
      *
      * @see org.hisp.dhis.common.NameableObject
      */
-    private boolean nameableObject;
+    private final boolean nameableObject;
+
+    /**
+     * Does this class implement {@link EmbeddedObject} ?
+     */
+    private final boolean embeddedObject;
 
     /**
      * Singular name.
      */
-    private String singular;
+    private final String singular;
 
     /**
      * Plural name.
      */
-    private String plural;
+    private final String plural;
+
+    /**
+     * Is this class considered metadata, this is mainly used for our metadata importer/exporter.
+     */
+    private final boolean metadata;
 
     /**
      * Namespace URI to be used for this class.
@@ -127,11 +139,6 @@ public class Schema implements Ordered, Klass
      * Used by LinkService to link to the Schema describing this type (if reference).
      */
     private String href;
-
-    /**
-     * Is this class considered metadata, this is mainly used for our metadata importer/exporter.
-     */
-    private boolean metadata = true;
 
     /**
      * Are any properties on this class being persisted, if false, this file does not have any hbm file attached to it.
@@ -177,6 +184,11 @@ public class Schema implements Ordered, Klass
     private Map<String, Property> nonPersistedProperties = new HashMap<>();
 
     /**
+     * Map of all link object properties, cached on first request.
+     */
+    private Map<String, Property> embeddedObjectProperties;
+
+    /**
      * Used for sorting of schema list when doing metadata import/export.
      */
     private int order = Ordered.LOWEST_PRECEDENCE;
@@ -184,10 +196,12 @@ public class Schema implements Ordered, Klass
     public Schema( Class<?> klass, String singular, String plural )
     {
         this.klass = klass;
+        this.embeddedObject = EmbeddedObject.class.isAssignableFrom( klass );
         this.identifiableObject = IdentifiableObject.class.isAssignableFrom( klass );
         this.nameableObject = NameableObject.class.isAssignableFrom( klass );
         this.singular = singular;
         this.plural = plural;
+        this.metadata = MetadataObject.class.isAssignableFrom( klass );
     }
 
     @Override
@@ -196,11 +210,6 @@ public class Schema implements Ordered, Klass
     public Class<?> getKlass()
     {
         return klass;
-    }
-
-    public void setKlass( Class<?> klass )
-    {
-        this.klass = klass;
     }
 
     @JsonProperty
@@ -219,14 +228,23 @@ public class Schema implements Ordered, Klass
 
     @JsonProperty
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isEmbeddedObject()
+    {
+        return embeddedObject;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public Boolean getShareable()
+    {
+        return shareable;
+    }
+
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
     public String getSingular()
     {
         return singular;
-    }
-
-    public void setSingular( String singular )
-    {
-        this.singular = singular;
     }
 
     @JsonProperty
@@ -236,9 +254,11 @@ public class Schema implements Ordered, Klass
         return plural;
     }
 
-    public void setPlural( String plural )
+    @JsonProperty
+    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
+    public boolean isMetadata()
     {
-        this.plural = plural;
+        return metadata;
     }
 
     @JsonProperty
@@ -341,18 +361,6 @@ public class Schema implements Ordered, Klass
     public void setHref( String href )
     {
         this.href = href;
-    }
-
-    @JsonProperty
-    @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )
-    public boolean isMetadata()
-    {
-        return metadata;
-    }
-
-    public void setMetadata( boolean metadata )
-    {
-        this.metadata = metadata;
     }
 
     @JsonProperty
@@ -510,6 +518,20 @@ public class Schema implements Ordered, Klass
         }
 
         return nonPersistedProperties;
+    }
+
+    public Map<String, Property> getEmbeddedObjectProperties()
+    {
+        if ( embeddedObjectProperties == null )
+        {
+            embeddedObjectProperties = new HashMap<>();
+
+            getPropertyMap().entrySet().stream()
+                .filter( entry -> entry.getValue().isEmbeddedObject() )
+                .forEach( entry -> embeddedObjectProperties.put( entry.getKey(), entry.getValue() ) );
+        }
+
+        return embeddedObjectProperties;
     }
 
     public void addProperty( Property property )

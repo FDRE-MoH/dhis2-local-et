@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.hisp.dhis</groupId>
     <artifactId>dhis-web</artifactId>
-    <version>2.26</version>
+    <version>2.27</version>
   </parent>
 
   <artifactId>dhis-web-apps</artifactId>
@@ -45,7 +45,7 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-maintenance</artifactId>
-                  <version>2.26-SNAPSHOT</version>
+                  <version>2.27-SNAPSHOT</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-maintenance</outputDirectory>
                   <includes>**/*.*</includes>
@@ -111,7 +111,7 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-event-capture</artifactId>
-                  <version>2.26-SNAPSHOT</version>
+                  <version>2.27-SNAPSHOT</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-event-capture</outputDirectory>
                   <includes>**/*.*</includes>
@@ -120,7 +120,7 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-tracker-capture</artifactId>
-                  <version>2.26-SNAPSHOT</version>
+                  <version>2.27-SNAPSHOT</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-tracker-capture</outputDirectory>
                   <includes>**/*.*</includes>
@@ -129,7 +129,7 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-visualizer</artifactId>
-                  <version>2.26-SNAPSHOT</version>
+                  <version>2.27-SNAPSHOT</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-visualizer</outputDirectory>
                   <includes>**/*.*</includes>
@@ -138,7 +138,7 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-pivot</artifactId>
-                  <version>2.26-SNAPSHOT</version>
+                  <version>2.27-SNAPSHOT</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-pivot</outputDirectory>
                   <includes>**/*.*</includes>
@@ -147,9 +147,27 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-mapping</artifactId>
-                  <version>2.26-SNAPSHOT</version>
+                  <version>2.27-SNAPSHOT</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-mapping</outputDirectory>
+                  <includes>**/*.*</includes>
+                </artifactItem>
+                <!-- Event Reports -->
+                <artifactItem>
+                  <groupId>org.hisp.dhis</groupId>
+                  <artifactId>dhis-app-event-reports</artifactId>
+                  <version>2.27-SNAPSHOT</version>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-event-reports</outputDirectory>
+                  <includes>**/*.*</includes>
+                </artifactItem>
+                <!-- Event Visualizer -->
+                <artifactItem>
+                  <groupId>org.hisp.dhis</groupId>
+                  <artifactId>dhis-app-event-visualizer</artifactId>
+                  <version>2.27-SNAPSHOT</version>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-event-visualizer</outputDirectory>
                   <includes>**/*.*</includes>
                 </artifactItem>
                 <!-- Translations -->
@@ -165,7 +183,7 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-dashboard</artifactId>
-                  <version>2.26-SNAPSHOT</version>
+                  <version>2.27-SNAPSHOT</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-dashboard-integration</outputDirectory>
                   <includes>**/*.*</includes>
@@ -174,9 +192,18 @@
                 <artifactItem>
                   <groupId>org.hisp.dhis</groupId>
                   <artifactId>dhis-app-interpretation</artifactId>
-                  <version>2.26-SNAPSHOT</version>
+                  <version>2.27-SNAPSHOT</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-interpretation</outputDirectory>
+                  <includes>**/*.*</includes>
+                </artifactItem>
+                <!-- Datastore -->
+                <artifactItem>
+                  <groupId>org.hisp.dhis</groupId>
+                  <artifactId>dhis-app-datastore</artifactId>
+                  <version>2.27-SNAPSHOT</version>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/${project.artifactId}/dhis-web-datastore</outputDirectory>
                   <includes>**/*.*</includes>
                 </artifactItem>
               </artifactItems>

@@ -79,7 +79,9 @@ public class DefaultSqlViewService
     @Override
     public int saveSqlView( SqlView sqlView )
     {
-        return sqlViewStore.save( sqlView );
+        sqlViewStore.save( sqlView );
+
+        return sqlView.getId();
     }
 
     @Override
@@ -369,7 +371,7 @@ public class DefaultSqlViewService
         
         if ( violation != null )
         {
-            log.warn( "Validation failed: " + violation );
+            log.warn( String.format( "Validation failed for SQL view '%s': %s", sqlView.getUid(), violation ) );
             
             throw new IllegalQueryException( violation );
         }

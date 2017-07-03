@@ -55,7 +55,8 @@ public class DefaultProgramStageSectionService
     @Override
     public int saveProgramStageSection( ProgramStageSection programStageSection )
     {
-        return programStageSectionStore.save( programStageSection );
+        programStageSectionStore.save( programStageSection );
+        return programStageSection.getId();
     }
 
     @Override
@@ -74,11 +75,5 @@ public class DefaultProgramStageSectionService
     public ProgramStageSection getProgramStageSection( int id )
     {
         return programStageSectionStore.get( id );
-    }
-
-    @Override
-    public ProgramStageSection getProgramStageSectionByName( String name, ProgramStage programStage )
-    {
-        return programStageSectionStore.getByNameAndProgramStage( name, programStage );
     }
 }

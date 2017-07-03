@@ -113,7 +113,8 @@ public class DefaultTrackedEntityAttributeService
     @Override
     public int addTrackedEntityAttribute( TrackedEntityAttribute attribute )
     {
-        return attributeStore.save( attribute );
+        attributeStore.save( attribute );
+        return attribute.getId();
     }
 
     @Override
@@ -138,18 +139,6 @@ public class DefaultTrackedEntityAttributeService
     public TrackedEntityAttribute getTrackedEntityAttributeByCode( String code )
     {
         return attributeStore.getByShortName( code );
-    }
-
-    @Override
-    public List<TrackedEntityAttribute> getOptionalAttributesWithoutGroup()
-    {
-        return attributeStore.getOptionalAttributesWithoutGroup();
-    }
-
-    @Override
-    public List<TrackedEntityAttribute> getTrackedEntityAttributesWithoutGroup()
-    {
-        return attributeStore.getWithoutGroup();
     }
 
     @Override

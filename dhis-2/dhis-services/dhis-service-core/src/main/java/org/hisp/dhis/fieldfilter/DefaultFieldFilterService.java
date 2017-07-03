@@ -34,10 +34,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hisp.dhis.common.ReportingRate;
-import org.hisp.dhis.dataelement.DataElementOperand;
-import org.hisp.dhis.dataset.DataInputPeriod;
-import org.hisp.dhis.dataset.DataSetElement;
+import org.hisp.dhis.common.EmbeddedObject;
 import org.hisp.dhis.node.AbstractNode;
 import org.hisp.dhis.node.Node;
 import org.hisp.dhis.node.NodeTransformer;
@@ -46,8 +43,6 @@ import org.hisp.dhis.node.types.CollectionNode;
 import org.hisp.dhis.node.types.ComplexNode;
 import org.hisp.dhis.node.types.SimpleNode;
 import org.hisp.dhis.period.PeriodType;
-import org.hisp.dhis.program.ProgramStageDataElement;
-import org.hisp.dhis.program.ProgramTrackedEntityAttribute;
 import org.hisp.dhis.schema.Property;
 import org.hisp.dhis.schema.Schema;
 import org.hisp.dhis.schema.SchemaService;
@@ -60,6 +55,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -83,7 +79,7 @@ public class DefaultFieldFilterService implements FieldFilterService
     private SchemaService schemaService;
 
     @Autowired( required = false )
-    private Set<NodeTransformer> nodeTransformers = Sets.newHashSet();
+    private Set<NodeTransformer> nodeTransformers = new HashSet<>();
 
     private ImmutableMap<String, Preset> presets = ImmutableMap.of();
 
@@ -114,7 +110,7 @@ public class DefaultFieldFilterService implements FieldFilterService
     @Override
     public ComplexNode filter( Object object, List<String> fieldList )
     {
-        Assert.notNull( object );
+        Assert.notNull( object, "Object cannot be null" );
 
         CollectionNode collectionNode = filter( object.getClass(), Lists.newArrayList( object ), fieldList );
 
@@ -198,6 +194,11 @@ public class DefaultFieldFilterService implements FieldFilterService
             Schema propertySchema = schemaService.getDynamicSchema( property.getKlass() );
 
             FieldMap fieldValue = fieldMap.get( fieldKey );
+
+            if ( returnValue == null && property.isCollection() )
+            {
+                continue;
+            }
 
             if ( property.isCollection() )
             {
@@ -327,18 +328,18 @@ public class DefaultFieldFilterService implements FieldFilterService
 
         for ( String fieldKey : Sets.newHashSet( fieldMap.keySet() ) )
         {
+            Collection<Property> properties = schema.getReadableProperties().values();
+
             if ( "*".equals( fieldKey ) )
             {
-                schema.getPropertyMap().keySet().stream()
-                    .filter( mapKey -> !fieldMap.containsKey( mapKey ) )
-                    .forEach( mapKey -> fieldMap.put( mapKey, new FieldMap() ) );
+                properties.stream()
+                    .filter( property -> !fieldMap.containsKey( property.key() ) )
+                    .forEach( property -> fieldMap.put( property.key(), new FieldMap() ) );
 
                 cleanupFields.add( fieldKey );
             }
             else if ( ":persisted".equals( fieldKey ) )
             {
-                List<Property> properties = schema.getProperties();
-
                 properties.stream()
                     .filter( property -> !fieldMap.containsKey( property.key() ) && property.isPersisted() )
                     .forEach( property -> fieldMap.put( property.key(), new FieldMap() ) );
@@ -347,8 +348,6 @@ public class DefaultFieldFilterService implements FieldFilterService
             }
             else if ( ":owner".equals( fieldKey ) )
             {
-                List<Property> properties = schema.getProperties();
-
                 properties.stream()
                     .filter( property -> !fieldMap.containsKey( property.key() ) && property.isPersisted() && property.isOwner() )
                     .forEach( property -> fieldMap.put( property.key(), new FieldMap() ) );
@@ -425,9 +424,17 @@ public class DefaultFieldFilterService implements FieldFilterService
     {
         FieldMap fieldMap = new FieldMap();
 
+        for ( Property property : schema.getReadableProperties().values() )
+        {
+            fieldMap.put( property.getName(), new FieldMap() );
+        }
+
         for ( String mapKey : schema.getPropertyMap().keySet() )
         {
-            fieldMap.put( mapKey, new FieldMap() );
+            if ( schema.getProperty( mapKey ).isReadable() )
+            {
+                fieldMap.put( mapKey, new FieldMap() );
+            }
         }
 
         return fieldMap;
@@ -480,9 +487,6 @@ public class DefaultFieldFilterService implements FieldFilterService
 
     private boolean isProperIdObject( Class<?> klass )
     {
-        return !(DataElementOperand.class.isAssignableFrom( klass ) || UserCredentials.class.isAssignableFrom( klass ) ||
-            ReportingRate.class.isAssignableFrom( klass ) || DataSetElement.class.isAssignableFrom( klass ) ||
-            DataInputPeriod.class.isAssignableFrom( klass ) || ProgramStageDataElement.class.isAssignableFrom( klass ) ||
-            ProgramTrackedEntityAttribute.class.isAssignableFrom( klass ));
+        return !(UserCredentials.class.isAssignableFrom( klass ) || EmbeddedObject.class.isAssignableFrom( klass ));
     }
 }

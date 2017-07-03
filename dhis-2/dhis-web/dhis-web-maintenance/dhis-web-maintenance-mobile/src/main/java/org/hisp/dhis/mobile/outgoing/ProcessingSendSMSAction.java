@@ -270,8 +270,7 @@ public class ProcessingSendSMSAction
             return ERROR;
         }
         
-        if ( message == null )
-        {
+        if ( message == null ) {
             message = "An inter error occurs, please contact your administration";
             return ERROR;
         }

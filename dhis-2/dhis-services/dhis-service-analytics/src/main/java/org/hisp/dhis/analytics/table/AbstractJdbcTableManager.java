@@ -180,7 +180,9 @@ public abstract class AbstractJdbcTableManager
     @Override
     public void analyzeTable( String tableName )
     {
-        executeSilently( "analyze " + tableName );
+        String sql = StringUtils.trimToEmpty( statementBuilder.getAnalyze( tableName ) );
+        
+        executeSilently( sql );
     }
 
     @Override
@@ -373,7 +375,7 @@ public abstract class AbstractJdbcTableManager
         log.debug( String.format( "Populate table: %s with SQL: ", tableName, sql ) );
 
         Timer timer = new SystemTimer().start();
-        
+
         jdbcTemplate.execute( sql );
         
         log.info( String.format( "Populated table in %s: %s", timer.stop().toString(), tableName ) );

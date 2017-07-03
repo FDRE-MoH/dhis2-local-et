@@ -49,10 +49,7 @@ import org.hisp.dhis.util.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hisp.dhis.analytics.DataQueryParams.*;
@@ -94,8 +91,8 @@ public class DefaultDataQueryService
 
     @Override
     public DataQueryParams getFromUrl( Set<String> dimensionParams, Set<String> filterParams, AggregationType aggregationType,
-        String measureCriteria, String preAggregationMeasureCriteria, boolean skipMeta, boolean skipData, boolean skipRounding,
-        boolean completedOnly, boolean hierarchyMeta, boolean ignoreLimit, boolean hideEmptyRows, boolean showHierarchy,
+        String measureCriteria, String preAggregationMeasureCriteria, Date startDate, Date endDate, boolean skipMeta, boolean skipData, boolean skipRounding,
+        boolean completedOnly, boolean hierarchyMeta, boolean ignoreLimit, boolean hideEmptyRows, boolean hideEmptyColumns, boolean showHierarchy,
         boolean includeNumDen, DisplayProperty displayProperty, IdScheme outputIdScheme, IdScheme inputIdScheme,
         boolean duplicatesOnly, String approvalLevel, Date relativePeriodDate, String userOrgUnit, boolean allowAllPeriods, DhisApiVersion apiVersion )
     {
@@ -127,6 +124,8 @@ public class DefaultDataQueryService
 
         return params
             .withAggregationType( aggregationType )
+            .withStartDate( startDate )
+            .withEndDate( endDate )
             .withSkipMeta( skipMeta )
             .withSkipData( skipData )
             .withSkipRounding( skipRounding )
@@ -134,6 +133,7 @@ public class DefaultDataQueryService
             .withIgnoreLimit( ignoreLimit )
             .withHierarchyMeta( hierarchyMeta )
             .withHideEmptyRows( hideEmptyRows )
+            .withHideEmptyColumns( hideEmptyColumns )
             .withShowHierarchy( showHierarchy )
             .withIncludeNumDen( includeNumDen )
             .withDisplayProperty( displayProperty )
@@ -148,15 +148,15 @@ public class DefaultDataQueryService
     @Override
     public DataQueryParams getFromAnalyticalObject( AnalyticalObject object )
     {
-        Assert.notNull( object );
+        Assert.notNull( object, "Analytical object cannot be null" );
 
         DataQueryParams.Builder params = DataQueryParams.newBuilder();
         
         I18nFormat format = i18nManager.getI18nFormat();        
         IdScheme idScheme = IdScheme.UID;
         Date date = object.getRelativePeriodDate();
-        
-        String userOrgUnit = object.getRelativeOrganisationUnit() != null ? 
+
+        String userOrgUnit = object.getRelativeOrganisationUnit() != null ?
             object.getRelativeOrganisationUnit().getUid() : null;
 
         List<OrganisationUnit> userOrgUnits = getUserOrgUnits( null, userOrgUnit );
@@ -210,7 +210,7 @@ public class DefaultDataQueryService
 
     @Override
     public DimensionalObject getDimension( String dimension, List<String> items, Date relativePeriodDate,
-        List<OrganisationUnit> userOrgUnits, I18nFormat format, boolean allowNull, boolean allowAllPeriods, IdScheme inputIdScheme )
+        List<OrganisationUnit> userOrgUnits, I18nFormat format, boolean allowNull, boolean allowAllPeriodItems, IdScheme inputIdScheme )
     {
         final boolean allItems = items.isEmpty();
 
@@ -328,7 +328,7 @@ public class DefaultDataQueryService
 
             periods = periods.stream().distinct().collect( Collectors.toList() ); // Remove duplicates
 
-            if ( periods.isEmpty() && !allowAllPeriods )
+            if ( periods.isEmpty() && !allowAllPeriodItems )
             {
                 throw new IllegalQueryException( "Dimension pe is present in query without any valid dimension options" );
             }
@@ -390,7 +390,7 @@ public class DefaultDataQueryService
                         groups.add( group );
                     }
                 }
-                else if ( !inputIdScheme.is( IdentifiableProperty.UID ) || CodeGenerator.isValidCode( ou ) )
+                else if ( !inputIdScheme.is( IdentifiableProperty.UID ) || CodeGenerator.isValidUid( ou ) )
                 {
                     OrganisationUnit unit = idObjectManager.getObject( OrganisationUnit.class, inputIdScheme, ou );
 

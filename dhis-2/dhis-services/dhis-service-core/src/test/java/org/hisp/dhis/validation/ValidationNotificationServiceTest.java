@@ -38,6 +38,8 @@ import org.hisp.dhis.message.MessageService;
 import org.hisp.dhis.notification.NotificationMessage;
 import org.hisp.dhis.notification.ValidationNotificationMessageRenderer;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
+import org.hisp.dhis.period.DefaultPeriodService;
+import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.period.QuarterlyPeriodType;
 import org.hisp.dhis.user.User;
@@ -51,20 +53,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyBoolean;
-import static org.mockito.Mockito.anySetOf;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests for the business logic implemented in ValidationNotificationService.
@@ -96,6 +91,9 @@ public class ValidationNotificationServiceTest
     @InjectMocks
     private DefaultValidationNotificationService service;
 
+    @InjectMocks
+    private DefaultPeriodService periodService;
+
     private List<MockMessage> sentMessages;
 
     /**
@@ -109,14 +107,10 @@ public class ValidationNotificationServiceTest
 
         // Stub MessageService.sendMessage(..) so that it appends any outgoing messages to our List
         when(
-            messageService.sendMessage(
+            messageService.sendValidationResultMessage(
                 anyString(),
                 anyString(),
-                anyString(),
-                anySetOf( User.class ),
-                any( User.class ),
-                anyBoolean(),
-                anyBoolean()
+                anySetOf( User.class )
             )
         ).then(
             invocation -> {
@@ -141,6 +135,8 @@ public class ValidationNotificationServiceTest
     private DataElementCategoryOptionCombo catOptCombo = createCategoryOptionCombo( 'A', 'r', 'i', 'b', 'a' );
     private ValidationRule valRuleA;
     private UserGroup userGroupA;
+
+    int idCounter = 0;
 
     private void setUpEntitiesA()
     {
@@ -167,26 +163,38 @@ public class ValidationNotificationServiceTest
 
     private ValidationResult createValidationResult( OrganisationUnit ou, ValidationRule rule )
     {
-        return new ValidationResult(
-            createPeriod( "2017Q1" ),
+        Period period = createPeriod( "2017Q1" );
+        ValidationResult vr = new ValidationResult(
+            rule,
+            period,
             ou,
             catOptCombo,
-            rule,
             RandomUtils.nextDouble( 10, 1000 ),
-            RandomUtils.nextDouble( 10, 1000 )
+            RandomUtils.nextDouble( 10, 1000 ),
+            periodService.getDayInPeriod( period, new Date() )
         );
+
+        vr.setId( idCounter++ );
+
+        return vr;
     }
 
     private ValidationResult createValidationResultA()
     {
-        return new ValidationResult(
-            createPeriod( "2017Q1" ),
+        Period period = createPeriod( "2017Q1" );
+        ValidationResult vr = new ValidationResult(
+            valRuleA,
+            period,
             orgUnitA,
             catOptCombo,
-            valRuleA,
             RandomUtils.nextDouble( 10, 1000 ),
-            RandomUtils.nextDouble( 10, 1000 )
+            RandomUtils.nextDouble( 10, 1000 ),
+            periodService.getDayInPeriod( period, new Date() )
         );
+
+        vr.setId( idCounter++ );
+
+        return vr;
     }
 
     /*
@@ -269,7 +277,7 @@ public class ValidationNotificationServiceTest
         assertEquals( "The validation results should form a single summarized message", 1, sentMessages.size() );
 
         String text = sentMessages.iterator().next().text;
-
+        
         assertEquals(
             "Wrong number of messages in the summarized message", 10, StringUtils.countMatches( text, STATIC_MOCK_SUBJECT ) );
     }
@@ -391,7 +399,7 @@ public class ValidationNotificationServiceTest
     // -------------------------------------------------------------------------
 
     /**
-     * Mocks the input to MessageService.sendMessage(..)
+     * Mocks the input to MessageService.sendValidationResultMessage(..)
      */
     static class MockMessage
     {
@@ -408,11 +416,11 @@ public class ValidationNotificationServiceTest
         {
             this.subject = (String) args[0];
             this.text = (String) args[1];
-            this.metaData = (String) args[2];
-            this.users = (Set<User>) args[3];
-            this.sender = (User) args[4];
-            this.includeFeedbackRecipients = (boolean) args[5];
-            this.forceNotifications = (boolean) args[6];
+            this.metaData = null;
+            this.users = (Set<User>) args[2];
+            this.sender = null;
+            this.includeFeedbackRecipients = false;
+            this.forceNotifications = false;
         }
     }
 }

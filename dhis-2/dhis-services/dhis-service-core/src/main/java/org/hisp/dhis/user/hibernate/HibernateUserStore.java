@@ -56,6 +56,13 @@ public class HibernateUserStore
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public List<User> getExpiringUsers( UserQueryParams params )
+    {
+        return getUserQuery( params, false ).list();
+    }
+
+    @Override
     public int getUserCount( UserQueryParams params )
     {
         Long count = (Long) getUserQuery( params, true ).uniqueResult();
@@ -77,7 +84,6 @@ public class HibernateUserStore
         {
             hql += "left join u.organisationUnits ou ";
 
-
             if ( params.getIncludeOrgUnitChildren() )
             {
                 hql += hlp.whereAnd() + " ou.path like :organisationUnitUid ";
@@ -86,7 +92,6 @@ public class HibernateUserStore
             {
                 hql += hlp.whereAnd() + " ou = :organisationUnit ";
             }
-
         }
 
         if ( params.getQuery() != null )
@@ -138,6 +143,11 @@ public class HibernateUserStore
         {
             hql += hlp.whereAnd() + " uc.lastLogin < :inactiveSince ";
         }
+
+        if ( params.getDaysPassedSincePasswordChange() != null )
+        {
+            hql += hlp.whereAnd() + " uc.passwordLastUpdated < :daysPassedSincePasswordChange ";
+        }
         
         if ( params.isSelfRegistered() )
         {
@@ -162,7 +172,7 @@ public class HibernateUserStore
         {
             hql += "order by u.surname, u.firstName";
         }
-        
+
         Query query = sessionFactory.getCurrentSession().createQuery( hql );
         
         if ( params.getQuery() != null )
@@ -200,7 +210,12 @@ public class HibernateUserStore
         {
             query.setTimestamp( "lastLogin", params.getLastLogin() );
         }
-        
+
+        if ( params.getDaysPassedSincePasswordChange() != null )
+        {
+            query.setTimestamp( "daysPassedSincePasswordChange", params.getDaysPassedSincePasswordChange() );
+        }
+
         if ( params.getInactiveSince() != null )
         {
             query.setTimestamp( "inactiveSince", params.getInactiveSince() );
@@ -228,7 +243,7 @@ public class HibernateUserStore
         {
             query.setMaxResults( params.getMax() ).list();
         }
-        
+
         return query;
     }
 

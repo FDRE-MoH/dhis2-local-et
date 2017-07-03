@@ -212,7 +212,7 @@ public class FormUtils
 
     public static Form fromProgram( Program program )
     {
-        Assert.notNull( program );
+        Assert.notNull( program, "Program cannot be null" );
 
         Form form = new Form();
         form.setLabel( program.getDisplayName() );
@@ -254,11 +254,11 @@ public class FormUtils
         {
             for ( ProgramStageSection section : programStage.getProgramStageSections() )
             {
-                List<Field> fields = inputFromProgramStageDataElements( section.getProgramStageDataElements() );
+                List<Field> fields = inputFromDataElements( section.getDataElements() );
 
                 Group group = new Group();
                 group.setLabel( section.getDisplayName() );
-                group.setDataElementCount( section.getProgramStageDataElements().size() );
+                group.setDataElementCount( section.getDataElements().size() );
                 group.setFields( fields );
                 form.getGroups().add( group );
             }

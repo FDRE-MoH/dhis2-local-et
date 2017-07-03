@@ -109,7 +109,9 @@ public class DefaultInterpretationService
             interpretation.updateSharing();
         }
 
-        return interpretationStore.save( interpretation );
+        interpretationStore.save( interpretation );
+
+        return interpretation.getId();
     }
 
     @Override
@@ -163,7 +165,7 @@ public class DefaultInterpretationService
 
         InterpretationComment comment = new InterpretationComment( text );
         comment.setLastUpdated( new Date() );
-        comment.setUid( CodeGenerator.generateCode() );
+        comment.setUid( CodeGenerator.generateUid() );
 
         if ( user != null )
         {

@@ -35,10 +35,6 @@ import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.dxf2.metadata.objectbundle.ObjectBundle;
 import org.hisp.dhis.schema.Schema;
-import org.hisp.dhis.user.User;
-import org.hisp.dhis.user.UserAccess;
-import org.hisp.dhis.user.UserGroup;
-import org.hisp.dhis.user.UserGroupAccess;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.StringUtils;
 
@@ -56,28 +52,24 @@ public class IdentifiableObjectBundleHook extends AbstractObjectBundleHook
         ((BaseIdentifiableObject) identifiableObject).setAutoFields();
 
         Schema schema = schemaService.getDynamicSchema( identifiableObject.getClass() );
-        Session session = sessionFactory.getCurrentSession();
-        handleAttributeValues( session, identifiableObject, bundle, schema );
-        handleUserGroupAccesses( session, identifiableObject, bundle, schema );
-        handleUserAccesses( session, identifiableObject, bundle, schema );
-        handleObjectTranslations( session, identifiableObject, bundle, schema );
+        handleAttributeValues( identifiableObject, bundle, schema );
     }
 
     @Override
     public void preUpdate( IdentifiableObject object, IdentifiableObject persistedObject, ObjectBundle bundle )
     {
-        ((BaseIdentifiableObject) object).setAutoFields();
+        BaseIdentifiableObject identifiableObject = (BaseIdentifiableObject) object;
+        identifiableObject.setAutoFields();
+        identifiableObject.setLastUpdatedBy( bundle.getUser() );
 
         Schema schema = schemaService.getDynamicSchema( object.getClass() );
-        Session session = sessionFactory.getCurrentSession();
-        handleAttributeValues( session, object, bundle, schema );
-        handleUserGroupAccesses( session, object, bundle, schema );
-        handleUserAccesses( session, object, bundle, schema );
-        handleObjectTranslations( session, object, bundle, schema );
+        handleAttributeValues( object, bundle, schema );
     }
 
-    private void handleAttributeValues( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
+    private void handleAttributeValues( IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
     {
+        Session session = sessionFactory.getCurrentSession();
+
         if ( !schema.havePersistedProperty( "attributeValues" ) ) return;
 
         Iterator<AttributeValue> iterator = identifiableObject.getAttributeValues().iterator();
@@ -105,69 +97,5 @@ public class IdentifiableObjectBundleHook extends AbstractObjectBundleHook
             session.save( attributeValue );
             session.flush();
         }
-    }
-
-    private void handleUserGroupAccesses( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
-    {
-        if ( !schema.havePersistedProperty( "userGroupAccesses" ) ) return;
-
-        if ( bundle.isSkipSharing() )
-        {
-            identifiableObject.getUserGroupAccesses().clear();
-            return;
-        }
-
-        Iterator<UserGroupAccess> userGroupAccessIterator = identifiableObject.getUserGroupAccesses().iterator();
-
-        while ( userGroupAccessIterator.hasNext() )
-        {
-            UserGroupAccess userGroupAccess = userGroupAccessIterator.next();
-            UserGroup userGroup = bundle.getPreheat().get( bundle.getPreheatIdentifier(), userGroupAccess.getUserGroup() );
-
-            if ( userGroup != null )
-            {
-                userGroupAccess.setUserGroup( userGroup );
-                session.save( userGroupAccess );
-            }
-            else
-            {
-                userGroupAccessIterator.remove();
-            }
-        }
-    }
-
-    private void handleUserAccesses( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
-    {
-        if ( !schema.havePersistedProperty( "userAccesses" ) ) return;
-
-        if ( bundle.isSkipSharing() )
-        {
-            identifiableObject.getUserAccesses().clear();
-            return;
-        }
-
-        Iterator<UserAccess> userAccessIterator = identifiableObject.getUserAccesses().iterator();
-
-        while ( userAccessIterator.hasNext() )
-        {
-            UserAccess userAccess = userAccessIterator.next();
-            User user = bundle.getPreheat().get( bundle.getPreheatIdentifier(), userAccess.getUser() );
-
-            if ( user != null )
-            {
-                userAccess.setUser( user );
-                session.save( userAccess );
-            }
-            else
-            {
-                userAccessIterator.remove();
-            }
-        }
-    }
-
-    private void handleObjectTranslations( Session session, IdentifiableObject identifiableObject, ObjectBundle bundle, Schema schema )
-    {
-        if ( !schema.havePersistedProperty( "translations" ) ) return;
-        identifiableObject.getTranslations().forEach( session::save );
     }
 }

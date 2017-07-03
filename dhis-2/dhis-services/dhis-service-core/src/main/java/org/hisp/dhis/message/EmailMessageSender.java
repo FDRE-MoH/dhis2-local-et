@@ -38,13 +38,13 @@ import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.hisp.dhis.common.DeliveryChannel;
 import org.hisp.dhis.commons.util.DebugUtils;
+import org.hisp.dhis.email.EmailConfiguration;
 import org.hisp.dhis.email.EmailResponse;
 import org.hisp.dhis.setting.SettingKey;
 import org.hisp.dhis.setting.SystemSettingManager;
 import org.hisp.dhis.outboundmessage.OutboundMessageBatchStatus;
 import org.hisp.dhis.outboundmessage.OutboundMessageResponse;
 import org.hisp.dhis.outboundmessage.OutboundMessageResponseSummary;
-import org.hisp.dhis.outboundmessage.OutboundMessage;
 import org.hisp.dhis.outboundmessage.OutboundMessageBatch;
 import org.hisp.dhis.system.util.ValidationUtils;
 import org.hisp.dhis.system.velocity.VelocityManager;
@@ -53,10 +53,10 @@ import org.hisp.dhis.user.UserSettingKey;
 import org.hisp.dhis.user.UserSettingService;
 import org.springframework.scheduling.annotation.Async;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Lars Helge Overland
@@ -106,19 +106,18 @@ public class EmailMessageSender
     public OutboundMessageResponse sendMessage( String subject, String text, String footer, User sender, Set<User> users,
         boolean forceSend )
     {
-        String hostName = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_HOST_NAME );
-        int port = (int) systemSettingManager.getSystemSetting( SettingKey.EMAIL_PORT );
-        String username = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_USERNAME );
-        String password = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_PASSWORD );
-        boolean tls = (boolean) systemSettingManager.getSystemSetting( SettingKey.EMAIL_TLS );
-        String from = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_SENDER );
+        EmailConfiguration emailConfig = getEmailConfiguration();
+
         String errorMessage = "No recipient found";
 
         OutboundMessageResponse status = new OutboundMessageResponse();
 
-        if ( hostName == null )
+        if ( emailConfig.getHostName() == null )
         {
-            return null;
+            status.setOk( false );
+            status.setResponseObject( EmailResponse.NOT_CONFIGURED );
+
+            return status;
         }
 
         String plainContent = renderPlainContent( text, sender );
@@ -126,7 +125,8 @@ public class EmailMessageSender
 
         try
         {
-            HtmlEmail email = getHtmlEmail( hostName, port, username, password, tls, from );
+            HtmlEmail email = getHtmlEmail( emailConfig.getHostName(), emailConfig.getPort(), emailConfig.getUsername(),
+                    emailConfig.getPassword(), emailConfig.isTls(), emailConfig.getFrom() );
             email.setSubject( customizeTitle( DEFAULT_SUBJECT_PREFIX ) + subject );
             email.setTextMsg( plainContent );
             email.setHtmlMsg( htmlContent );
@@ -145,7 +145,7 @@ public class EmailMessageSender
                         email.addBcc( user.getEmail() );
 
                         log.info( "Sending email to user: " + user.getUsername() + " with email address: "
-                            + user.getEmail() + " to host: " + hostName + ":" + port );
+                            + user.getEmail() + " to host: " + emailConfig.getHostName() + ":" + emailConfig.getPort() );
 
                         hasRecipients = true;
                     }
@@ -162,7 +162,7 @@ public class EmailMessageSender
             {
                 email.send();
 
-                log.info( "Email sent using host: " + hostName + ":" + port + " with TLS: " + tls );
+                log.info( "Email sent using host: " + emailConfig.getHostName() + ":" + emailConfig.getPort() + " with TLS: " + emailConfig.isTls() );
 
                 status = new OutboundMessageResponse( "Email sent", EmailResponse.SENT, true );
             }
@@ -190,24 +190,24 @@ public class EmailMessageSender
     @Override
     public OutboundMessageResponse sendMessage( String subject, String text, Set<String> recipients )
     {
-        String hostName = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_HOST_NAME );
-        int port = (int) systemSettingManager.getSystemSetting( SettingKey.EMAIL_PORT );
-        String username = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_USERNAME );
-        String password = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_PASSWORD );
-        boolean tls = (boolean) systemSettingManager.getSystemSetting( SettingKey.EMAIL_TLS );
-        String from = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_SENDER );
+        EmailConfiguration emailConfig = getEmailConfiguration();
+
         String errorMessage = "No recipient found";
 
         OutboundMessageResponse status = new OutboundMessageResponse();
 
-        if ( hostName == null )
+        if ( emailConfig.getHostName() == null )
         {
-            return null;
+            status.setOk( false );
+            status.setResponseObject( EmailResponse.NOT_CONFIGURED );
+
+            return status;
         }
 
         try
         {
-            HtmlEmail email = getHtmlEmail( hostName, port, username, password, tls, from );
+            HtmlEmail email = getHtmlEmail( emailConfig.getHostName(), emailConfig.getPort(), emailConfig.getUsername(),
+                    emailConfig.getPassword(), emailConfig.isTls(), emailConfig.getFrom() );
             email.setSubject( customizeTitle( DEFAULT_SUBJECT_PREFIX ) + subject );
             email.setTextMsg( text );
 
@@ -221,7 +221,7 @@ public class EmailMessageSender
 
                     hasRecipients = true;
 
-                    log.info( "Sending email to : " + recipient + " to host: " + hostName + ":" + port );
+                    log.info( "Sending email to : " + recipient + " to host: " + emailConfig.getHostName() + ":" + emailConfig.getPort() );
                 }
                 else
                 {
@@ -235,7 +235,7 @@ public class EmailMessageSender
             {
                 email.send();
 
-                log.info( "Email sent using host: " + hostName + ":" + port + " with TLS: " + tls );
+                log.info( "Email sent using host: " + emailConfig.getHostName() + ":" + emailConfig.getPort() + " with TLS: " + emailConfig.isTls() );
 
                 return new OutboundMessageResponse( "Email sent", EmailResponse.SENT, true );
             }
@@ -269,12 +269,9 @@ public class EmailMessageSender
     @Override
     public OutboundMessageResponseSummary sendMessageBatch( OutboundMessageBatch batch )
     {
-        List<OutboundMessageResponse> statuses = new ArrayList<>();
-
-        for ( OutboundMessage email : batch.getMessages() )
-        {
-            statuses.add( sendMessage( email.getSubject(), email.getText(), email.getRecipients() ) );
-        }
+        List<OutboundMessageResponse> statuses = batch.getMessages().stream()
+            .map( m -> sendMessage( m.getSubject(), m.getText(), m.getRecipients() ) )
+            .collect( Collectors.toList() );
 
         return generateSummary( statuses );
     }
@@ -282,8 +279,7 @@ public class EmailMessageSender
     @Override
     public boolean isConfigured()
     {
-        // TODO Check if SMTP is configured
-        return true;
+        return getEmailConfiguration().isOk();
     }
 
     // -------------------------------------------------------------------------
@@ -370,6 +366,18 @@ public class EmailMessageSender
     private boolean isEmailValid( String email )
     {
         return ValidationUtils.emailIsValid( email );
+    }
+
+    private EmailConfiguration getEmailConfiguration()
+    {
+        String hostName = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_HOST_NAME );
+        String username = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_USERNAME );
+        String password = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_PASSWORD );
+        String from = (String) systemSettingManager.getSystemSetting( SettingKey.EMAIL_SENDER );
+        int port = (int) systemSettingManager.getSystemSetting( SettingKey.EMAIL_PORT );
+        boolean tls = (boolean) systemSettingManager.getSystemSetting( SettingKey.EMAIL_TLS );
+
+        return new EmailConfiguration( hostName, username, password, from, port, tls );
     }
 
     private OutboundMessageResponseSummary generateSummary( List<OutboundMessageResponse> statuses )

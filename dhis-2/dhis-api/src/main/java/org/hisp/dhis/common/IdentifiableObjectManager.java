@@ -103,6 +103,8 @@ public interface IdentifiableObjectManager
     <T extends IdentifiableObject> List<T> getAllByAttributes( Class<T> klass, List<Attribute> attributes );
 
     <T extends IdentifiableObject> List<T> getByUid( Class<T> clazz, Collection<String> uids );
+    
+    <T extends IdentifiableObject> List<T> getById( Class<T> clazz, Collection<Integer> ids );
 
     <T extends IdentifiableObject> List<T> getByUidOrdered( Class<T> clazz, List<String> uids );
 
@@ -169,6 +171,8 @@ public interface IdentifiableObjectManager
     <T extends DimensionalObject> List<T> getDataDimensionsNoAcl( Class<T> clazz );
 
     void refresh( Object object );
+
+    void flush();
 
     void evict( Object object );
 

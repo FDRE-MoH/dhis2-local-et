@@ -39,26 +39,23 @@ import org.hisp.dhis.common.BaseAnalyticalObject;
 import org.hisp.dhis.common.BaseIdentifiableObject;
 import org.hisp.dhis.common.CodeGenerator;
 import org.hisp.dhis.common.DataDimensionItem;
+import org.hisp.dhis.common.EmbeddedObject;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObjectManager;
-import org.hisp.dhis.common.MergeMode;
-import org.hisp.dhis.common.ReportingRate;
 import org.hisp.dhis.commons.collection.CollectionUtils;
 import org.hisp.dhis.commons.timer.SystemTimer;
 import org.hisp.dhis.commons.timer.Timer;
-import org.hisp.dhis.dataelement.DataElementCategoryDimension;
+import org.hisp.dhis.dataelement.CategoryDimension;
 import org.hisp.dhis.dataelement.DataElementOperand;
-import org.hisp.dhis.dataset.DataInputPeriod;
-import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetElement;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodStore;
-import org.hisp.dhis.program.Program;
-import org.hisp.dhis.program.ProgramTrackedEntityAttribute;
 import org.hisp.dhis.query.Query;
 import org.hisp.dhis.query.QueryService;
 import org.hisp.dhis.query.Restrictions;
+import org.hisp.dhis.schema.MergeParams;
+import org.hisp.dhis.schema.MergeService;
 import org.hisp.dhis.schema.Property;
 import org.hisp.dhis.schema.PropertyType;
 import org.hisp.dhis.schema.Schema;
@@ -112,6 +109,9 @@ public class DefaultPreheatService implements PreheatService
     @Autowired
     private AttributeService attributeService;
 
+    @Autowired
+    private MergeService mergeService;
+
     @Override
     @SuppressWarnings( "unchecked" )
     public Preheat preheat( PreheatParams params )
@@ -121,7 +121,6 @@ public class DefaultPreheatService implements PreheatService
         Preheat preheat = new Preheat();
         preheat.setUser( params.getUser() );
         preheat.setDefaults( manager.getDefaults() );
-        preheat.setUsernames( getUsernames() );
 
         if ( preheat.getUser() == null )
         {
@@ -135,7 +134,7 @@ public class DefaultPreheatService implements PreheatService
         {
             params.getObjects().get( klass ).stream()
                 .filter( identifiableObject -> StringUtils.isEmpty( identifiableObject.getUid() ) )
-                .forEach( identifiableObject -> ((BaseIdentifiableObject) identifiableObject).setUid( CodeGenerator.generateCode() ) );
+                .forEach( identifiableObject -> ((BaseIdentifiableObject) identifiableObject).setUid( CodeGenerator.generateUid() ) );
         }
 
         Map<Class<? extends IdentifiableObject>, List<IdentifiableObject>> uniqueCollectionMap = new HashMap<>();
@@ -299,6 +298,7 @@ public class DefaultPreheatService implements PreheatService
                     ua.setUser( user );
                 }
             } );
+
             object.getUserGroupAccesses().forEach( uga ->
             {
                 UserGroup userGroup = null;
@@ -546,7 +546,7 @@ public class DefaultPreheatService implements PreheatService
                 {
                     BaseAnalyticalObject analyticalObject = (BaseAnalyticalObject) object;
                     List<DataDimensionItem> dataDimensionItems = analyticalObject.getDataDimensionItems();
-                    List<DataElementCategoryDimension> categoryDimensions = analyticalObject.getCategoryDimensions();
+                    List<CategoryDimension> categoryDimensions = analyticalObject.getCategoryDimensions();
                     List<TrackedEntityDataElementDimension> trackedEntityDataElementDimensions = analyticalObject.getDataElementDimensions();
                     List<TrackedEntityAttributeDimension> attributeDimensions = analyticalObject.getAttributeDimensions();
                     List<TrackedEntityProgramIndicatorDimension> programIndicatorDimensions = analyticalObject.getProgramIndicatorDimensions();
@@ -683,7 +683,7 @@ public class DefaultPreheatService implements PreheatService
                             try
                             {
                                 IdentifiableObject identifiableObject = (IdentifiableObject) p.getKlass().newInstance();
-                                identifiableObject.mergeWith( reference, MergeMode.REPLACE );
+                                mergeService.merge( new MergeParams<>( reference, identifiableObject ) );
                                 refMap.get( object.getUid() ).put( p.getName(), identifiableObject );
                             }
                             catch ( InstantiationException | IllegalAccessException ignored )
@@ -703,7 +703,7 @@ public class DefaultPreheatService implements PreheatService
                                 try
                                 {
                                     IdentifiableObject identifiableObject = (IdentifiableObject) p.getItemKlass().newInstance();
-                                    identifiableObject.mergeWith( reference, MergeMode.REPLACE );
+                                    mergeService.merge( new MergeParams<>( reference, identifiableObject ) );
                                     refObjects.add( identifiableObject );
                                 }
                                 catch ( InstantiationException | IllegalAccessException ignored )
@@ -740,31 +740,46 @@ public class DefaultPreheatService implements PreheatService
             targets.put( UserCredentials.class, userCredentials );
         }
 
-        if ( targets.containsKey( DataSet.class ) )
+        for ( Map.Entry<Class<?>, List<?>> entry : new HashMap<>( targets ).entrySet() )
         {
-            List<DataSet> dataSets = (List<DataSet>) targets.get( DataSet.class );
+            Class<?> klass = entry.getKey();
+            List<?> objects = entry.getValue();
 
-            List<DataSetElement> dataSetElements = new ArrayList<>();
-            List<DataInputPeriod> dataInputPeriods = new ArrayList<>();
+            Schema schema = schemaService.getDynamicSchema( klass );
+            Map<String, Property> properties = schema.getEmbeddedObjectProperties();
 
-            dataSets.forEach( ds ->
+            if ( properties.isEmpty() )
             {
-                dataSetElements.addAll( ds.getDataSetElements() );
-                dataInputPeriods.addAll( ds.getDataInputPeriods() );
-            } );
+                return;
+            }
 
-            targets.put( DataSetElement.class, dataSetElements );
-            targets.put( DataInputPeriod.class, dataInputPeriods );
-        }
+            for ( Property property : properties.values() )
+            {
+                if ( property.isCollection() )
+                {
+                    List<Object> list = new ArrayList<>();
 
-        if ( targets.containsKey( Program.class ) )
-        {
-            List<Program> programs = (List<Program>) targets.get( Program.class );
-            List<ProgramTrackedEntityAttribute> programTrackedEntityAttributes = new ArrayList<>();
+                    if ( targets.containsKey( property.getItemKlass() ) )
+                    {
+                        list.addAll( targets.get( property.getItemKlass() ) );
+                    }
 
-            programs.forEach( p -> programTrackedEntityAttributes.addAll( p.getProgramAttributes() ) );
+                    objects.forEach( o -> list.addAll( ReflectionUtils.invokeMethod( o, property.getGetterMethod() ) ) );
+                    targets.put( property.getItemKlass(), list );
+                }
+                else
+                {
+                    List<Object> list = new ArrayList<>();
 
-            targets.put( ProgramTrackedEntityAttribute.class, programTrackedEntityAttributes );
+                    if ( targets.containsKey( property.getKlass() ) )
+                    {
+                        list.addAll( targets.get( property.getKlass() ) );
+                    }
+
+                    objects.forEach( o -> list.add( ReflectionUtils.invokeMethod( o, property.getGetterMethod() ) ) );
+                    targets.put( property.getKlass(), list );
+                }
+            }
         }
     }
 
@@ -816,7 +831,8 @@ public class DefaultPreheatService implements PreheatService
                 IdentifiableObject refObject = ReflectionUtils.invokeMethod( object, property.getGetterMethod() );
                 IdentifiableObject ref = getPersistedObject( preheat, identifier, refObject );
 
-                if ( Preheat.isDefaultClass( property.getKlass() ) && (ref == null || refObject == null || "default".equals( refObject.getName() )) )
+                if ( !DataSetElement.class.isInstance( object )
+                    && (Preheat.isDefaultClass( property.getKlass() ) && (ref == null || refObject == null || "default".equals( refObject.getName() ))) )
                 {
                     ref = defaults.get( property.getKlass() );
                 }
@@ -838,12 +854,6 @@ public class DefaultPreheatService implements PreheatService
                 for ( IdentifiableObject refObject : refObjects )
                 {
                     IdentifiableObject ref = getPersistedObject( preheat, identifier, refObject );
-
-                    if ( Preheat.isDefaultClass( refObject ) && (ref == null || "default".equals( refObject.getName() )) )
-                    {
-                        ref = defaults.get( refObject.getClass() );
-                    }
-
                     if ( ref != null && ref.getId() != 0 ) objects.add( ref );
                 }
 
@@ -933,25 +943,8 @@ public class DefaultPreheatService implements PreheatService
         return preheat.get( identifier, ref );
     }
 
-    @SuppressWarnings( "unchecked" )
-    private Map<String, UserCredentials> getUsernames()
-    {
-        Map<String, UserCredentials> userCredentialsMap = new HashMap<>();
-        Query query = Query.from( schemaService.getDynamicSchema( UserCredentials.class ) );
-        List<UserCredentials> userCredentials = (List<UserCredentials>) queryService.query( query );
-
-        for ( UserCredentials uc : userCredentials )
-        {
-            userCredentialsMap.put( uc.getUsername(), uc );
-        }
-
-        return userCredentialsMap;
-    }
-
     private boolean skipConnect( Class<?> klass )
     {
-        return klass != null && (DataElementOperand.class.isAssignableFrom( klass ) || UserCredentials.class.isAssignableFrom( klass ) ||
-            ReportingRate.class.isAssignableFrom( klass ) || DataSetElement.class.isAssignableFrom( klass ) ||
-            DataInputPeriod.class.isAssignableFrom( klass ) || ProgramTrackedEntityAttribute.class.isAssignableFrom( klass ));
+        return klass != null && (UserCredentials.class.isAssignableFrom( klass ) || EmbeddedObject.class.isAssignableFrom( klass ));
     }
 }

@@ -29,19 +29,11 @@ package org.hisp.dhis.dxf2.datavalueset;
  */
 
 import com.csvreader.CsvReader;
-import org.amplecode.staxwax.factory.XMLFactory;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.calendar.CalendarService;
-import org.hisp.dhis.common.AuditType;
-import org.hisp.dhis.common.DateRange;
-import org.hisp.dhis.common.DxfNamespaces;
-import org.hisp.dhis.common.IdScheme;
-import org.hisp.dhis.common.IdSchemes;
-import org.hisp.dhis.common.IdentifiableObjectManager;
-import org.hisp.dhis.common.IdentifiableProperty;
-import org.hisp.dhis.common.IllegalQueryException;
+import org.hisp.dhis.common.*;
 import org.hisp.dhis.commons.collection.CachingMap;
 import org.hisp.dhis.commons.util.DebugUtils;
 import org.hisp.dhis.commons.util.StreamUtils;
@@ -56,6 +48,7 @@ import org.hisp.dhis.dataset.CompleteDataSetRegistration;
 import org.hisp.dhis.dataset.CompleteDataSetRegistrationService;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.LockExceptionStore;
+import org.hisp.dhis.datavalue.DataExportParams;
 import org.hisp.dhis.datavalue.DataValue;
 import org.hisp.dhis.datavalue.DataValueAudit;
 import org.hisp.dhis.dxf2.common.ImportOptions;
@@ -65,6 +58,8 @@ import org.hisp.dhis.dxf2.importsummary.ImportStatus;
 import org.hisp.dhis.dxf2.importsummary.ImportSummary;
 import org.hisp.dhis.dxf2.pdfform.PdfDataEntryFormUtil;
 import org.hisp.dhis.dxf2.utils.InputUtils;
+import org.hisp.dhis.fileresource.FileResource;
+import org.hisp.dhis.fileresource.FileResourceService;
 import org.hisp.dhis.i18n.I18n;
 import org.hisp.dhis.i18n.I18nManager;
 import org.hisp.dhis.importexport.ImportStrategy;
@@ -96,23 +91,17 @@ import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.util.ObjectUtils;
 import org.hisp.quick.BatchHandler;
 import org.hisp.quick.BatchHandlerFactory;
+import org.hisp.staxwax.factory.XMLFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
-import static org.hisp.dhis.system.notification.NotificationLevel.ERROR;
-import static org.hisp.dhis.system.notification.NotificationLevel.INFO;
-import static org.hisp.dhis.system.notification.NotificationLevel.WARN;
+import static org.hisp.dhis.system.notification.NotificationLevel.*;
 import static org.hisp.dhis.system.util.DateUtils.parseDate;
 
 /**
@@ -173,6 +162,9 @@ public class DefaultDataValueSetService
     @Autowired
     private CalendarService calendarService;
 
+    @Autowired
+    private FileResourceService fileResourceService;
+
     // Set methods for test purposes
 
     public void setBatchHandlerFactory( BatchHandlerFactory batchHandlerFactory )
@@ -191,8 +183,8 @@ public class DefaultDataValueSetService
 
     @Override
     public DataExportParams getFromUrl( Set<String> dataSets, Set<String> dataElementGroups, Set<String> periods, Date startDate, Date endDate,
-        Set<String> organisationUnits, boolean includeChildren, Set<String> organisationUnitGroups, boolean includeDeleted, Date lastUpdated,
-        String lastUpdatedDuration, Integer limit, IdSchemes outputIdSchemes )
+        Set<String> organisationUnits, boolean includeChildren, Set<String> organisationUnitGroups, Set<String> attributeOptionCombos,
+        boolean includeDeleted, Date lastUpdated, String lastUpdatedDuration, Integer limit, IdSchemes outputIdSchemes )
     {
         DataExportParams params = new DataExportParams();
 
@@ -207,7 +199,7 @@ public class DefaultDataValueSetService
             params.getDataElementGroups().addAll( identifiableObjectManager.getObjects(
                 DataElementGroup.class, IdentifiableProperty.UID, dataElementGroups ) );
         }
-
+        
         if ( periods != null && !periods.isEmpty() )
         {
             params.getPeriods().addAll( periodService.reloadIsoPeriods( new ArrayList<>( periods ) ) );
@@ -230,6 +222,12 @@ public class DefaultDataValueSetService
             params.getOrganisationUnitGroups().addAll( identifiableObjectManager.getObjects(
                 OrganisationUnitGroup.class, IdentifiableProperty.UID, organisationUnitGroups ) );
         }
+        
+        if ( attributeOptionCombos != null )
+        {
+            params.getAttributeOptionCombos().addAll( identifiableObjectManager.getObjects( 
+                DataElementCategoryOptionCombo.class, IdentifiableProperty.UID, attributeOptionCombos ) );
+        }
 
         return params
             .setIncludeChildren( includeChildren )
@@ -250,7 +248,7 @@ public class DefaultDataValueSetService
             throw new IllegalArgumentException( "Params cannot be null" );
         }
 
-        if ( params.getDataSets().isEmpty() && params.getDataElementGroups().isEmpty() )
+        if ( params.getDataElements().isEmpty() && params.getDataSets().isEmpty() && params.getDataElementGroups().isEmpty() )
         {
             violation = "At least one valid data set or data element group must be specified";
         }
@@ -737,13 +735,13 @@ public class DefaultDataValueSetService
 
         if ( outerOrgUnit == null && trimToNull( dataValueSet.getOrgUnit() ) != null )
         {
-            summary.getConflicts().add( new ImportConflict( dataValueSet.getDataSet(), "Org unit not found or not accessible" ) );
+            summary.getConflicts().add( new ImportConflict( dataValueSet.getOrgUnit(), "Org unit not found or not accessible" ) );
             summary.setStatus( ImportStatus.ERROR );
         }
 
         if ( outerAttrOptionCombo == null && trimToNull( dataValueSet.getAttributeOptionCombo() ) != null )
         {
-            summary.getConflicts().add( new ImportConflict( dataValueSet.getDataSet(), "Attribute option combo not found or not accessible" ) );
+            summary.getConflicts().add( new ImportConflict( dataValueSet.getAttributeOptionCombo(), "Attribute option combo not found or not accessible" ) );
             summary.setStatus( ImportStatus.ERROR );
         }
 
@@ -867,6 +865,9 @@ public class DefaultDataValueSetService
                 summary.getConflicts().add( new ImportConflict( "Value", "Data value or comment not specified for data element: " + dataElement.getUid() ) );
                 continue;
             }
+
+            dataValue.setValueForced(
+                ValidationUtils.normalizeBoolean( dataValue.getValue(), dataElement.getValueType() ) );
 
             String valueValid = ValidationUtils.dataValueIsValid( dataValue.getValue(), dataElement );
 
@@ -1106,6 +1107,16 @@ public class DefaultDataValueSetService
                         dataValueBatchHandler.updateObject( internalValue );
 
                         auditBatchHandler.addObject( auditValue );
+
+                        if ( dataElement.isFileType() )
+                        {
+                            FileResource fr = fileResourceService.getFileResource( internalValue.getValue() );
+
+                            fr.setAssigned( true );
+
+                            fileResourceService.updateFileResource( fr );
+                        }
+
                     }
                 }
                 else if ( strategy.isDelete() )
@@ -1121,6 +1132,15 @@ public class DefaultDataValueSetService
                         dataValueBatchHandler.updateObject( internalValue );
 
                         auditBatchHandler.addObject( auditValue );
+
+                        if ( dataElement.isFileType() )
+                        {
+                            FileResource fr = fileResourceService.getFileResource( internalValue.getValue() );
+
+                            fr.setAssigned( false );
+
+                            fileResourceService.updateFileResource( fr );
+                        }
                     }
                 }
             }
@@ -1137,6 +1157,15 @@ public class DefaultDataValueSetService
                             if ( !dryRun )
                             {
                                 dataValueBatchHandler.updateObject( internalValue );
+
+                                if ( dataElement.isFileType() )
+                                {
+                                    FileResource fr = fileResourceService.getFileResource( internalValue.getValue() );
+
+                                    fr.setAssigned( true );
+
+                                    fileResourceService.updateFileResource( fr );
+                                }
                             }
                         }
                         else

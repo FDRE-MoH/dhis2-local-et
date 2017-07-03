@@ -51,6 +51,7 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StreamUtils;
@@ -70,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author Lars Helge Overland
@@ -81,6 +83,10 @@ public class AppController
 {
     public static final String RESOURCE_PATH = "/apps";
 
+    public final Pattern REGEX_REMOVE_PROTOCOL = Pattern.compile( ".+:/+" );
+
+    private final ResourceLoader resourceLoader = new DefaultResourceLoader();
+
     @Autowired
     private AppManager appManager;
 
@@ -90,10 +96,8 @@ public class AppController
     @Autowired
     private I18nManager i18nManager;
 
-    private final ResourceLoader resourceLoader = new DefaultResourceLoader();
-
     @Autowired
-    protected ContextService contextService;
+    private ContextService contextService;
 
     // -------------------------------------------------------------------------
     // Resources
@@ -130,6 +134,7 @@ public class AppController
             apps = appManager.getApps( contextPath );
         }
 
+        response.setContentType( MediaType.APPLICATION_JSON_UTF8_VALUE );
         renderService.toJson( response.getOutputStream(), apps );
     }
 
@@ -165,12 +170,13 @@ public class AppController
         HttpServletRequest request, HttpServletResponse response )
         throws IOException
     {
+        String folderPath = appManager.getAppFolderPath() + "/" + app + "/";
+
         Iterable<Resource> locations = Lists.newArrayList(
-            resourceLoader.getResource( "file:" + appManager.getAppFolderPath() + "/" + app + "/" ),
-            resourceLoader.getResource( "classpath*:/apps/" + app + "/" )
+            resourceLoader.getResource( "file:" + folderPath )
         );
 
-        Resource manifest = findResource( locations, "manifest.webapp" );
+        Resource manifest = findResource( locations, folderPath, "manifest.webapp" );
 
         if ( manifest == null )
         {
@@ -201,7 +207,7 @@ public class AppController
             }
         }
 
-        Resource resource = findResource( locations, pageName );
+        Resource resource = findResource( locations, folderPath, pageName );
 
         if ( resource == null )
         {
@@ -270,7 +276,7 @@ public class AppController
     // Helpers
     //--------------------------------------------------------------------------
 
-    private Resource findResource( Iterable<Resource> locations, String resourceName )
+    private Resource findResource( Iterable<Resource> locations, String folder, String resourceName )
         throws IOException
     {
         for ( Resource location : locations )
@@ -279,7 +285,13 @@ public class AppController
 
             if ( resource.exists() && resource.isReadable() )
             {
-                return resource;
+                File file = resource.getFile();
+
+                // make sure that file resolves into path app folder
+                if ( file != null && file.toPath().startsWith( folder ) )
+                {
+                    return resource;
+                }
             }
         }
 
@@ -294,6 +306,9 @@ public class AppController
         {
             path = path.substring( prefix.length() );
         }
+
+        // if path is prefixed by any protocol, clear it out (this is to ensure that only files inside app directory can be resolved)
+        path = REGEX_REMOVE_PROTOCOL.matcher( path ).replaceAll( "" );
 
         return path;
     }

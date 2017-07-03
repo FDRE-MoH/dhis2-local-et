@@ -55,7 +55,14 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.hisp.dhis.common.IdentifiableObjectUtils.getIdentifiers;
 import static org.hisp.dhis.commons.util.TextUtils.*;
@@ -79,7 +86,8 @@ public class JdbcEventStore
         .put( "eventDate", "psi_executiondate" ).put( "followup", "pi_followup" ).put( "status", "psi_status" )
         .put( "dueDate", "psi_duedate" ).put( "storedBy", "psi_storedby" ).put( "created", "psi_created" )
         .put( "lastUpdated", "psi_lastupdated" ).put( "completedBy", "psi_completedby" )
-        .put( "attributeOptionCombo", "psi_aoc" ).put( "completedDate", "psi_completeddate" ).build();
+        .put( "attributeOptionCombo", "psi_aoc" ).put( "completedDate", "psi_completeddate" )
+        .put( "deleted", "psi_deleted" ).build();
 
     // -------------------------------------------------------------------------
     // Dependencies
@@ -118,16 +126,20 @@ public class JdbcEventStore
 
         while ( rowSet.next() )
         {
+
             if ( rowSet.getString( "psi_uid" ) == null )
             {
                 continue;
             }
 
-            if ( !event.getEvent().equals( rowSet.getString( "psi_uid" ) ) )
+            if ( event.getUid() == null || !event.getUid().equals( rowSet.getString( "psi_uid" ) ) )
             {
                 event = new Event();
 
-                event.setEvent( rowSet.getString( "psi_uid" ) );
+                event.setUid( rowSet.getString( "psi_uid" ) );
+
+                event.setEvent( IdSchemes.getValue( rowSet.getString( "psi_uid" ), rowSet.getString( "psi_code" ) ,
+                    idSchemes.getProgramStageInstanceIdScheme() ) );
                 event.setTrackedEntityInstance( rowSet.getString( "tei_uid" ) );
                 event.setStatus( EventStatus.valueOf( rowSet.getString( "psi_status" ) ) );
 
@@ -137,6 +149,7 @@ public class JdbcEventStore
                     idSchemes.getProgramStageIdScheme() ) );
                 event.setOrgUnit( IdSchemes.getValue( rowSet.getString( "ou_uid" ), rowSet.getString( "ou_code" ),
                     idSchemes.getOrgUnitIdScheme() ) );
+                event.setDeleted( rowSet.getBoolean( "psi_deleted" ) );
 
                 ProgramType programType = ProgramType.fromValue( rowSet.getString( "p_type" ) );
 
@@ -187,13 +200,6 @@ public class JdbcEventStore
                     {
                         event.setCoordinate( coordinate );
                     }
-                }
-                
-                boolean deleted = rowSet.getBoolean( "psi_deleted" );
-                
-                if ( deleted )
-                {
-                    event.setDeleted( deleted );
                 }
 
                 events.add( event );
@@ -257,7 +263,7 @@ public class JdbcEventStore
             + ", " + "ou.uid as " + EVENT_ORG_UNIT_ID + ", " + "ou.name as " + EVENT_ORG_UNIT_NAME + ", "
             + "psi.status as " + EVENT_STATUS_ID + ", " + "psi.longitude as " + EVENT_LONGITUDE_ID + ", "
             + "psi.latitude as " + EVENT_LATITUDE_ID + ", " + "ps.uid as " + EVENT_PROGRAM_STAGE_ID + ", " + "p.uid as "
-            + EVENT_PROGRAM_ID + ", " + "coc.uid as " + EVENT_ATTRIBUTE_OPTION_COMBO_ID + ", ";
+            + EVENT_PROGRAM_ID + ", " + "coc.uid as " + EVENT_ATTRIBUTE_OPTION_COMBO_ID + ", " + "psi.deleted as " + EVENT_DELETED + ", ";
 
         for ( QueryItem item : params.getDataElementsAndFilters() )
         {
@@ -295,7 +301,7 @@ public class JdbcEventStore
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet( sql );
 
         log.debug( "Event query SQL: " + sql );
-        
+
         List<Map<String, String>> list = new ArrayList<>();
 
         while ( rowSet.next() )
@@ -344,16 +350,20 @@ public class JdbcEventStore
                 continue;
             }
 
-            if ( !eventRow.getEvent().equals( rowSet.getString( "psi_uid" ) ) )
+            if (  eventRow.getUid() == null ||!eventRow.getUid().equals( rowSet.getString( "psi_uid" ) ) )
             {
                 eventRow = new EventRow();
 
-                eventRow.setEvent( rowSet.getString( "psi_uid" ) );
+                eventRow.setUid( rowSet.getString( "psi_uid" ) );
+
+                eventRow.setEvent( IdSchemes.getValue( rowSet.getString( "psi_uid" ), rowSet.getString( "psi_code" ), idSchemes.getProgramStageInstanceIdScheme() ) );
                 eventRow.setTrackedEntityInstance( rowSet.getString( "tei_uid" ) );
                 eventRow.setTrackedEntityInstanceOrgUnit( rowSet.getString( "tei_ou" ) );
                 eventRow.setTrackedEntityInstanceOrgUnitName( rowSet.getString( "tei_ou_name" ) );
                 eventRow.setTrackedEntityInstanceCreated( rowSet.getString( "tei_created" ) );
                 eventRow.setTrackedEntityInstanceInactive( rowSet.getBoolean( "tei_inactive" ) );
+                eventRow.setDeleted( rowSet.getBoolean( "psi_deleted" ) );
+
 
                 eventRow.setProgram( IdSchemes.getValue( rowSet.getString( "p_uid" ), rowSet.getString( "p_code" ),
                     idSchemes.getProgramIdScheme() ) );
@@ -489,7 +499,7 @@ public class JdbcEventStore
 
         SqlHelper hlp = new SqlHelper();
 
-        String sql = "select psi.programstageinstanceid as psi_id, psi.uid as psi_uid, psi.status as psi_status, psi.executiondate as psi_executiondate, "
+        String sql = "select psi.programstageinstanceid as psi_id, psi.uid as psi_uid, psi.code as psi_code, psi.status as psi_status, psi.executiondate as psi_executiondate, "
             + "psi.duedate as psi_duedate, psi.completedby as psi_completedby, psi.storedby as psi_storedby, psi.longitude as psi_longitude, " 
             + "psi.latitude as psi_latitude, psi.created as psi_created, psi.lastupdated as psi_lastupdated, psi.completeddate as psi_completeddate, psi.deleted as psi_deleted, "
             + "coc.code AS coc_categoryoptioncombocode, coc.uid AS coc_categoryoptioncombouid, cocco.categoryoptionid AS cocco_categoryoptionid, "
@@ -720,6 +730,11 @@ public class JdbcEventStore
             {
                 sql += hlp.whereAnd() + " psi.status = '" + params.getEventStatus().name() + "' ";
             }
+        }
+
+        if ( params.getEvents() != null && !params.getEvents().isEmpty() && !params.hasFilters() )
+        {
+            sql += hlp.whereAnd() + " (psi.uid in (" + getQuotedCommaDelimitedString( params.getEvents() ) + ")) ";
         }
 
         return sql;

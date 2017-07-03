@@ -31,7 +31,7 @@ package org.hisp.dhis.dxf2.metadata.objectbundle.hooks;
 import org.hibernate.SessionFactory;
 import org.hisp.dhis.common.IdentifiableObject;
 import org.hisp.dhis.common.IdentifiableObjectManager;
-import org.hisp.dhis.dxf2.metadata.MergeService;
+import org.hisp.dhis.schema.MergeService;
 import org.hisp.dhis.dxf2.metadata.objectbundle.ObjectBundle;
 import org.hisp.dhis.dxf2.metadata.objectbundle.ObjectBundleHook;
 import org.hisp.dhis.feedback.ErrorReport;
@@ -73,12 +73,12 @@ public class AbstractObjectBundleHook implements ObjectBundleHook
     }
 
     @Override
-    public void preImport( ObjectBundle bundle )
+    public void preCommit( ObjectBundle bundle )
     {
     }
 
     @Override
-    public void postImport( ObjectBundle bundle )
+    public void postCommit( ObjectBundle bundle )
     {
     }
 

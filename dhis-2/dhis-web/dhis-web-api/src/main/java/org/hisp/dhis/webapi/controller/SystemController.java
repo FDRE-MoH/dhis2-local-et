@@ -128,7 +128,7 @@ public class SystemController
 
         for ( int i = 0; i < limit; i++ )
         {
-            collectionNode.addChild( new SimpleNode( "code", CodeGenerator.generateCode() ) );
+            collectionNode.addChild( new SimpleNode( "code", CodeGenerator.generateUid() ) );
         }
 
         return rootNode;
@@ -151,7 +151,7 @@ public class SystemController
         for ( int i = 0; i < limit; i++ )
         {
             csvGenerator.writeStartObject();
-            csvGenerator.writeStringField( "uid", CodeGenerator.generateCode() );
+            csvGenerator.writeStringField( "uid", CodeGenerator.generateUid() );
             csvGenerator.writeEndObject();
         }
 
@@ -237,12 +237,6 @@ public class SystemController
         return info;
     }
 
-    @RequestMapping( value = "/info/minimal", method = RequestMethod.GET, produces = { "application/json", "application/javascript" } )
-    public @ResponseBody SystemInfo getMinimalSystemInfo( Model model, HttpServletRequest request )
-    {
-        return systemService.getMinimalSystemInfo();
-    }
-
     @RequestMapping( value = "/objectCounts", method = RequestMethod.GET )
     public @ResponseBody RootNode getObjectCounts()
     {
@@ -258,7 +252,7 @@ public class SystemController
     }
 
     @RequestMapping( value = "/ping", method = RequestMethod.GET, produces = "text/plain" )
-    @ApiVersion( exclude = { DhisApiVersion.V24, DhisApiVersion.V25, DhisApiVersion.V26 } )
+    @ApiVersion( exclude = { DhisApiVersion.V24, DhisApiVersion.V25, DhisApiVersion.V26, DhisApiVersion.V27 } )
     public @ResponseBody String pingLegacy()
     {
         return "pong";

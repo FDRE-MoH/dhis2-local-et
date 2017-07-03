@@ -253,7 +253,7 @@ dhis2.de.shouldFetchDataSets = function( ids ) {
         return false;
     }
 
-    if( !$.isArray(ids) || ids.length == 0 || (ids.length > 0 && dhis2.de.fetchedDataSets[ids[0]]) ) {
+    if( !$.isArray(ids) || ids.length === 0 || (ids.length > 0 && dhis2.de.fetchedDataSets[ids[0]]) ) {
         return false;
     }
 
@@ -415,7 +415,7 @@ dhis2.de.uploadLocalData = function()
             },
             error: function( jqXHR, textStatus, errorThrown )
             {
-            	if ( 409 == xhr.status || 500 == xhr.status ) // Invalid value or locked
+            	if ( 409 === xhr.status || 500 === xhr.status ) // Invalid value or locked
             	{
             		// Ignore value for now TODO needs better handling for locking
             		
@@ -479,7 +479,7 @@ dhis2.de.uploadLocalData = function()
             },
             error: function( xhr, textStatus, errorThrown )
             {
-            	if ( 409 == xhr.status || 500 == xhr.status ) // Invalid value or locked
+            	if ( 409 === xhr.status || 500 === xhr.status ) // Invalid value or locked
             	{
             		// Ignore value for now TODO needs better handling for locking
             		
@@ -548,7 +548,7 @@ dhis2.de.addEventListeners = function()
             keyPress( event, this );
         } );
 
-        if ( type == 'DATE' )
+        if ( type === 'DATE' )
         {
             // Fake event, needed for valueBlur / valueFocus when using date-picker
             var fakeEvent = {
@@ -1190,7 +1190,7 @@ function dataSetSelected()
 
     dhis2.de.currentDataSetId = $( '#selectedDataSetId' ).val();
     
-    if ( dhis2.de.currentDataSetId && dhis2.de.currentDataSetId != -1 )
+    if ( dhis2.de.currentDataSetId && dhis2.de.currentDataSetId !== -1 )
     {
         $( '#selectedPeriodId' ).removeAttr( 'disabled' );
         $( '#prevButton' ).removeAttr( 'disabled' );
@@ -1831,6 +1831,15 @@ function insertDataValues( json )
                     'pe': $( '#selectedPeriodId' ).val()
                 };
 
+                var cc = dhis2.de.getCurrentCategoryCombo();
+                var cp = dhis2.de.getCurrentCategoryOptionsQueryValue;
+
+                if( cc && cp )
+                {
+                    dvParams.cc = cc;
+                    dvParams.cp = cp;
+                }
+
                 var name = "", size = "";
 
                 if ( value.fileMeta )
@@ -2179,6 +2188,39 @@ function displayUserDetails()
 // Validation
 // -----------------------------------------------------------------------------
 
+dhis2.de.validateCompulsoryDataElements = function ()
+{
+  var compulsoryValid = true;
+
+  $('[required=required]').each( function() {
+    if ( $(this).hasClass("entryselect") )
+    {
+      var entrySelectName =  $(this).attr("name");
+      var value  = $("[name="+entrySelectName+"]:checked").val();
+
+      if( value == undefined )
+      {
+        $(this).parents("td").addClass("required");
+        compulsoryValid = false;
+      }
+    }
+    else if( $.trim( $( this ).val() ).length == 0 )
+    {
+      if( $(this).hasClass("entryoptionset") )
+      {
+        $(this).siblings("div.entryoptionset").css("border", "1px solid red");
+      }
+      else
+      {
+        $(this).css( 'background-color', dhis2.de.cst.colorRed );
+      }
+
+      compulsoryValid = false;
+    }
+  }) ;
+  return compulsoryValid;
+}
+
 /**
  * Executes all validation checks.
  * 
@@ -2189,10 +2231,12 @@ function displayUserDetails()
 dhis2.de.validate = function( ignoreValidationSuccess, successCallback )
 {
 	var compulsoryCombinationsValid = dhis2.de.validateCompulsoryCombinations();
+
+  var compulsoryDataElementsValid = dhis2.de.validateCompulsoryDataElements();
 	
 	// Check for compulsory combinations and return false if violated
 	
-	if ( !compulsoryCombinationsValid )
+	if ( !compulsoryCombinationsValid || !compulsoryDataElementsValid )
 	{
     	var html = '<h3>' + i18n_validation_result + ' &nbsp;<img src="../images/warning_small.png"></h3>' +
         	'<p class="bold">' + i18n_all_values_for_data_element_must_be_filled + '</p>';
@@ -3145,7 +3189,7 @@ dhis2.de.searchOptionSet = function( uid, query, success )
 dhis2.de.getOptions = function( uid, query, success ) 
 {
     return $.ajax( {
-        url: '../api/optionSets/' + uid + '.json?links=false&q=' + query,
+        url: '../api/optionSets/' + uid + '.json?fields=:all,options[:all]&links=false&q=' + query,
         dataType: "json",
         cache: false,
         type: 'GET',

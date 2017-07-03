@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * MetadataSyncService defines the methods avaibale for initiating sync related methods
+ * MetadataSyncService defines the methods available for initiating sync related methods
  *
  * @author vanyas
  */
