@@ -167,9 +167,11 @@ dhis2.period.DatePicker.prototype.createRangedInstance = function(fromEl, toEl, 
   mergedOptions.onSelect = function(dates) {
     if ( this.id === $fromEl.attr( 'id' ) ) {
       $toEl.calendarsPicker( "option", "minDate", dates[0] || null );
+      formatEthiopianDate($fromEl.calendarsPicker("getDate"),fromEl);
     }
     else if ( this.id === $toEl.attr( 'id' ) ) {
       $fromEl.calendarsPicker( "option", "maxDate", dates[0] || null );
+      formatEthiopianDate($toEl.calendarsPicker("getDate"),toEl);
     }
   };
 
@@ -1032,18 +1034,46 @@ $.extend( dhis2.period.QuarterlyGenerator.prototype, {
   $generate: function(offset) {
     var year = offset + this.calendar.today().year();
     var periods = [];
+    
+    //TODO this will make the system not work in international versions
+    //	need to check if Ethiopian first.
+    
+    var monthOffset=-2;
 
     for ( var month = 1, idx = 1; month <= getHMISMonthsInYear( this.calendar, year ); month += 3, idx++ ) {
-      var startDate = this.calendar.newDate( year, month, 1 );
-      var endDate = this.calendar.newDate( startDate ).set( month + 2, 'm' );
-      endDate.set( endDate.daysInMonth( month + 2 ), 'd' );
-
+    	var sm=month+monthOffset;
+    	var sy=year;
+    	
+    	if(sm<0){
+    		sm=sm+12;
+    		sy=sy-1;
+    	}
+    	
+    	var em=sm+2;
+    	var ey=sy;
+    	
+    	if(em>12){
+    		em=1;
+    		ey=ey+1;
+    	}
+    	
+      var startDate = this.calendar.newDate( sy, sm, 1 );
+      var endDate = this.calendar.newDate();
+      endDate.set(ey,'y');
+      endDate.set(em,'m');
+      endDate.set(endDate.daysInMonth(em),'d');
+      
       var period = {};
       period['startDate'] = startDate.formatDate( this.format );
       period['endDate'] = endDate.formatDate( this.format );
-      period['name'] = getMonthTranslation( startDate.formatDate( "MM" ) ) + ' - ' + getMonthTranslation( endDate.formatDate( "MM" ) ) + ' ' + year;
+      
+      //------------------------------------------------------------
+      //Previous implementation might perform better for translation.
+      //------------------------------------------------------------
+      //period['name'] = getMonthTranslation( startDate.formatDate( "MM" ) ) + ' - ' + getMonthTranslation( endDate.formatDate( "MM" ) ) + ' ' + year;
+      period['name']='Q'+idx+'['+startDate.formatDate("MM")+' '+sy+' - '+endDate.formatDate('MM')+' '+ey+']';
       period['id'] = 'Quarterly_' + period['startDate'];
-      period['iso'] = startDate.formatDate( "yyyy" ) + 'Q' + idx;
+      period['iso'] = endDate.formatDate( "yyyy" ) + 'Q' + idx;
 
       period['_startDate'] = this.calendar.newDate( startDate );
       period['_endDate'] = this.calendar.newDate( endDate );
@@ -1054,7 +1084,8 @@ $.extend( dhis2.period.QuarterlyGenerator.prototype, {
     return periods;
   },
   $todayPlusPeriods: function(n) {
-    return this.calendar.today().add( n * 3, 'm' );
+    var res=this.calendar.today().add(n*3,'m');
+    return res;
   }
 } );
 
@@ -1337,7 +1368,28 @@ function getHMISMonthsInYear(calendar, year) {
   }
 
   return monthsInYear;
-}
+};
+
+
+function formatEthiopianDate(cDate,el){
+	if(cDate[0]){
+		var d=cDate[0]._day+'-'+cDate[0]._month+'-'+cDate[0]._year;
+		var arr=d.split('-');
+		var _d='';
+		
+		for(var i=0;i<arr.length;i++){
+			if(arr[i].length==1){
+				arr[i]="0"+arr[i];
+			}
+			_d+=arr[i]+'-';
+		}
+		
+		_d=_d.substring(0,d.length-1);
+		
+		$(el).val(_d);
+		$(el).attr("value",_d);
+	}
+};
 
 /**
  * Convenience method to get month translations which are fetched by main.vm
