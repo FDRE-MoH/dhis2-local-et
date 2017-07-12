@@ -1187,6 +1187,16 @@ function addRemoveDateButton( id, hideDel )
 
 function getCurrentDate()
 {	
+	var today=dhis2.period.calendar.newDate();
+	if(today._calendar && today._calendar.local && today._calendar.local.dateFormat){
+		if(today._calendar.local.dateFormat === 'dd/MM/yyyy'){
+			today=moment(today_year + '-' + today._month+'-'+today._day,'DD-MM-YYYY')._d;
+			return jQuery.datepicker.formatDate( 'dd-mm-yy',today);
+		}else{
+			today=moment(today._year + '-'+ today._month+'-'+today._day,'YYYY-MM-DD')._d;
+			return jQuery.datepicker.formDate('dd-mm-yy',today);
+		}
+	}
 	return jQuery.datepicker.formatDate( dateFormat , new Date() ) ;
 }
 
