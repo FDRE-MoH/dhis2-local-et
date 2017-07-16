@@ -1,0 +1,237 @@
+<div class="vertical-spacing remove-left-padding" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
+                              
+    <div class="col-sm-12" equal-height-nav-tabs>
+        <tabset justified="true">
+            <tab heading="{{section.displayName}}" class="bold" ng-repeat="section in model.selectedDataSet.sections | orderBy:'sortOrder'" active="section.active">
+                <div class="row col-sm-8 vertical-spacing">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>                                
+                                <th>
+                                    {{'data_element' | translate}}
+                                </th>
+                                <th>
+                                    {{'value' | translate}}
+                                </th>
+                            </tr>
+                        </thead>                        
+                        <tbody ng-repeat="dataElement in section.dataElements" 
+                            ng-init="de = model.dataElements[dataElement.id]; 
+                                     ocos = model.selectedCategoryCombos[de.categoryCombo.id].categoryOptionCombos"
+                            ng-if="model.selectedCategoryCombos[model.dataElements[dataElement.id].categoryCombo.id].categoryOptionCombos.length > 1">
+                            <tr>
+                                <td>
+                                    {{de.displayFormName}}
+                                </td>
+                                <td>
+                                    
+                                </td>
+                            </tr>
+                            <tr ng-repeat="oco in ocos">                            
+                                <td>
+                                    {{oco.displayName}}
+                                </td>
+                                <td>
+                                    <ng-form name="innerForm">
+                                        <span ng-switch="de.valueType">                                                        
+                                            <span ng-switch-when="LONG_TEXT">
+                                                <textarea rows="5" 
+                                                          name="foo"
+                                                          maxlength="{{MAXCHARSLEN}}"      
+                                                          ng-model="dataValues[de.id][oco.id]" 
+                                                          ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                          class="form-control" 
+                                                          ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                          d2-blur="saveDataValue(de.id, oco.id)">
+                                                </textarea>
+                                                <div class="alert alert-warning trimmed-alert small-vertical-spacing bold italic">
+                                                    {{'chars_remaining'| translate}}: {{dataValues[de.id][oco.id] ? MAXCHARSLEN - dataValues[de.id][oco.id].length : MAXCHARSLEN}}
+                                                </div>
+                                            </span>
+                                            <span ng-switch-when="TEXT">
+                                                <input type="text" 
+                                                       name="foo"
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="NUMBER">
+                                                <input type="number"  
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER">
+                                                <input type="number"   
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER_POSITIVE">
+                                                <input type="number" 
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER_NEGATIVE">
+                                                <input type="number"   
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
+                                                <input type="number"   
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-default>
+                                                <div class="alert alert-danger form-control">
+                                                    {{'unsupported_value_type' | translate}}:  {{de.valueType}}
+                                                </div>
+                                            </span>
+                                        </span>
+                                        <span ng-messages="innerForm.foo.$error" ng-if="interacted(innerForm.foo)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                                         
+                                        </span>
+                                    </ng-form>
+                                </td>
+                            </tr>
+                    </tbody>
+                    <tbody ng-repeat="dataElement in section.dataElements" 
+                            ng-init="de = model.dataElements[dataElement.id]; 
+                                     ocos = model.selectedCategoryCombos[de.categoryCombo.id].categoryOptionCombos"
+                            ng-if="model.selectedCategoryCombos[model.dataElements[dataElement.id].categoryCombo.id].categoryOptionCombos.length === 1">
+                            <tr ng-repeat="oco in ocos">
+                                <td class="vertical-center"
+                                    rowspan="{{ocos.length}}" ng-if="$index === 0">
+                                    {{de.displayFormName}}
+                                </td>
+                                <td>
+                                    <span ng-if="!model.selectedCategoryCombos[de.categoryCombo.id].isDefault">
+                                        {{oco.displayName}}
+                                    </span>
+                                    <ng-form name="innerForm">
+                                        <span ng-switch="de.valueType">                                                        
+                                            <span ng-switch-when="LONG_TEXT">
+                                                <textarea rows="5" 
+                                                          name="foo"
+                                                          maxlength="{{MAXCHARSLEN}}"      
+                                                          ng-model="dataValues[de.id][oco.id]" 
+                                                          ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                          class="form-control" 
+                                                          ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                          d2-blur="saveDataValue(de.id, oco.id)">
+                                                </textarea>
+                                                <div class="alert alert-warning trimmed-alert small-vertical-spacing bold italic">
+                                                    {{'chars_remaining'| translate}}: {{dataValues[de.id][oco.id] ? MAXCHARSLEN - dataValues[de.id][oco.id].length : MAXCHARSLEN}}
+                                                </div>
+                                            </span>
+                                            <span ng-switch-when="TEXT">
+                                                <input type="text" 
+                                                       name="foo"
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="NUMBER">
+                                                <input type="number"  
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER">
+                                                <input type="number"   
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER_POSITIVE">
+                                                <input type="number" 
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER_NEGATIVE">
+                                                <input type="number"   
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
+                                                <input type="number"   
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-default>
+                                                <div class="alert alert-danger form-control">
+                                                    {{'unsupported_value_type' | translate}}:  {{de.valueType}}
+                                                </div>
+                                            </span>
+                                        </span>
+                                        <span ng-messages="innerForm.foo.$error" ng-if="interacted(innerForm.foo)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                                         
+                                        </span>
+                                    </ng-form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </tab>                    
+        </tabset>
+    </div>
+</div>

@@ -266,6 +266,11 @@ public class JdbcAnalyticsManager
         {
             sql = "value";
         }
+        else if( params.isAggregationType( LAST_SUM_ORG_UNIT ) ) //Last value
+        {
+        	System.out.println("Need to pick the last / latest value");
+        	sql = "last_value(value) over (order by peenddate)";        	
+        }
         else // SUM, AVERAGE_SUM_INT_DISAGGREGATION and null
         {
             sql = "sum(value)";

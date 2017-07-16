@@ -36,6 +36,7 @@ public enum AggregationType
     SUM( "sum", false, true ),
     AVERAGE( "avg", false, true ),
     AVERAGE_SUM_ORG_UNIT( "avg_sum_org_unit", false, true ),
+    LAST_SUM_ORG_UNIT( "lst_sum_org_unit", false, true ), // Last value in period but sum in organisation unit hierarchy
     COUNT( "count", false, true ),
     STDDEV( "stddev", false, true ),
     VARIANCE( "variance", false, true ),
@@ -48,7 +49,7 @@ public enum AggregationType
     AVERAGE_SUM_INT_DISAGGREGATION( "avg_sum_int_disaggregation", true, true ), // Sum in organisation unit hierarchy
     AVERAGE_INT( "avg_int", true, true ),
     AVERAGE_INT_DISAGGREGATION( "avg_int_disaggregation", true, true ),
-    AVERAGE_BOOL( "avg_bool", true, true );
+    AVERAGE_BOOL( "avg_bool", true, true );	
 
     private final String value;
     

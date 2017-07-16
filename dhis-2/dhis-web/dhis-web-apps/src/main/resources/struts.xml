@@ -11,6 +11,12 @@
             <result name="success" type="redirect">index.html</result>
         </action>
     </package>
+    
+    <package name="dhis-web-routine-dataentry" extends="dhis-web-commons" namespace="/dhis-web-routine-dataentry">
+		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
+		    <result name="success" type="redirect">index.html</result>
+		</action>        
+	</package>	
 
     <!-- Apps pulled from Maven repository -->
 
