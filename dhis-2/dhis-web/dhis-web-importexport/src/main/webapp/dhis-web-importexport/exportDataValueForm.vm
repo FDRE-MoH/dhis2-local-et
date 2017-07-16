@@ -17,6 +17,10 @@
         return option;
       }
     });
+    
+    dhis2.period.picker.createInstance('#startDate');
+    dhis2.period.picker.createInstance('#endDate');
+    
   });
 
   var i18n_select_organisation_unit = '$encoder.jsEscape( $i18n.getString( "select_organisation_unit" ), "'")';

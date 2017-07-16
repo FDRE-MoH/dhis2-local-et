@@ -59,7 +59,10 @@ public class PartitionUtils
 
     public static Period getPeriod( Calendar calendar, Integer year )
     {
-        DateTimeUnit startOfYear = calendar.isoStartOfYear( year );
+        //DateTimeUnit startOfYear = calendar.isoStartOfYear( year );
+    	DateTimeUnit startOfYear=calendar.fromIso(year,1,1);
+    	startOfYear=new DateTimeUnit(startOfYear.getYear(),1,1);
+    	
         DateTime time = new DateTime( year, startOfYear.getMonth(), startOfYear.getDay(), 1, 1 );
 
         return PERIODTYPE.createPeriod( time.toDate(), calendar );

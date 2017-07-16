@@ -30,6 +30,7 @@ package org.hisp.dhis.analytics;
 
 import com.google.common.collect.*;
 import org.apache.commons.lang3.StringUtils;
+import org.hisp.dhis.calendar.DateTimeUnit;
 import org.hisp.dhis.common.*;
 import org.hisp.dhis.commons.collection.CollectionUtils;
 import org.hisp.dhis.commons.collection.ListUtils;
@@ -666,8 +667,14 @@ public class DataQueryParams
         {
             for ( DimensionalItemObject aggregatePeriod : getDimensionOrFilterItems( PERIOD_DIM_ID ) )
             {
-                Period dataPeriod = dataPeriodType.createPeriod( ((Period) aggregatePeriod).getStartDate() );
-                
+            	Date date=((Period)aggregatePeriod).getStartDate();
+            	
+            	org.hisp.dhis.calendar.Calendar cal= dataPeriodType.getCalendar();
+            	
+            	
+            	DateTimeUnit dateTimeUnit=cal.fromIso(date);
+            	Period dataPeriod=dataPeriodType.createPeriod(dateTimeUnit,cal);
+            	
                 map.putValue( dataPeriod, aggregatePeriod );
             }
         }

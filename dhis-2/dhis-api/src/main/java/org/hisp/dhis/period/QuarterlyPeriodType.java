@@ -30,6 +30,7 @@ package org.hisp.dhis.period;
 
 import com.google.common.collect.Lists;
 import org.hisp.dhis.calendar.DateTimeUnit;
+import org.hisp.dhis.calendar.impl.EthiopianCalendar;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -75,6 +76,10 @@ public class QuarterlyPeriodType
     @Override
     public Period createPeriod( DateTimeUnit dateTimeUnit, org.hisp.dhis.calendar.Calendar calendar )
     {
+    	if(calendar instanceof EthiopianCalendar) {
+    		return getEthiopianQuarterPeriod(calendar, dateTimeUnit);
+    	}
+    	
         DateTimeUnit start = new DateTimeUnit( dateTimeUnit );
 
         start.setMonth( ((dateTimeUnit.getMonth() - 1) - ((dateTimeUnit.getMonth() - 1) % 3)) + 1 );
@@ -91,6 +96,28 @@ public class QuarterlyPeriodType
         end.setDay( calendar.daysInMonth( end.getYear(), end.getMonth() ) );
 
         return toIsoPeriod( start, end, calendar );
+    }
+    
+    //--------------------------------------------------
+    //Ethiopian calendar helper
+    //--------------------------------------------------
+    private Period getEthiopianQuarterPeriod(org.hisp.dhis.calendar.Calendar calendar,DateTimeUnit dateTimeUnit) {
+    	DateTimeUnit start=new DateTimeUnit(dateTimeUnit);
+    	
+    	start.setMonth(((dateTimeUnit.getMonth()-1)-((dateTimeUnit.getMonth()-1)%3))+2);
+    	start.setDay(1);
+    	
+    	if(start.getMonth()>12) {
+    		start.setYear(start.getYear()+1);
+    		start.setMonth(1);
+    	}
+    	
+    	DateTimeUnit end=new DateTimeUnit(start);
+    	end=calendar.plusMonths(end, 2);
+    	end.setDay(calendar.daysInMonth(end.getYear(), end.getMonth()));
+    	
+    	return toIsoPeriod(start,end,calendar);
+    	
     }
 
     @Override
@@ -180,19 +207,34 @@ public class QuarterlyPeriodType
     @Override
     public String getIsoDate( DateTimeUnit dateTimeUnit, org.hisp.dhis.calendar.Calendar calendar  )
     {
-        switch ( dateTimeUnit.getMonth() )
-        {
-            case 1:
-                return dateTimeUnit.getYear() + "Q1";
-            case 4:
-                return dateTimeUnit.getYear() + "Q2";
-            case 7:
-                return dateTimeUnit.getYear() + "Q3";
-            case 10:
-                return dateTimeUnit.getYear() + "Q4";
-            default:
-                throw new IllegalArgumentException( "Month not valid [1,4,7,10], was given " + dateTimeUnit.getMonth() );
-        }
+    	if(calendar instanceof EthiopianCalendar) {
+    		switch(dateTimeUnit.getMonth()) {
+    		case 11:
+    			return dateTimeUnit.getYear()+1+"Q1";
+    		case 2:
+    			return dateTimeUnit.getYear()+"Q2";
+    		case 5:
+    			return dateTimeUnit.getYear()+"Q3";
+    		case 8:
+    			return dateTimeUnit.getYear()+"Q4";
+    			default:
+    				throw new IllegalArgumentException("Month not valid [11,2,5,8], was given "+dateTimeUnit.getMonth());
+    		}
+    	}else {
+	        switch ( dateTimeUnit.getMonth() )
+	        {
+	            case 1:
+	                return dateTimeUnit.getYear() + "Q1";
+	            case 4:
+	                return dateTimeUnit.getYear() + "Q2";
+	            case 7:
+	                return dateTimeUnit.getYear() + "Q3";
+	            case 10:
+	                return dateTimeUnit.getYear() + "Q4";
+	            default:
+	                throw new IllegalArgumentException( "Month not valid [1,4,7,10], was given " + dateTimeUnit.getMonth() );
+	        }
+    	}
     }
 
     /**
