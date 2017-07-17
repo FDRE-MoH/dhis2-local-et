@@ -866,3 +866,7 @@ div#orgUnitTree {
 .empty-data-row {
     color: #767676 !important;
 }
+
+.font-size-10pt {
+    font-size: 10pt !important;
+}

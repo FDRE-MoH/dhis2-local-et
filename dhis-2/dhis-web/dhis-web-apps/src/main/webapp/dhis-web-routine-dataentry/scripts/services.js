@@ -10,7 +10,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     var store = new dhis2.storage.Store({
         name: "dhis2rd",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorGroups']
+        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes']
     });
     return{
         currentStore: store
@@ -709,6 +709,121 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         getStakeholderNames: function(){
             var stakeholders = [{id: 'CA_ID', displayName: $translate.instant('catalyst')},{id: 'FU_ID', displayName: $translate.instant('funder')},{id: 'RM_ID', displayName: $translate.instant('responsible_ministry')}];
             return stakeholders;
+        },
+        formatDataValue: function( de, val){            
+            if( de.valueType === 'NUMBER' ){
+                val = parseFloat( val );
+            }
+            else if(de.valueType === 'INTEGER' ||
+                    de.valueType === 'INTEGER_POSITIVE' ||
+                    de.valueType === 'INTEGER_NEGATIVE' ||
+                    de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ){
+                val = parseInt( val );
+            }
+            
+            return val;
+        },
+        getDataElementTotal: function(dataValues, dataElement){            
+            if( dataValues[dataElement] ){                
+                dataValues[dataElement].total = 0;                
+                angular.forEach(dataValues[dataElement], function(val, key){
+                    if( key !== 'total' ){
+                        dataValues[dataElement].total += val;
+                    }
+                });
+            }            
+            return dataValues[dataElement];
+        },       
+        getIndicatorResult: function( ind, dataValues ){
+            
+            var formulaRegex = /#\{.+?\}/g;
+            var cstSeparator = '.';
+            var denVal = 1, numVal = 0;
+            
+            if( ind.numerator ) {
+                
+                ind.numExpression = angular.copy( ind.numerator );
+                var matcher = ind.numExpression.match( formulaRegex );
+                
+                for ( var k in matcher )
+                {
+                    var match = matcher[k];
+
+                    // Remove brackets from expression to simplify extraction of identifiers
+
+                    var operand = match.replace( /[#\{\}]/g, '' );
+
+                    var isTotal = !!( operand.indexOf( cstSeparator ) == -1 );
+
+                    var value = '0';
+
+                    if ( isTotal )
+                    {
+                        if( dataValues && dataValues[operand] && dataValues[operand].total ){
+                            value = dataValues[operand].total;
+                        }
+                    }
+                    else
+                    {
+                        var de = operand.substring( 0, operand.indexOf( cstSeparator ) );
+                        var coc = operand.substring( operand.indexOf( cstSeparator ) + 1, operand.length );
+                        
+                        if( dataValues && dataValues[de] && dataValues[de][coc] ){
+                            value = dataValues[de][coc];
+                        }
+                    }
+                    ind.numExpression = ind.numExpression.replace( match, value );                    
+                }
+            }
+            
+            
+            if( ind.denominator ) {
+                
+                ind.denExpression = angular.copy( ind.denominator );
+                var matcher = ind.denExpression.match( formulaRegex );
+                
+                for ( var k in matcher )
+                {
+                    var match = matcher[k];
+
+                    // Remove brackets from expression to simplify extraction of identifiers
+
+                    var operand = match.replace( /[#\{\}]/g, '' );
+
+                    var isTotal = !!( operand.indexOf( cstSeparator ) == -1 );
+
+                    var value = '0';
+
+                    if ( isTotal )
+                    {
+                        if( dataValues[operand] && dataValues[operand].total ){
+                            value = dataValues[operand].total;
+                        }
+                    }
+                    else
+                    {
+                        var de = operand.substring( 0, operand.indexOf( cstSeparator ) );
+                        var coc = operand.substring( operand.indexOf( cstSeparator ) + 1, operand.length );
+                        
+                        if( dataValues[de] && dataValues[de][coc] ){
+                            value = dataValues[de][coc];
+                        }
+                    }
+                    ind.denExpression = ind.denExpression.replace( match, value );
+                }
+            }
+            
+            if( ind.numExpression ){
+                numVal = eval( ind.numExpression );
+                numVal = isNaN( numVal ) ? '-' : roundTo( numVal, 1 );
+            }
+            
+            if( ind.denExpression ){
+                denVal = eval( ind.denExpression );
+                denVal = isNaN( denVal ) ? '-' : roundTo( denVal, 1 );
+            }
+            
+            return numVal / denVal;
         }
     };
 })

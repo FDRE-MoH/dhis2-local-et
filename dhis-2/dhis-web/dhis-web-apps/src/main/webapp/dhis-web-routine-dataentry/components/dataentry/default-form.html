@@ -6,12 +6,15 @@
                 <div class="row col-sm-8 vertical-spacing">
                     <table class="table table-bordered">
                         <thead>
-                            <tr>                                
-                                <th>
-                                    {{'data_element' | translate}}
+                            <tr> 
+                                <th class="col-sm-3 pull-center">
+                                    {{'s_no' | translate}}
                                 </th>
-                                <th>
-                                    {{'value' | translate}}
+                                <th class="col-sm-6 pull-center">
+                                    {{'activity' | translate}}
+                                </th>
+                                <th class="col-sm-3 pull-center">
+                                    {{'number' | translate}}
                                 </th>
                             </tr>
                         </thead>                        
@@ -19,15 +22,36 @@
                             ng-init="de = model.dataElements[dataElement.id]; 
                                      ocos = model.selectedCategoryCombos[de.categoryCombo.id].categoryOptionCombos"
                             ng-if="model.selectedCategoryCombos[model.dataElements[dataElement.id].categoryCombo.id].categoryOptionCombos.length > 1">
-                            <tr>
-                                <td>
-                                    {{de.displayFormName}}
-                                </td>
+                            <tr ng-repeat="ind in section.indicators" ng-if="ind.params.indexOf(de.id) === 0">
                                 <td>
                                     
                                 </td>
+                                <td style="font-size: 10pt; font-weight: bold">
+                                    {{ind.displayName}}
+                                </td>
+                                <td style="font-size: 10pt; font-weight: bold">
+                                    {{getIndicatorValue(ind)}}
+                                </td>
                             </tr>
-                            <tr ng-repeat="oco in ocos">                            
+                            <tr>
+                                <td>
+                                    
+                                </td>
+                                <td class="bold">
+                                    {{de.displayFormName}}
+                                </td>
+                                <td>
+                                    <input type="text" 
+                                        name="foo"
+                                        ng-model="dataValues[de.id].total" 
+                                        ng-disabled="true"
+                                        class="form-control">
+                                </td>
+                            </tr>
+                            <tr ng-repeat="oco in ocos">
+                                <td>
+                                    
+                                </td>
                                 <td>
                                     {{oco.displayName}}
                                 </td>
@@ -123,12 +147,26 @@
                                     </ng-form>
                                 </td>
                             </tr>
-                    </tbody>
-                    <tbody ng-repeat="dataElement in section.dataElements" 
+                        </tbody>
+                        <tbody ng-repeat="dataElement in section.dataElements" 
                             ng-init="de = model.dataElements[dataElement.id]; 
                                      ocos = model.selectedCategoryCombos[de.categoryCombo.id].categoryOptionCombos"
                             ng-if="model.selectedCategoryCombos[model.dataElements[dataElement.id].categoryCombo.id].categoryOptionCombos.length === 1">
+                            <tr ng-repeat="ind in section.indicators" ng-if="ind.params.indexOf(de.id) === 0">
+                                <td>
+                                    
+                                </td>
+                                <td style="font-size: 10pt; font-weight: bold">
+                                    {{ind.displayName}}
+                                </td>
+                                <td style="font-size: 10pt; font-weight: bold">
+                                    {{getIndicatorValue(ind)}}
+                                </td>
+                            </tr>
                             <tr ng-repeat="oco in ocos">
+                                <td>
+                                    
+                                </td>
                                 <td class="vertical-center"
                                     rowspan="{{ocos.length}}" ng-if="$index === 0">
                                     {{de.displayFormName}}
