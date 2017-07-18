@@ -867,6 +867,28 @@ div#orgUnitTree {
     color: #767676 !important;
 }
 
-.font-size-10pt {
+.de-table-hdr{
+    background-color: #666;
+    color: #000 !important;
+}
+
+.de-style{
+    background-color: #ffffcc;
+}
+
+.de-total-style{    
+    font-weight: bold;
+    background-color: #eee;
+}
+
+.ds-hdr{
+    background-color: #ffffcc;
+    padding: 20px;
+    font-size: 20pt;
+}
+
+.ind-style{
     font-size: 10pt !important;
+    font-weight: bold;
+    background-color: #ccc;
 }
