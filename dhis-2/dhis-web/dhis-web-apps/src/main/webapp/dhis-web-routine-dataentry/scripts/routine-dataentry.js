@@ -28,7 +28,7 @@ if( dhis2.routineDataEntry.memoryOnly ) {
 dhis2.routineDataEntry.store = new dhis2.storage.Store({
     name: 'dhis2rd',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes']
+    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules']
 });
 
 (function($) {
@@ -154,6 +154,11 @@ function downloadMetaData()
     promise = promise.then( filterMissingIndicatorTypes );
     promise = promise.then( getIndicatorTypes );
     
+    //fetch validationRules
+    promise = promise.then( getMetaValidationRules );
+    promise = promise.then( filterMissingValidationRules );
+    promise = promise.then( getValidationRules );
+    
     
     promise.done(function() {        
         //Enable ou selection after meta-data has downloaded
@@ -207,7 +212,7 @@ function filterMissingCategoryCombos( objs ){
 }
 
 function getCategoryCombos( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'categoryCombos', 'categoryCombos', '../api/categoryCombos.json', 'paging=false&fields=id,displayName,code,skipTotal,isDefault,categoryOptionCombos[id,displayName,categoryOptions[displayName]],categories[id,displayName,code,dimension,dataDimensionType,attributeValues[value,attribute[id,name,valueType,code]],categoryOptions[id,displayName,code]]', 'idb', dhis2.routineDataEntry.store);
+    return dhis2.metadata.getBatches( ids, batchSize, 'categoryCombos', 'categoryCombos', '../api/categoryCombos.json', 'paging=false&fields=id,displayName,code,skipTotal,isDefault,categoryOptionCombos[id,displayName],categories[id,displayName,code,attributeValues[value,attribute[id,name,valueType,code]],categoryOptions[id,displayName,code]]', 'idb', dhis2.routineDataEntry.store);
 }
 
 function getMetaDataSets(){
@@ -245,4 +250,16 @@ function filterMissingIndicatorTypes( objs ){
 
 function getIndicatorTypes( ids ){    
     return dhis2.metadata.getBatches( ids, batchSize, 'indicatorTypes', 'indicatorTypes', '../api/indicatorTypes.json', 'paging=false&fields=id,displayName,factor,number', 'idb', dhis2.routineDataEntry.store, dhis2.metadata.processObject);
+}
+
+function getMetaValidationRules(){
+    return dhis2.metadata.getMetaObjectIds('validationRules', '../api/validationRules.json', 'paging=false&fields=id,version');
+}
+
+function filterMissingValidationRules( objs ){
+    return dhis2.metadata.filterMissingObjIds('validationRules', dhis2.routineDataEntry.store, objs);
+}
+
+function getValidationRules( ids ){    
+    return dhis2.metadata.getBatches( ids, batchSize, 'validationRules', 'validationRules', '../api/validationRules.json', 'paging=false&fields=id,displayName,importance,operator,periodType,instruction,leftSide[:all],rightSide[:all]', 'idb', dhis2.routineDataEntry.store, dhis2.metadata.processObject);
 }

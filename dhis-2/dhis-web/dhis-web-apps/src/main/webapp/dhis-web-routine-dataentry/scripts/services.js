@@ -10,7 +10,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     var store = new dhis2.storage.Store({
         name: "dhis2rd",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes']
+        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules']
     });
     return{
         currentStore: store
@@ -36,6 +36,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 availablePeriods.push( p );
             }
         });        
+        availablePeriods = availablePeriods.reverse();
         return availablePeriods;
     };
 })
@@ -824,6 +825,15 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             }
             
             return numVal / denVal;
+        },
+        getCartesianProduct: function() {
+            return _.reduce(arguments, function(a, b) {
+                return _.flatten(_.map(a, function(x) {
+                    return _.map(b, function(y) {
+                        return x.concat([y]);
+                    });
+                }), true);
+            }, [ [] ]);
         }
     };
 })

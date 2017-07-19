@@ -29,6 +29,69 @@
 
 dhis2.util.namespace('dhis2.metadata');
 
+dhis2.metadata.expressionRegex = /#{.*?\}/g;
+dhis2.metadata.operatorRegex = /[#\{\}]/g;
+
+dhis2.metadata.expressionMatcher = function( obj, src, des, expressionPattern, operandPattern, src2){
+    var match;    
+    if( src2 ){
+        if( obj[src] && obj[src][src2] && expressionPattern && operandPattern && obj[des]){
+            while (match = expressionPattern.exec( obj[src][src2] ) ) {                                
+                match[0] = match[0].replace( operandPattern, '' );                
+                obj[des].push(match[0].split('.')[0]);                                
+            }
+        }    
+    }
+    else{
+        if( obj[src] && expressionPattern && operandPattern && obj[des]){
+            while (match = expressionPattern.exec( obj[src] ) ) {                                
+                match[0] = match[0].replace( operandPattern, '' );
+                obj[des].push(match[0]);                                
+            }
+        }    
+    }
+    
+    return obj;
+};
+
+dhis2.metadata.cartesianProduct = function( arrays ){
+    
+    var i, j, l, m, a1, o = [];
+    if (!arrays || arrays.length == 0) return arrays;
+
+    a1 = arrays.splice(0,1);
+    arrays = dhis2.metadata.cartesianProduct( arrays );
+    for (i = 0, l = a1[0].length; i < l; i++) {
+        if (arrays && arrays.length) for (j = 0, m = arrays.length; j < m; j++)
+            o.push([a1[0][i]].concat(arrays[j]));
+        else
+            o.push([a1[0][i]]);
+    }
+    return o;
+    
+    /*var result = [],
+      indices = Array(arrays.length);
+        (function backtracking(index) {
+          if(index == arrays.length)
+              return result.push(arrays.map(function(array,index) {
+                  return array[indices[index]];
+              }));
+          for(var i=0; i<arrays[index].length; ++i) {
+            indices[index] = i;
+            backtracking(index+1);
+          }
+        })(0);
+        return result;*/
+    
+    /*return _.reduce(arguments, function(a, b) {
+        return _.flatten(_.map(a, function(x) {
+            return _.map(b, function(y) {
+                return x.concat([y]);
+            });
+        }), true);
+    }, [ [] ]);*/
+};
+
 dhis2.metadata.chunk = function( array, size ){
 	if( !array || !array.length || !size || size < 1 ){
             return [];
@@ -202,16 +265,50 @@ dhis2.metadata.getMetaObjects = function( store, objs, url, filter, storage, db,
                 if( func ) {
                     obj = func(obj, 'organisationUnits');
                 }                
-                if( store === 'categoryCombos' && obj.categoryOptionCombos ){                     
-                    if( obj.categoryOptionCombos ){
-                        _.each( _.values( obj.categoryOptionCombos ), function ( coc ) {                            
-                            if( coc.categoryOptions ){
-                                var cocDisplayName = $.map(coc.categoryOptions, function(co){return co.displayName;}).join();
-                                coc.displayName1 = cocDisplayName ? cocDisplayName : coc.displayName;
+                if( store === 'categoryCombos' ){
+                    
+                    if( obj.categoryOptionCombos && obj.categories ){
+                        var categoryOptions = [];
+                        _.each( _.values( obj.categories ), function ( cat ) {                            
+                            if( cat.categoryOptions ){
+                                categoryOptions.push( $.map(cat.categoryOptions, function(co){return co.displayName;}) );
                             }
-                            //delete coc.categoryOptions;
+                        });                        
+
+                        var cocs = dhis2.metadata.cartesianProduct( categoryOptions );
+                        var sortedOptionCombos = [];
+                        _.each( _.values( cocs ), function ( coc ) {                        
+                            for( var i=0; i<obj.categoryOptionCombos.length; i++){                            
+                                var opts = obj.categoryOptionCombos[i].displayName.split(', ');
+                                var itsc = _.intersection(opts, coc);
+                                if( itsc.length === opts.length && itsc.length === coc.length ){
+                                    sortedOptionCombos.push({id: obj.categoryOptionCombos[i].id, displayName: coc.join(', ')} );
+                                    break;
+                                }
+                            }
+                        });                    
+                        obj.categoryOptionCombos = sortedOptionCombos;
+                    }                    
+                }
+                /*else if( store === 'dataSets' ){
+                    
+                    if( obj.sections ){
+                        _.each(obj.sections, function(sec){                
+                            if( sec.indicators ){
+                                angular.forEach(sec.indicators, function(ind){
+                                    ind.params = [];                                    
+                                    ind = dhis2.metadata.expressionMatcher(ind, 'numerator', 'params', dhis2.metadata.expressionRegex, dhis2.metadata.operatorRegex);
+                                    ind = dhis2.metadata.expressionMatcher(ind, 'denominator', 'params', dhis2.metadata.expressionRegex, dhis2.metadata.operatorRegex);
+                                });
+                            }                
                         });
-                    }
+                    }                    
+                }*/
+                else if( store === 'validationRules' ){
+                    //console.log('obj:  ', obj);
+                    obj.params = [];
+                    obj = dhis2.metadata.expressionMatcher(obj, 'leftSide', 'params',dhis2.metadata.expressionRegex, dhis2.metadata.operatorRegex, 'expression');
+                    obj = dhis2.metadata.expressionMatcher(obj, 'rightSide', 'params',dhis2.metadata.expressionRegex, dhis2.metadata.operatorRegex, 'expression');
                 }
             });            
             

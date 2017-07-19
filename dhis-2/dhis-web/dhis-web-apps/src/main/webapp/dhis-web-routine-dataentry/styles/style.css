@@ -709,6 +709,14 @@ div#orgUnitTree {
     margin-right: 15px !important;
 }
 
+.add-default-left-padding {
+    margin-left: 15px !important;
+}
+
+.oco-left-padding {
+    margin-left: 30px !important;
+}
+
 .remove-left-padding {
     margin-left: -15px !important;
 }

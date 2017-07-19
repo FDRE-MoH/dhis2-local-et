@@ -9,7 +9,6 @@ routineDataEntry.controller('dataEntryController',
         function($scope,
                 $filter,
                 $modal,
-                $window,                
                 orderByFilter,
                 SessionStorageService,
                 storage,
@@ -38,6 +37,9 @@ routineDataEntry.controller('dataEntryController',
                     orgUnitsWithValues: [],
                     selectedAttributeOptionCombos: {},
                     selectedAttributeOptionCombo: null,
+                    categoryCombos: {},
+                    optionCombos: {},
+                    validationRules: [],
                     attributeCategoryUrl: null,
                     showCustomForm: false,
                     valueExists: false};
@@ -62,6 +64,8 @@ routineDataEntry.controller('dataEntryController',
             var systemSetting = storage.get('SYSTEM_SETTING');
             $scope.model.allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
             loadOptionSets();
+            loadOptionCombos();
+            loadValidationRules();
             $scope.loadDataSets($scope.selectedOrgUnit);
         }
     });
@@ -77,20 +81,19 @@ routineDataEntry.controller('dataEntryController',
         }
     }
     
-    function loadOptionCombos(){
-        $scope.model.selectedAttributeCategoryCombo = null;     
-        if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.categoryCombo && $scope.model.selectedDataSet.categoryCombo.id ){
-            MetaDataFactory.get('categoryCombos', $scope.model.selectedDataSet.categoryCombo.id).then(function(coc){
-                $scope.model.selectedAttributeCategoryCombo = coc;
-                if( $scope.model.selectedAttributeCategoryCombo && $scope.model.selectedAttributeCategoryCombo.isDefault ){
-                    $scope.model.categoryOptionsReady = true;
-                }                
-                angular.forEach($scope.model.selectedAttributeCategoryCombo.categoryOptionCombos, function(oco){
-                    $scope.model.selectedAttributeOptionCombos['"' + oco.displayName + '"'] = oco.id;
-                });
+    function loadOptionCombos(){        
+        MetaDataFactory.getAll('categoryCombos').then(function(ccs){            
+            angular.forEach(ccs, function(cc){
+                $scope.model.categoryCombos[cc.id] = cc;
             });
-        }
-    }    
+        });
+    }
+    
+    function loadValidationRules(){
+        MetaDataFactory.getAll('validationRules').then(function(vrs){            
+            $scope.model.validationRules = vrs;
+        });
+    }
     
     //load datasets associated with the selected org unit.
     $scope.loadDataSets = function(orgUnit) {
@@ -142,44 +145,28 @@ routineDataEntry.controller('dataEntryController',
                 $scope.invalidCategoryDimensionConfiguration('error', 'missing_data_elements_indicators');
                 return;
             }            
+                        
+            $scope.model.selectedAttributeCategoryCombo = null;     
+            if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.categoryCombo && $scope.model.selectedDataSet.categoryCombo.id ){
+                
+                $scope.model.selectedAttributeCategoryCombo = $scope.model.categoryCombos[$scope.model.selectedDataSet.categoryCombo.id];
+                if( $scope.model.selectedAttributeCategoryCombo && $scope.model.selectedAttributeCategoryCombo.isDefault ){
+                    $scope.model.categoryOptionsReady = true;
+                }                
+                angular.forEach($scope.model.selectedAttributeCategoryCombo.categoryOptionCombos, function(oco){
+                    $scope.model.selectedAttributeOptionCombos['"' + oco.displayName + '"'] = oco.id;
+                });
+            }
             
-            loadOptionCombos();            
-            
-            $scope.model.selectedCategoryCombos = {};
             $scope.model.dataElements = [];
             angular.forEach($scope.model.selectedDataSet.dataElements, function(de){
-                $scope.model.dataElements[de.id] = de;
-                MetaDataFactory.get('categoryCombos', de.categoryCombo.id).then(function(cc){
-                    if( cc.isDefault ){
-                        $scope.model.defaultCategoryCombo = cc;
+                de.validationRules = [];
+                angular.forEach($scope.model.validationRules, function(vr){
+                    if( vr.params && vr.params.length > 0 && vr.params.indexOf(de.id) !== -1){
+                        de.validationRules.push( vr );
                     }
-                    $scope.model.selectedCategoryCombos[de.categoryCombo.id] = cc;
-                });                
-            });
-            
-            angular.forEach($scope.model.selectedDataSet.sections, function(sec){                
-                if( sec.indicators ){
-                    angular.forEach(sec.indicators, function(ind){
-                        var idsRegex = /#{.*?\}/g,
-                            match;
-                        
-                        ind.params = [];
-                                
-                        if( ind.numerator ){
-                            while (match = idsRegex.exec(ind.numerator)) {                                
-                                match[0] = match[0].replace( /[#\{\}]/g, '' );
-                                ind.params.push(match[0]);                                
-                            }
-                        }
-                        
-                        if( ind.denominator ){
-                            while (match = idsRegex.exec(ind.denominator)) {                                
-                                match[0] = match[0].replace( /[#\{\}]/g, '' );
-                                ind.params.push(match[0]);
-                            }
-                        }                        
-                    });
-                }                
+                });
+                $scope.model.dataElements[de.id] = de;
             });
             
             $scope.customDataEntryForm = CustomFormService.getForDataSet($scope.model.selectedDataSet, $scope.model.dataElements);
