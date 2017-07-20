@@ -29,8 +29,10 @@
 
 dhis2.util.namespace('dhis2.metadata');
 
+dhis2.metadata.custSeparator   = '.';
+dhis2.metadata.formulaRegex    = /#\{.+?\}/g;
 dhis2.metadata.expressionRegex = /#{.*?\}/g;
-dhis2.metadata.operatorRegex = /[#\{\}]/g;
+dhis2.metadata.operatorRegex   = /[#\{\}]/g;
 
 dhis2.metadata.expressionMatcher = function( obj, src, des, expressionPattern, operandPattern, src2){
     var match;    
@@ -68,28 +70,6 @@ dhis2.metadata.cartesianProduct = function( arrays ){
             o.push([a1[0][i]]);
     }
     return o;
-    
-    /*var result = [],
-      indices = Array(arrays.length);
-        (function backtracking(index) {
-          if(index == arrays.length)
-              return result.push(arrays.map(function(array,index) {
-                  return array[indices[index]];
-              }));
-          for(var i=0; i<arrays[index].length; ++i) {
-            indices[index] = i;
-            backtracking(index+1);
-          }
-        })(0);
-        return result;*/
-    
-    /*return _.reduce(arguments, function(a, b) {
-        return _.flatten(_.map(a, function(x) {
-            return _.map(b, function(y) {
-                return x.concat([y]);
-            });
-        }), true);
-    }, [ [] ]);*/
 };
 
 dhis2.metadata.chunk = function( array, size ){
@@ -270,23 +250,24 @@ dhis2.metadata.getMetaObjects = function( store, objs, url, filter, storage, db,
                     if( obj.categoryOptionCombos && obj.categories ){
                         var categoryOptions = [];
                         _.each( _.values( obj.categories ), function ( cat ) {                            
-                            if( cat.categoryOptions ){
-                                categoryOptions.push( $.map(cat.categoryOptions, function(co){return co.displayName;}) );
-                            }
+                            if( cat.categoryOptions ){                                
+                                categoryOptions.push(  $.map(cat.categoryOptions, function(co){return co.displayName;}) );
+                            }                            
                         });                        
 
-                        var cocs = dhis2.metadata.cartesianProduct( categoryOptions );
+                        var cocs = dhis2.metadata.cartesianProduct( categoryOptions );                        
+                        
                         var sortedOptionCombos = [];
                         _.each( _.values( cocs ), function ( coc ) {                        
                             for( var i=0; i<obj.categoryOptionCombos.length; i++){                            
-                                var opts = obj.categoryOptionCombos[i].displayName.split(', ');
+                                var opts = obj.categoryOptionCombos[i].displayName.split(', ');                                
                                 var itsc = _.intersection(opts, coc);
                                 if( itsc.length === opts.length && itsc.length === coc.length ){
                                     sortedOptionCombos.push({id: obj.categoryOptionCombos[i].id, displayName: coc.join(', ')} );
                                     break;
                                 }
                             }
-                        });                    
+                        });                        
                         obj.categoryOptionCombos = sortedOptionCombos;
                     }                    
                 }
@@ -305,7 +286,6 @@ dhis2.metadata.getMetaObjects = function( store, objs, url, filter, storage, db,
                     }                    
                 }*/
                 else if( store === 'validationRules' ){
-                    //console.log('obj:  ', obj);
                     obj.params = [];
                     obj = dhis2.metadata.expressionMatcher(obj, 'leftSide', 'params',dhis2.metadata.expressionRegex, dhis2.metadata.operatorRegex, 'expression');
                     obj = dhis2.metadata.expressionMatcher(obj, 'rightSide', 'params',dhis2.metadata.expressionRegex, dhis2.metadata.operatorRegex, 'expression');

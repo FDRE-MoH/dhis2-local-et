@@ -734,17 +734,113 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 });
             }            
             return dataValues[dataElement];
-        },       
+        },
+        getValidationResult: function( de, dataValues, failedValidationRules ){
+            var vrs = [];
+            if( de && de.validationRules && de.validationRules.length > 0 ){
+                angular.forEach(de.validationRules, function(vr){                    
+                    var leftSide = null, rightSide = null; 
+                    if( vr.leftSide && vr.leftSide.expression ){
+                        leftSide = angular.copy( vr.leftSide.expression );
+                        var matcher = leftSide.match( dhis2.metadata.formulaRegex );
+                        for( var k in matcher ){
+                            var match = matcher[k];
+                            var operand = match.replace( dhis2.metadata.operatorRegex, '' );
+                            var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                            var value = null;
+                            if ( isTotal )
+                            {                                
+                                if( dataValues && dataValues[operand] && dataValues[operand].total ){                                    
+                                    value = dataValues[operand].total;
+                                }
+                            }
+                            else
+                            {
+                                var ids = operand.split('.');
+                                if( dataValues && dataValues[ids[0]] && dataValues[ids[0]][ids[1]] ){
+                                    value = dataValues[ids[0]][ids[1]];
+                                }
+                            }
+                            leftSide = leftSide.replace( match, value );                    
+                        }
+                    }                    
+                    if( vr.rightSide && vr.rightSide.expression ){
+                        rightSide = angular.copy( vr.rightSide.expression );
+                        var matcher = rightSide.match( dhis2.metadata.formulaRegex );
+                        for( var k in matcher ){
+                            var match = matcher[k];
+                            var operand = match.replace( dhis2.metadata.operatorRegex, '' );
+                            var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                            var value = null;
+                            if ( isTotal )
+                            {                                
+                                if( dataValues && dataValues[operand] && dataValues[operand].total ){                                    
+                                    value = dataValues[operand].total;
+                                }
+                            }
+                            else
+                            {
+                                var ids = operand.split('.');;
+                                if( dataValues && dataValues[ids[0]] && dataValues[ids[0]][ids[1]] ){
+                                    value = dataValues[ids[0]][ids[1]];
+                                }
+                            }
+                            rightSide = rightSide.replace( match, value );                    
+                        }
+                    }
+                    
+                    if( leftSide && rightSide ){                        
+                        var op = null;
+                        switch( vr.operator ){
+                            case 'equal_to':
+                                op = '==';
+                                break;
+                            case 'not_equal_to':
+                                op = '!=';
+                                break;
+                            case 'greater_than':
+                                op = '>';
+                                break;
+                            case 'greater_than_or_equal_to':
+                                op = '>=';
+                                break;
+                            case 'less_than':
+                                op = '<';
+                                break;
+                            case 'less_than_or_equal_to':
+                                op = '>=';
+                                break;
+                            default:
+                                op = null;
+                                break;
+                        }
+                        if( op !== null ){                            
+                            var res = eval( leftSide + op + rightSide);
+                            if( !res ){
+                                vrs.push(vr);
+                                if( failedValidationRules.indexOf( vr.id) === -1 ){
+                                    failedValidationRules.push( vr.id );
+                                }                                
+                            }
+                            else{
+                                var idx = failedValidationRules.indexOf( vr.id );
+                                if( idx !== -1 ){
+                                    failedValidationRules.splice(idx, 1);
+                                }                                
+                            }
+                        }
+                    }                    
+                });
+            }
+            return {vrs: vrs, failed: failedValidationRules};
+        },
         getIndicatorResult: function( ind, dataValues ){
-            
-            var formulaRegex = /#\{.+?\}/g;
-            var cstSeparator = '.';
             var denVal = 1, numVal = 0;
             
             if( ind.numerator ) {
                 
                 ind.numExpression = angular.copy( ind.numerator );
-                var matcher = ind.numExpression.match( formulaRegex );
+                var matcher = ind.numExpression.match( dhis2.metadata.formulaRegex );
                 
                 for ( var k in matcher )
                 {
@@ -752,9 +848,9 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 
                     // Remove brackets from expression to simplify extraction of identifiers
 
-                    var operand = match.replace( /[#\{\}]/g, '' );
+                    var operand = match.replace( dhis2.metadata.operatorRegex, '' );
 
-                    var isTotal = !!( operand.indexOf( cstSeparator ) == -1 );
+                    var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
 
                     var value = '0';
 
@@ -766,8 +862,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     }
                     else
                     {
-                        var de = operand.substring( 0, operand.indexOf( cstSeparator ) );
-                        var coc = operand.substring( operand.indexOf( cstSeparator ) + 1, operand.length );
+                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.cstSeparator ) );
+                        var coc = operand.substring( operand.indexOf( dhis2.metadata.cstSeparator ) + 1, operand.length );
                         
                         if( dataValues && dataValues[de] && dataValues[de][coc] ){
                             value = dataValues[de][coc];
@@ -781,7 +877,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             if( ind.denominator ) {
                 
                 ind.denExpression = angular.copy( ind.denominator );
-                var matcher = ind.denExpression.match( formulaRegex );
+                var matcher = ind.denExpression.match( dhis2.metadata.formulaRegex );
                 
                 for ( var k in matcher )
                 {
@@ -789,9 +885,9 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 
                     // Remove brackets from expression to simplify extraction of identifiers
 
-                    var operand = match.replace( /[#\{\}]/g, '' );
+                    var operand = match.replace( dhis2.metadata.operatorRegex, '' );
 
-                    var isTotal = !!( operand.indexOf( cstSeparator ) == -1 );
+                    var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
 
                     var value = '0';
 
@@ -803,8 +899,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     }
                     else
                     {
-                        var de = operand.substring( 0, operand.indexOf( cstSeparator ) );
-                        var coc = operand.substring( operand.indexOf( cstSeparator ) + 1, operand.length );
+                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.cstSeparator ) );
+                        var coc = operand.substring( operand.indexOf( dhis2.metadata.cstSeparator ) + 1, operand.length );
                         
                         if( dataValues[de] && dataValues[de][coc] ){
                             value = dataValues[de][coc];

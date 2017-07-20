@@ -37,10 +37,16 @@
                             </tr>
                             <tr class="de-total-style" ng-if="ocos.length > 1">
                                 <td>
-                                    
                                 </td>
                                 <td>
-                                    {{de.displayFormName}}
+                                    <div>
+                                        {{de.displayFormName}}
+                                    </div>
+                                    <div ng-if="model.validationResults[de.id] && model.validationResults[de.id].length > 0">
+                                        <div ng-repeat="vr in model.validationResults[de.id]" class="alert alert-danger trimmed-alert small-vertical-spacing italic" ng-if="model.failedValidationRules.indexOf(vr.id) !== -1">
+                                            {{vr.instruction}}
+                                        </div>
+                                    </div>
                                 </td>
                                 <td>
                                     <input type="text" 

@@ -900,3 +900,13 @@ div#orgUnitTree {
     font-weight: bold;
     background-color: #ccc;
 }
+
+.ou-search-left-bar {
+    margin-top: 30px; 
+    padding: 2px;
+}
+
+.trimmed-alert {
+    padding: 5px !important;
+    margin-bottom: 0 !important;
+}

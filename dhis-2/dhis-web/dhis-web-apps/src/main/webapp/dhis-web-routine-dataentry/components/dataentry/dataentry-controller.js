@@ -40,6 +40,8 @@ routineDataEntry.controller('dataEntryController',
                     categoryCombos: {},
                     optionCombos: {},
                     validationRules: [],
+                    validationResults: [],
+                    failedValidationRules: [],
                     attributeCategoryUrl: null,
                     showCustomForm: false,
                     valueExists: false};
@@ -48,6 +50,8 @@ routineDataEntry.controller('dataEntryController',
     $scope.$watch('selectedOrgUnit', function() {
         $scope.model.periods = [];
         $scope.model.dataSets = [];
+        $scope.model.validationResults = [];
+        $scope.model.failedValidationRules = [];
         $scope.model.selectedDataSet = null;
         $scope.model.selectedPeriod = null;
         $scope.model.selectedAttributeCategoryCombo = null;
@@ -177,6 +181,8 @@ routineDataEntry.controller('dataEntryController',
     var resetParams = function(){
         $scope.dataValues = {};
         $scope.model.orgUnitsWithValues = [];
+        $scope.model.validationResults = [];
+        $scope.model.failedValidationRules = [];
         $scope.model.selectedEvent = {};
         $scope.model.valueExists = false;
         $scope.model.basicAuditInfo = {};
@@ -225,9 +231,18 @@ routineDataEntry.controller('dataEntryController',
                     }
                 }
                 
-                angular.forEach($scope.dataValues, function(vals, de) {                    
+                angular.forEach($scope.dataValues, function(vals, de) {
                     $scope.dataValues[de] = ActionMappingUtils.getDataElementTotal( $scope.dataValues, de);
                 });
+                
+                angular.forEach($scope.model.selectedDataSet.dataElements, function(de){                    
+                    var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[de.id], $scope.dataValues, $scope.model.failedValidationRules);                    
+                    $scope.model.validationResults[de.id] = vres.vrs ? vres.vrs : [];
+                    $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;                    
+                });
+                
+                console.log('vr:  ', $scope.model.validationResults);
+                console.log('fvr:  ', $scope.model.failedValidationRules);
             });
             
             $scope.model.dataSetCompletness = {};
@@ -308,6 +323,11 @@ routineDataEntry.controller('dataEntryController',
            $scope.saveStatus[deId + '-' + ocId].error = false;
            
            $scope.dataValues[deId] = ActionMappingUtils.getDataElementTotal( $scope.dataValues, deId);
+           var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[deId], $scope.dataValues, $scope.model.failedValidationRules); 
+           
+           $scope.model.validationResults[deId] = vres.vrs ? vres.vrs : [];
+           $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules
+           
            
         }, function(){
             $scope.saveStatus[deId + '-' + ocId].saved = false;
@@ -317,29 +337,26 @@ routineDataEntry.controller('dataEntryController',
     };
     
     $scope.getIndicatorValue = function( indicator ){  
-        var res = ActionMappingUtils.getIndicatorResult( indicator, $scope.dataValues );
-        return res;
+        return ActionMappingUtils.getIndicatorResult( indicator, $scope.dataValues );
     };
     
     $scope.getInputNotifcationClass = function(deId, ocId){
-
-        return "";
-        var currentElement = $scope.saveStatus[deId + '-' + ocId];        
+        
+        var style = 'form-control';        
+        var currentElement = $scope.saveStatus[deId + '-' + ocId];
         
         if( currentElement ){
             if(currentElement.pending){
-                return 'form-control input-pending';
+                style = 'form-control input-pending';
             }
-
             if(currentElement.saved){
-                return 'form-control input-success';
+                style = 'form-control input-success';
             }            
             else{
-                return 'form-control input-error';
+                style = 'form-control input-error';
             }
-        }    
-        
-        return 'form-control';
+        }
+        return style;
     };
         
     $scope.getAuditInfo = function(de, ouId, oco, value, comment){        

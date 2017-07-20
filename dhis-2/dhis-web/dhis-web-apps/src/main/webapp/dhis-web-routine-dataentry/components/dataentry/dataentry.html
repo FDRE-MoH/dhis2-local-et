@@ -6,12 +6,18 @@
 
     <d2-left-bar></d2-left-bar>
 
-    <div style="margin-top:20px">
-        <img id="searchIcon" src="../images/search.png" style="cursor: pointer" title="{{searchOusLabel}}">
+    <div class="ou-search-left-bar">
+        <div class="input-group">
+            <input type="text" id="searchField" name="key" class="form-control" placeholder="{{'search' | translate}}">
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="button" onclick="selection.findByName()">{{'go' | translate}}</button>
+            </span>
+        </div>
+        <!--<img id="searchIcon" src="../images/search.png" style="cursor: pointer" title="{{searchOusLabel}}">
         <span id="searchSpan" style="width:100%;display:none;">
             <input type="text" id="searchField" name="key"/>
             <input type="button" value="{{findLabel}}" onclick="selection.findByName()"/>
-        </span>
+        </span>-->
     </div>
 
     <div id="orgUnitTree">
@@ -37,7 +43,7 @@
 
     <div ng-show="selectedOrgUnit">
         <h2>
-            {{'data_entry'| translate}}
+            <span class="remove-left-padding">{{'data_entry'| translate}}</span>
         </h2>
 
         <!-- selection begins-->
