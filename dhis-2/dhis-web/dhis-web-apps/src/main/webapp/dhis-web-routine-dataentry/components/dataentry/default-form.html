@@ -71,22 +71,18 @@
                                         <span ng-switch="de.valueType">                                                        
                                             <span ng-switch-when="LONG_TEXT">
                                                 <textarea rows="5" 
-                                                          name="foo"
-                                                          maxlength="{{MAXCHARSLEN}}"      
-                                                          ng-model="dataValues[de.id][oco.id]" 
+                                                          name="foo"                                                          
+                                                          ng-model="dataValues[de.id][oco.id].value" 
                                                           ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
                                                           class="form-control" 
-                                                          ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                          ng-class="getInputNotifcationClass(de.id, oco.id)"                                                           
                                                           d2-blur="saveDataValue(de.id, oco.id)">
                                                 </textarea>
-                                                <div class="alert alert-warning trimmed-alert small-vertical-spacing bold italic">
-                                                    {{'chars_remaining'| translate}}: {{dataValues[de.id][oco.id] ? MAXCHARSLEN - dataValues[de.id][oco.id].length : MAXCHARSLEN}}
-                                                </div>
                                             </span>
                                             <span ng-switch-when="TEXT">
                                                 <input type="text" 
                                                        name="foo"
-                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-model="dataValues[de.id][oco.id].value" 
                                                        ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
                                                        class="form-control" 
                                                        ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
@@ -97,10 +93,11 @@
                                                        name="foo"
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
-                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-model="dataValues[de.id][oco.id].value" 
                                                        ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
                                                        class="form-control" 
-                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
                                                        d2-blur="saveDataValue(de.id, oco.id, false)">
                                             </span>
                                             <span ng-switch-when="INTEGER">
@@ -108,10 +105,11 @@
                                                        name="foo"
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
-                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-model="dataValues[de.id][oco.id].value" 
                                                        ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
                                                        class="form-control" 
-                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"  
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
                                                        d2-blur="saveDataValue(de.id, oco.id, false)">
                                             </span>
                                             <span ng-switch-when="INTEGER_POSITIVE">
@@ -119,10 +117,11 @@
                                                        name="foo"
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
-                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-model="dataValues[de.id][oco.id].value" 
                                                        ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
                                                        class="form-control" 
-                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
                                                        d2-blur="saveDataValue(de.id, oco.id, false)">
                                             </span>
                                             <span ng-switch-when="INTEGER_NEGATIVE">
@@ -130,10 +129,11 @@
                                                        name="foo"
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
-                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-model="dataValues[de.id][oco.id].value" 
                                                        ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
                                                        class="form-control" 
-                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
                                                        d2-blur="saveDataValue(de.id, oco.id, false)">
                                             </span>
                                             <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
@@ -141,10 +141,11 @@
                                                        name="foo"
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
-                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-model="dataValues[de.id][oco.id].value" 
                                                        ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
                                                        class="form-control" 
-                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
                                                        d2-blur="saveDataValue(de.id, oco.id, false)">
                                             </span>
                                             <span ng-switch-default>

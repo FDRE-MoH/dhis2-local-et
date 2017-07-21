@@ -156,6 +156,7 @@ routineDataEntry.controller('dataEntryController',
                 $scope.model.selectedAttributeCategoryCombo = $scope.model.categoryCombos[$scope.model.selectedDataSet.categoryCombo.id];
                 if( $scope.model.selectedAttributeCategoryCombo && $scope.model.selectedAttributeCategoryCombo.isDefault ){
                     $scope.model.categoryOptionsReady = true;
+                    $scope.model.selectedOptions = $scope.model.selectedAttributeCategoryCombo.categories[0].categoryOptions;
                 }                
                 angular.forEach($scope.model.selectedAttributeCategoryCombo.categoryOptionCombos, function(oco){
                     $scope.model.selectedAttributeOptionCombos['"' + oco.displayName + '"'] = oco.id;
@@ -218,10 +219,10 @@ routineDataEntry.controller('dataEntryController',
                             
                             if(!$scope.dataValues[dv.dataElement]){                                
                                 $scope.dataValues[dv.dataElement] = {};
-                                $scope.dataValues[dv.dataElement][dv.categoryOptionCombo] = dv.value;
+                                $scope.dataValues[dv.dataElement][dv.categoryOptionCombo] = dv;
                             }
                             else{                                
-                                $scope.dataValues[dv.dataElement][dv.categoryOptionCombo] = dv.value;
+                                $scope.dataValues[dv.dataElement][dv.categoryOptionCombo] = dv;
                             }                 
                         });
                         response.dataValues = orderByFilter(response.dataValues, '-created').reverse();                    
@@ -305,7 +306,7 @@ routineDataEntry.controller('dataEntryController',
                     pe: $scope.model.selectedPeriod.id,
                     de: deId,
                     co: ocId,
-                    value: $scope.dataValues[deId][ocId] ? $scope.dataValues[deId][ocId] : ''
+                    value: $scope.dataValues[deId][ocId] && $scope.dataValues[deId][ocId].value ? $scope.dataValues[deId][ocId].value : ''
                 };        
         
         if( $scope.model.selectedAttributeCategoryCombo && !$scope.model.selectedAttributeCategoryCombo.isDefault ){            
@@ -352,7 +353,7 @@ routineDataEntry.controller('dataEntryController',
         return style;
     };
         
-    $scope.getAuditInfo = function(de, ouId, oco, value, comment){        
+    $scope.getAuditInfo = function(de, oco, value, comment){        
         var modalInstance = $modal.open({
             templateUrl: 'components/dataentry/history.html',
             controller: 'DataEntryHistoryController',
@@ -374,7 +375,7 @@ routineDataEntry.controller('dataEntryController',
                     return $scope.model.selectedProgram;
                 },
                 orgUnitId: function(){
-                    return  ouId;
+                    return  $scope.selectedOrgUnit.id;
                 },
                 attributeCategoryCombo: function(){
                     return $scope.model.selectedAttributeCategoryCombo;
@@ -387,9 +388,6 @@ routineDataEntry.controller('dataEntryController',
                 },
                 optionCombo: function(){
                     return oco;
-                },
-                currentEvent: function(){
-                    return $scope.model.selectedEvent[ouId];
                 }
             }
         });

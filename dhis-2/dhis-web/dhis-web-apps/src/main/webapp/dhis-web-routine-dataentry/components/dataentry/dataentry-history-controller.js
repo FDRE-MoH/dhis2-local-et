@@ -19,14 +19,10 @@ routineDataEntry.controller('DataEntryHistoryController',
                 attributeCategoryOptions,
                 attributeOptionCombo,
                 optionCombo,
-                currentEvent,
-                program,
                 DataValueService,
-                DataValueAuditService,
-                EventValueAuditService) {    
+                DataValueAuditService) {    
     $scope.commentSaveStarted = false;
     $scope.dataElement = dataElement;
-    $scope.program = program;
     $scope.historyUrl = "../api/charts/history/data.png?";
     $scope.historyUrl += 'de=' + dataElement.id;
     $scope.historyUrl += '&co=' + optionCombo.id;
@@ -47,13 +43,6 @@ routineDataEntry.controller('DataEntryHistoryController',
         $scope.dataValueAudits = response && response.dataValueAudits ? response.dataValueAudits : [];
         $scope.dataValueAudits = $filter('filter')($scope.dataValueAudits, {period: {id: period.id}});
     });
-    
-    if( currentEvent && currentEvent[optionCombo.id] && currentEvent[[optionCombo.id]].event ){
-        $scope.eventValueAudits = [];
-        EventValueAuditService.getEventValueAudit( currentEvent[optionCombo.id].event ).then(function( response ){
-            $scope.eventValueAudits = response && response.trackedEntityDataValueAudits ? response.trackedEntityDataValueAudits : [];
-        });
-    }    
     
     $scope.saveComment = function(){
         $scope.commentSaveStarted = true;

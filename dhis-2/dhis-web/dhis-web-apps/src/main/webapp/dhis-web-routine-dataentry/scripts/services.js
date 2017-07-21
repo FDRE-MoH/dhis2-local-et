@@ -538,44 +538,20 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             }
             return parseFloat((op1 / op2)*100).toFixed(2) + '%';
         },
-        getRoleHeaders: function(){
-            var headers = [];            
-            headers.push({id: 'catalyst', displayName: $translate.instant('catalyst')});
-            headers.push({id: 'funder', displayName: $translate.instant('funder')});
-            headers.push({id: 'responsibleMinistry', displayName: $translate.instant('responsible_ministry')});
-            
-            return headers;
-        },
         getOptionComboIdFromOptionNames: function(optionComboMap, options){
-            
             var optionNames = [];
             angular.forEach(options, function(op){
                 optionNames.push(op.displayName);
             });
             
-            var selectedAttributeOcboName = optionNames.toString();
-            //selectedAttributeOcboName = selectedAttributeOcboName.replace(/\,/g, ', ');
+            var selectedAttributeOcboName = optionNames.toString();            
             var selectedAttributeOcobo = optionComboMap['"' + selectedAttributeOcboName + '"'];
             
             if( !selectedAttributeOcobo || angular.isUndefined( selectedAttributeOcobo ) ){
                 selectedAttributeOcboName = optionNames.reverse().toString();
-                //selectedAttributeOcboName = selectedAttributeOcboName.replace(",", ", ");
                 selectedAttributeOcobo = optionComboMap['"' + selectedAttributeOcboName + '"'];
             }
-            
             return selectedAttributeOcobo;
-        },
-        splitRoles: function( roles ){
-            return roles.split(","); 
-        },
-        pushRoles: function(existingRoles, roles){
-            var newRoles = roles.split(",");
-            angular.forEach(newRoles, function(r){
-                if( existingRoles.indexOf(r) === -1 ){
-                    existingRoles.push(r);
-                }
-            });            
-            return existingRoles;
         },
         getOptionIds: function(options){            
             var optionNames = '';
@@ -600,42 +576,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var den = ind.denominator.substring(2,ind.numerator.length-1);
             den = den.split('.');            
             return {numerator: num[0], numeratorOptionCombo: num[1], denominator: den[0], denominatorOptionCombo: den[1]};
-        },
-        getStakeholderCategoryFromDataSet: function(dataSet, availableCombos, existingCategories, categoryIds){
-            if( dataSet.categoryCombo && dataSet.categoryCombo.id){
-                var cc = availableCombos[dataSet.categoryCombo.id];
-                if( cc && cc.categories ){
-                    angular.forEach(cc.categories, function(c){
-                        if( c.code === 'FI' && categoryIds.indexOf( c.id )){
-                            existingCategories.push( c );
-                            categoryIds.push( c.id );
-                        }
-                    });
-                }
-            }
-            return {categories: existingCategories, categoryIds: categoryIds};
-        },
-        getRequiredCols: function(availableRoles, selectedRole){
-            var cols = [];
-            for (var k in availableRoles[selectedRole.id]){
-                if ( availableRoles[selectedRole.id].hasOwnProperty(k) ) {
-                    angular.forEach(availableRoles[selectedRole.id][k], function(c){
-                        c = c.trim();
-                        if( cols.indexOf( c ) === -1 ){
-                            c = c.trim();
-                            if( selectedRole.domain === 'CA' ){
-                                if( selectedRole.categoryOptions && selectedRole.categoryOptions.indexOf( c ) !== -1){
-                                    cols.push( c );
-                                }
-                            }
-                            else{
-                                cols.push( c );
-                            }                        
-                        }
-                    });                
-                }
-            }
-            return cols.sort();
         },
         populateOuLevels: function( orgUnit, ouLevels ){
             var ouModes = [{displayName: $translate.instant('selected_level') , value: 'SELECTED', level: orgUnit.l}];
@@ -692,25 +632,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             
             return ds;
         },
-        getReportName: function(reportType, reportRole, ouName, ouLevel, peName){
-            var reportName = ouName;
-            if( ouLevel && ouLevel.value && ouLevel.value !== 'SELECTED' ){
-                reportName += ' (' + ouLevel.displayName + ') ';
-            }
-            
-            reportName += ' - ' + reportType;
-            
-            if( reportRole && reportRole.displayNme ){
-                reportName += ' (' + reportRole.displayName + ')'; 
-            }
-            
-            reportName += ' - ' + peName + '.xls';
-            return reportName;
-        },
-        getStakeholderNames: function(){
-            var stakeholders = [{id: 'CA_ID', displayName: $translate.instant('catalyst')},{id: 'FU_ID', displayName: $translate.instant('funder')},{id: 'RM_ID', displayName: $translate.instant('responsible_ministry')}];
-            return stakeholders;
-        },
         formatDataValue: function( de, val){            
             if( de.valueType === 'NUMBER' ){
                 val = parseFloat( val );
@@ -728,8 +649,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             if( dataValues[dataElement] ){                
                 dataValues[dataElement].total = 0;                
                 angular.forEach(dataValues[dataElement], function(val, key){
-                    if( key !== 'total' ){
-                        dataValues[dataElement].total += val;
+                    if( key !== 'total' && val && val.value ){                        
+                        dataValues[dataElement].total += val.value;
                     }
                 });
             }            
@@ -757,8 +678,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                             else
                             {
                                 var ids = operand.split('.');
-                                if( dataValues && dataValues[ids[0]] && dataValues[ids[0]][ids[1]] ){
-                                    value = dataValues[ids[0]][ids[1]];
+                                if( dataValues && 
+                                        dataValues[ids[0]] && 
+                                        dataValues[ids[0]][ids[1]] &&
+                                        dataValues[ids[0]][ids[1]].value){
+                                    value = dataValues[ids[0]][ids[1]].value;
                                 }
                             }
                             leftSide = leftSide.replace( match, value );                    
@@ -781,8 +705,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                             else
                             {
                                 var ids = operand.split('.');;
-                                if( dataValues && dataValues[ids[0]] && dataValues[ids[0]][ids[1]] ){
-                                    value = dataValues[ids[0]][ids[1]];
+                                if( dataValues && 
+                                        dataValues[ids[0]] && 
+                                        dataValues[ids[0]][ids[1]] &&
+                                        dataValues[ids[0]][ids[1]].value){
+                                    value = dataValues[ids[0]][ids[1]].value;
                                 }
                             }
                             rightSide = rightSide.replace( match, value );                    
@@ -865,8 +792,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                         var de = operand.substring( 0, operand.indexOf( dhis2.metadata.cstSeparator ) );
                         var coc = operand.substring( operand.indexOf( dhis2.metadata.cstSeparator ) + 1, operand.length );
                         
-                        if( dataValues && dataValues[de] && dataValues[de][coc] ){
-                            value = dataValues[de][coc];
+                        if( dataValues && 
+                                dataValues[de] && 
+                                dataValues[de][coc] &&
+                                dataValues[de][coc].value){
+                            value = dataValues[de][coc].value;
                         }
                     }
                     ind.numExpression = ind.numExpression.replace( match, value );                    
@@ -902,8 +832,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                         var de = operand.substring( 0, operand.indexOf( dhis2.metadata.cstSeparator ) );
                         var coc = operand.substring( operand.indexOf( dhis2.metadata.cstSeparator ) + 1, operand.length );
                         
-                        if( dataValues[de] && dataValues[de][coc] ){
-                            value = dataValues[de][coc];
+                        if( dataValues && 
+                                dataValues[de] && 
+                                dataValues[de][coc] &&
+                                dataValues[de][coc].value){
+                            value = dataValues[de][coc].value;
                         }
                     }
                     ind.denExpression = ind.denExpression.replace( match, value );
@@ -930,127 +863,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     });
                 }), true);
             }, [ [] ]);
-        }
-    };
-})
-
-.service('ReportService', function($q, $filter, orderByFilter, EventService, DataValueService, ActionMappingUtils){
-    return {        
-        getReportData: function(reportParams, reportData){            
-            var def = $q.defer();
-            var pushedHeaders = [];
-            
-            EventService.getForMultiplePrograms(reportParams.orgUnit, 'DESCENDANTS', reportParams.programs, null, reportParams.period.startDate, reportParams.period.endDate).then(function(events){
-                if( !events || !events.length || events.length === 0 ){
-                    reportData.noDataExists = true;
-                    reportData.reportReady = true;
-                    reportData.reportStarted = false;
-                    reportData.showReportFilters = false;
-                    
-                    def.resolve(reportData);
-                }
-                else{
-                    angular.forEach(events, function(ev){
-                        var _ev = {event: ev.event, orgUnit: ev.orgUnit};
-                        if( !reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit] ){
-                            reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit] = {};
-                            reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
-                        }
-                        else{
-                            if( reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit] && !reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] ){
-                                reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo] = {};
-                            }
-                        }                
-
-                        if( ev.dataValues ){
-                            angular.forEach(ev.dataValues, function(dv){                        
-                                if( dv.dataElement && reportData.roleDataElementsById[dv.dataElement] ){
-                                    _ev[dv.dataElement] = dv.value.split(",");
-                                    if( pushedHeaders.indexOf(dv.dataElement) === -1 ){
-                                        var rde = reportData.roleDataElementsById[dv.dataElement];
-                                        reportData.whoDoesWhatCols.push({id: dv.dataElement, displayName: rde.displayName, sortOrder: rde.sortOrder, domain: 'DE'});
-                                        pushedHeaders.push( dv.dataElement );                                
-                                    }
-
-                                    if( !reportData.availableRoles[dv.dataElement] ){
-                                        reportData.availableRoles[dv.dataElement] = {};
-                                        reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
-                                    }
-                                    if( !reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] ){
-                                        reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] = [];
-                                    }   
-
-                                    reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo] = ActionMappingUtils.pushRoles( reportData.availableRoles[dv.dataElement][ev.categoryOptionCombo], dv.value );
-                                }
-                            });                    
-                            reportData.mappedRoles[reportData.programCodesById[ev.program]][ev.orgUnit][ev.categoryOptionCombo][ev.attributeOptionCombo] = _ev;
-                        }
-                    });
-                    
-                    reportData.mappedValues = [];
-                    reportData.mappedTargetValues = {};
-                    DataValueService.getDataValueSet( reportParams.dataValueSetUrl ).then(function( response ){                
-                        if( response && response.dataValues ){
-                            angular.forEach(response.dataValues, function(dv){
-                                var oco = reportData.mappedOptionCombos[dv.attributeOptionCombo];
-                                if( oco && oco.displayName ){
-                                    oco.optionNames = oco.displayName.split(",");
-                                    for(var i=0; i<oco.categories.length; i++){                        
-                                        dv[oco.categories[i].id] = [oco.optionNames[i]];
-                                        if( pushedHeaders.indexOf( oco.categories[i].id ) === -1 ){
-                                            reportData.whoDoesWhatCols.push({id: oco.categories[i].id, displayName: oco.categories[i].displayName, sortOrder: i, domain: 'CA'});
-                                            pushedHeaders.push( oco.categories[i].id );
-                                        }
-                                        if( !reportData.availableRoles[oco.categories[i].id] ){
-                                            reportData.availableRoles[oco.categories[i].id] = {};
-                                            reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
-                                        }
-                                        if( !reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] ){
-                                            reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = [];
-                                        }
-
-                                        reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo] = ActionMappingUtils.pushRoles( reportData.availableRoles[oco.categories[i].id][dv.categoryOptionCombo], oco.displayName );
-                                    }
-
-                                    if( reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]] &&
-                                        reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit] &&
-                                        reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo]){                            
-                                        var r = reportData.mappedRoles[reportData.dataElementCodesById[dv.dataElement]][dv.orgUnit][dv.categoryOptionCombo][dv.attributeOptionCombo];
-                                        if( r && angular.isObject( r ) ){
-                                            angular.extend(dv, r);
-                                        }
-                                    }
-                                    else{ // target values (denominators)
-                                        if( !reportData.mappedTargetValues[dv.dataElement] ){
-                                            reportData.mappedTargetValues[dv.dataElement] = {};
-                                            reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
-                                        }
-                                        if( !reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] ){
-                                            reportData.mappedTargetValues[dv.dataElement][dv.orgUnit] = {};
-                                        }
-                                        reportData.mappedTargetValues[dv.dataElement][dv.orgUnit][dv.categoryOptionCombo] = dv.value;
-                                    }
-                                }
-                            });                    
-                            reportData.mappedValues = response;
-                            reportData.noDataExists = false;
-                        }
-                        else{                    
-                            reportData.showReportFilters = false;
-                            reportData.noDataExists = true;
-                        }  
-
-                        var cols = orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'CA'}), '-sortOrder').reverse();                
-                        cols = cols.concat(orderByFilter($filter('filter')(reportData.whoDoesWhatCols, {domain: 'DE'}), '-sortOrder').reverse());
-                        reportData.whoDoesWhatCols = cols;                
-                        reportData.reportReady = true;
-                        reportData.reportStarted = false;
-
-                        def.resolve(reportData);
-                    });                    
-                }                
-            });
-            return def.promise;
         }
     };
 })
@@ -1102,99 +914,3 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         get: get
     };
 })
-
-/* service for handling events */
-.service('EventService', function($http, $q, DHIS2URL, ActionMappingUtils) {   
-    
-    var skipPaging = "&skipPaging=true";
-    
-    var getByOrgUnitAndProgram = function(orgUnit, ouMode, program, attributeCategoryUrl, categoryOptionCombo, startDate, endDate){
-        var url = DHIS2URL + '/events.json?' + 'orgUnit=' + orgUnit + '&ouMode='+ ouMode + '&program=' + program + skipPaging;
-
-        if( startDate && endDate ){
-            url += '&startDate=' + startDate + '&endDate=' + endDate;
-        }
-
-        if( attributeCategoryUrl && !attributeCategoryUrl.default ){
-            url += '&attributeCc=' + attributeCategoryUrl.cc + '&attributeCos=' + attributeCategoryUrl.cp;
-        }
-        
-        if( categoryOptionCombo ){
-            url += '&coc=' + categoryOptionCombo;
-        }
-
-        var promise = $http.get( url ).then(function(response){
-            return response.data.events;
-        }, function(response){
-            ActionMappingUtils.errorNotifier(response);
-        });            
-        return promise;
-    };
-    
-    var get = function(eventUid){            
-        var promise = $http.get(DHIS2URL + '/events/' + eventUid + '.json').then(function(response){               
-            return response.data;
-        });            
-        return promise;
-    };
-    
-    var create = function(dhis2Event){    
-        var promise = $http.post(DHIS2URL + '/events.json', dhis2Event).then(function(response){
-            return response.data;           
-        });
-        return promise;            
-    };
-    
-    var deleteEvent = function(dhis2Event){
-        var promise = $http.delete(DHIS2URL + '/events/' + dhis2Event.event).then(function(response){
-            return response.data;               
-        });
-        return promise;           
-    };
-    
-    var update = function(dhis2Event){   
-        var promise = $http.put(DHIS2URL + '/events/' + dhis2Event.event, dhis2Event).then(function(response){
-            return response.data;         
-        });
-        return promise;
-    };
-    return {        
-        get: get,        
-        create: create,
-        deleteEvent: deleteEvent,
-        update: update,
-        getByOrgUnitAndProgram: getByOrgUnitAndProgram,
-        getForMultipleOptionCombos: function( orgUnit, mode, pr, attributeCategoryUrl, optionCombos, startDate, endDate ){
-            var def = $q.defer();            
-            var promises = [], events = [];            
-            angular.forEach(optionCombos, function(oco){
-                promises.push( getByOrgUnitAndProgram( orgUnit, mode, pr, attributeCategoryUrl, oco.id, startDate, endDate) );
-            });
-            
-            $q.all(promises).then(function( _events ){
-                angular.forEach(_events, function(evs){
-                    events = events.concat( evs );
-                });
-                
-                def.resolve(events);
-            });
-            return def.promise;
-        },
-        getForMultiplePrograms: function( orgUnit, mode, programs, attributeCategoryUrl, startDate, endDate ){
-            var def = $q.defer();            
-            var promises = [], events = [];            
-            angular.forEach(programs, function(pr){
-                promises.push( getByOrgUnitAndProgram( orgUnit, mode, pr.id, attributeCategoryUrl, null, startDate, endDate) );                
-            });
-            
-            $q.all(promises).then(function( _events ){
-                angular.forEach(_events, function(evs){
-                    events = events.concat( evs );
-                });
-                
-                def.resolve(events);
-            });
-            return def.promise;
-        }
-    };    
-});
