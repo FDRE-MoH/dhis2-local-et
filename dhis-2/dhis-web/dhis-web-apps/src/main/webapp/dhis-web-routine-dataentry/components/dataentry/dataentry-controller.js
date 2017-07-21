@@ -236,13 +236,9 @@ routineDataEntry.controller('dataEntryController',
                 });
                 
                 angular.forEach($scope.model.selectedDataSet.dataElements, function(de){                    
-                    var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[de.id], $scope.dataValues, $scope.model.failedValidationRules);                    
-                    $scope.model.validationResults[de.id] = vres.vrs ? vres.vrs : [];
+                    var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[de.id], $scope.dataValues, $scope.model.failedValidationRules);
                     $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;                    
                 });
-                
-                console.log('vr:  ', $scope.model.validationResults);
-                console.log('fvr:  ', $scope.model.failedValidationRules);
             });
             
             $scope.model.dataSetCompletness = {};
@@ -323,11 +319,8 @@ routineDataEntry.controller('dataEntryController',
            $scope.saveStatus[deId + '-' + ocId].error = false;
            
            $scope.dataValues[deId] = ActionMappingUtils.getDataElementTotal( $scope.dataValues, deId);
-           var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[deId], $scope.dataValues, $scope.model.failedValidationRules); 
-           
-           $scope.model.validationResults[deId] = vres.vrs ? vres.vrs : [];
-           $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules
-           
+           var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[deId], $scope.dataValues, $scope.model.failedValidationRules);
+           $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;           
            
         }, function(){
             $scope.saveStatus[deId + '-' + ocId].saved = false;
