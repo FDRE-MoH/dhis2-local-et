@@ -43,7 +43,7 @@
                                         {{de.displayFormName}}
                                     </div>
                                     <div ng-repeat="vr in de.validationRules" class="alert alert-danger trimmed-alert small-vertical-spacing italic" ng-if="model.failedValidationRules.indexOf(vr.id) !== -1">
-                                        {{vr.instruction}}
+                                        {{vr.instruction ? vr.instruction : vr.displayName}}
                                     </div>                                    
                                 </td>
                                 <td>
