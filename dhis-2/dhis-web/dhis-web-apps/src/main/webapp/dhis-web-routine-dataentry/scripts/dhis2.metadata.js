@@ -267,8 +267,14 @@ dhis2.metadata.getMetaObjects = function( store, objs, url, filter, storage, db,
                                     break;
                                 }
                             }
-                        });                        
+                        });
                         obj.categoryOptionCombos = sortedOptionCombos;
+                        /*if( obj.categoryOptionCombos.length !== sortedOptionCombos.length ){
+                            console.log(obj.displayName, ' - ', obj.categoryOptionCombos.length, ' - ', sortedOptionCombos.length);
+                        }
+                        else{
+                            obj.categoryOptionCombos = sortedOptionCombos;
+                        }*/
                     }                    
                 }
                 /*else if( store === 'dataSets' ){

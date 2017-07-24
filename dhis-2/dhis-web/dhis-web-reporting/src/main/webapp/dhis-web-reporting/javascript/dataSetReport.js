@@ -264,12 +264,24 @@ dhis2.dsr.getDataSetReportUrl = function( dataSetReport )
 }
 
 dhis2.dsr.exportDataSetReport = function( type )
-{
-	var dataSetReport = dhis2.dsr.currentDataSetReport;
+{	
+    switch( type ){
+        case 'xls':
+            var blob = new Blob([document.getElementById('content').innerHTML], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
+            });
+
+            saveAs(blob, 'test.xls');    
+            break;
+        default:
+            var dataSetReport = dhis2.dsr.currentDataSetReport;
 	
-	var url = dhis2.dsr.getDataSetReportUrl( dataSetReport ) + "&type=" + type;
+            var url = dhis2.dsr.getDataSetReportUrl( dataSetReport ) + "&type=" + type;
 	    
-	window.location.href = url;
+            window.location.href = url;
+            
+            break;
+    }
 }
 
 dhis2.dsr.setUserInfo = function( username )

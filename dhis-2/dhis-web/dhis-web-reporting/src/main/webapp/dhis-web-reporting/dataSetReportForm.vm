@@ -40,7 +40,8 @@ div.inputSection {
 <div id="control">
 <input type="button" id="dataButton" value='$i18n.getString( "data_criteria" )' style="width:140px" onclick="dhis2.dsr.showCriteria()" disabled="disabled">
 <input type="button" class="downloadButton" value="$i18n.getString( 'get_report_as_xls' )" onclick="dhis2.dsr.exportDataSetReport( 'xls' )" style="width:140px; display:none;">
-<input type="button" class="downloadButton" value="$i18n.getString( 'get_report_as_pdf' )" onclick="dhis2.dsr.exportDataSetReport( 'pdf' )" style="width:140px; display:none;">
+<!--<input type="button" class="downloadButton" value="$i18n.getString( 'get_report_as_pdf' )" onclick="dhis2.dsr.exportDataSetReport( 'pdf' )" style="width:140px; display:none;">-->
+<input type="button" class="downloadButton" value="$i18n.getString( 'get_report_as_pdf' )" onclick="javascript:window.print()" style="width:140px; display:none;">
 <input type="button" class="downloadButton" value="$i18n.getString( 'print' )" onclick="window.print()" style="width:140px; display:none;">
 </div>
 
