@@ -270,8 +270,9 @@ dhis2.dsr.exportDataSetReport = function( type )
             var blob = new Blob([document.getElementById('content').innerHTML], {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
             });
-
-            saveAs(blob, 'test.xls');    
+            
+            var fileName = dhis2.dsr.reportOuName + '-' + dhis2.dsr.reportDsName + '-' + dhis2.dsr.reportPrName + '.xls'
+            saveAs(blob, fileName);    
             break;
         default:
             var dataSetReport = dhis2.dsr.currentDataSetReport;

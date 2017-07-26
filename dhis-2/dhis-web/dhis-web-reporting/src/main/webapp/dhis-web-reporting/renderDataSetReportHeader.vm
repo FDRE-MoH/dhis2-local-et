@@ -4,11 +4,11 @@
 <input type="hidden" id="currentSelectedUnitOnly" value="${selectedUnitOnly}">
 <div id="userInfo" class="page"></div>
 
-<h3>$encoder.htmlEncode( $selectedOrgunit.name ) - $format.formatPeriod( $selectedPeriod )</h3>
+<h3>$encoder.htmlEncode( $selectedOrgunit.name ) - $encoder.htmlEncode( $selectedDataSet.name ) - $format.formatPeriod( $selectedPeriod )</h3>
 
 #if( $registration )<div style="margin-bottom:6px">$i18n.getString( "completed_by" ): <a href="javascript:setUserInfo( '$!{registration.storedBy}' )">$!{registration.storedBy}</a></div>#end
 
-<div id="shareForm">
+<div id="shareForm" class="hideInPrint">
 <textarea id="interpretationArea" class="interpretationArea" placeholder="$i18n.getString( 'write_your_interpretation_of_report' )"></textarea><br>
 <input type="button" value="$i18n.getString( 'share' )" onclick="dhis2.dsr.shareInterpretation( '${uid}', '$!{ou}' )" style="width:120px">
 </div>

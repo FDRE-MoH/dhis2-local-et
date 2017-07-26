@@ -35,14 +35,16 @@ div.inputSection {
 }
 </style>
 
-<h3 id="dataSetReportHeader">$i18n.getString( "dataset_report" ) #openHelp( "dataset_reports" )</h3>
+<h3 id="dataSetReportHeader">
+    $i18n.getString( "dataset_report" ) 
+    <span class="hideInPrint">#openHelp( "dataset_reports" )</span>
+</h3>
 
-<div id="control">
-<input type="button" id="dataButton" value='$i18n.getString( "data_criteria" )' style="width:140px" onclick="dhis2.dsr.showCriteria()" disabled="disabled">
-<input type="button" class="downloadButton" value="$i18n.getString( 'get_report_as_xls' )" onclick="dhis2.dsr.exportDataSetReport( 'xls' )" style="width:140px; display:none;">
-<!--<input type="button" class="downloadButton" value="$i18n.getString( 'get_report_as_pdf' )" onclick="dhis2.dsr.exportDataSetReport( 'pdf' )" style="width:140px; display:none;">-->
-<input type="button" class="downloadButton" value="$i18n.getString( 'get_report_as_pdf' )" onclick="javascript:window.print()" style="width:140px; display:none;">
-<input type="button" class="downloadButton" value="$i18n.getString( 'print' )" onclick="window.print()" style="width:140px; display:none;">
+<div id="control" class="hideInPrint">
+    <input type="button" id="dataButton" value='$i18n.getString( "data_criteria" )' style="width:140px" onclick="dhis2.dsr.showCriteria()" disabled="disabled">
+    <input type="button" class="downloadButton" value="$i18n.getString( 'get_report_as_xls' )" onclick="dhis2.dsr.exportDataSetReport( 'xls' )" style="width:140px; display:none;">
+<!--<input type="button" class="downloadButton" value="$i18n.getString( 'get_report_as_pdf' )" onclick="dhis2.dsr.exportDataSetReport( 'pdf' )" style="width:140px; display:none;">-->    
+    <input type="button" class="downloadButton" value="$i18n.getString( 'print' )" onclick="window.print()" style="width:140px; display:none;">
 </div>
 
 <div id="criteria" class="inputCriteria" style="width:360px;">

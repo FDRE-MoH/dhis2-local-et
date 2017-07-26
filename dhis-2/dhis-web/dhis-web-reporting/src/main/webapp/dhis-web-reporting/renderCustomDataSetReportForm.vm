@@ -1,4 +1,10 @@
-
+<script type="text/javascript">
+    jQuery(document).ready(function() {
+      dhis2.dsr.reportOuName = '$encoder.htmlEncode( $selectedOrgunit.name )';
+      dhis2.dsr.reportDsName = '$encoder.htmlEncode( $selectedDataSet.name )';
+      dhis2.dsr.reportPrName = '$format.formatPeriod( $selectedPeriod )';  
+    });
+</script>
 #parse( "dhis-web-reporting/renderDataSetReportHeader.vm" )
 
 #set( $css = "cde cde-$!{selectedDataSet.dataEntryForm.style}" )
