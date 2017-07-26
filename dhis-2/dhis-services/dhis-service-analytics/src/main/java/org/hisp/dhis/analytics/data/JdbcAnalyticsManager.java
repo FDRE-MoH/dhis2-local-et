@@ -329,25 +329,8 @@ public class JdbcAnalyticsManager
             if ( !dim.getItems().isEmpty() && !dim.isFixed() )
             {
                 String col = statementBuilder.columnQuote( dim.getDimensionName() );
-
-                List<String> itms = getUids( dim.getItems() );
-
-                List<String> filteredItms = new ArrayList<>( itms );
-
-                if ( params.isAggregationType( LAST_SUM_ORG_UNIT ) )
-                {
-                    if ( dim.getDimensionType().equals( DimensionType.PERIOD ) )
-                    {
-                        if ( itms != null && itms.size() > 0 )
-                        {
-                            filteredItms = new ArrayList<>();
-                            filteredItms.add( itms.get( itms.size() - 1 ) );
-                        }
-                    }
-                }
-
-                sql += sqlHelper.whereAnd() + " " + col + " in (" + getQuotedCommaDelimitedString( filteredItms )
-                    + ") ";
+                
+                sql += sqlHelper.whereAnd() + " " + col + " in (" + getQuotedCommaDelimitedString( getUids( dim.getItems() ) ) + ") ";                
             }
         }
 
