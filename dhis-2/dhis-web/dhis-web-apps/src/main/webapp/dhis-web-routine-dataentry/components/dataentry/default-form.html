@@ -5,7 +5,7 @@
             <tab heading="{{section.displayName}}" class="bold" ng-repeat="section in model.selectedDataSet.sections | orderBy:'sortOrder'" active="section.active">
                 <div class="row col-sm-12 vertical-spacing">
                     <div class="col-sm-12 pull-center ds-hdr">
-                        {{model.selectedDataSet.displayName}}
+                        {{section.description}}
                     </div>
                     <table class="table table-bordered">
                         <thead>                            
