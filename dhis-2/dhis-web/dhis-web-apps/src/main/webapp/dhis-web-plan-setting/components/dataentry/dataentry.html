@@ -1,0 +1,163 @@
+<span id="showLeftBar" class="hideInPrint">
+    <a href="javascript:dhis2.leftBar.showAnimated()" title="$i18n.getString('show_menu' )"><i class="fa fa-arrow-right leftBarIcon"></i></a>
+</span>
+
+<div id="leftBar">
+
+    <d2-left-bar></d2-left-bar>
+
+    <div class="ou-search-left-bar">
+        <div class="input-group">
+            <input type="text" id="searchField" name="key" class="form-control" placeholder="{{'search' | translate}}">
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="button" onclick="selection.findByName()">{{'go' | translate}}</button>
+            </span>
+        </div>
+        <!--<img id="searchIcon" src="../images/search.png" style="cursor: pointer" title="{{searchOusLabel}}">
+        <span id="searchSpan" style="width:100%;display:none;">
+            <input type="text" id="searchField" name="key"/>
+            <input type="button" value="{{findLabel}}" onclick="selection.findByName()"/>
+        </span>-->
+    </div>
+
+    <div id="orgUnitTree">
+        <ul>
+        </ul>
+    </div>
+
+    <img id="ouwt_loader" src="../images/ajax-loader-bar.gif" alt="{{'in_progress'| translate}}"/>
+
+    <div class="small-horizontal-spacing" ng-if="!treeLoaded">
+        {{'loading_tree'| translate}}
+    </div>
+
+</div>
+
+
+<div class="page" id="mainPage">
+
+    <div ng-if="!selectedOrgUnit">
+        <img src="../images/ajax-loader-bar.gif" alt="{{'in_progress'| translate}}" ng-if="!selectedOrgUnit"/><br>
+        {{'loading_metadata'| translate}}
+    </div>
+
+    <div ng-show="selectedOrgUnit">
+        <h2>
+            <span class="remove-left-padding">{{'data_entry'| translate}}</span>
+        </h2>
+
+        <!-- selection begins-->
+        <div class="selectionGroup remove-left-padding">
+            <div class="col-sm-6 selectionArea">
+                <div class="row">
+                    <div class="col-sm-4">
+                        {{'org_unit'| translate}}
+                    </div>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" selected-org-unit ng-model="selectedOrgUnit.displayName"
+                               value="{{selectedOrgUnit.displayName|| pleaseSelectLabel}}" disabled="">
+                    </div>
+                </div>                
+                <div class="row small-vertical-spacing">
+                    <div class="col-sm-4">
+                        {{'data_set'| translate}}
+                    </div>
+                    <div class="col-sm-8">                        
+                        <ui-select ng-model="model.selectedDataSet" 
+                                   theme="select2"                                 
+                                   style="width:100%;">
+                            <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{model.dataSets && model.dataSets.length > 0 ? 'select_or_search' : 'empty'| translate}}">{{$select.selected.displayName|| $select.selected}}</ui-select-match>
+                            <ui-select-choices repeat="dataSet in model.dataSets | filter: $select.search | limitTo:maxOptionSize">
+                                <span ng-bind-html="dataSet.displayName | highlight: $select.search"></span>
+                            </ui-select-choices>
+                        </ui-select>
+                    </div>
+                </div>                
+                <div class="row small-vertical-spacing" ng-if="model.selectedDataSet && !model.invalidDimensions">
+                    <div class="col-sm-4">
+                        {{'period'| translate}}                        
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <ui-select ng-model="model.selectedPeriod" 
+                                           theme="select2"                                 
+                                           style="width:100%;">
+                                    <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{model.periods && model.periods.length > 0 ? 'select_or_search' : 'empty'| translate}}">{{$select.selected.name|| $select.selected}}</ui-select-match>
+                                    <ui-select-choices  repeat="period in model.periods | filter: $select.search | limitTo:maxOptionSize">
+                                        <span ng-bind-html="period.name | highlight: $select.search"></span>
+                                    </ui-select-choices>
+                                </ui-select>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="pull-right">                                    
+                                    <button type="button" 
+                                            class="btn btn-default" 
+                                            ng-click="getPeriods('PRV')" 
+                                            title="{{'previous_periods'| translate}}">
+                                        <i class="fa fa-caret-left"></i>
+                                    </button>
+
+                                    <button type="button" 
+                                            class="btn btn-default" 
+                                            ng-disabled="periodOffset > -1" 
+                                            ng-click="getPeriods('NXT')" 
+                                            title="{{'next_periods'| translate}}">
+                                        <i class="fa fa-caret-right"></i>
+                                    </button>                                    
+                                </div>                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div ng-repeat="category in model.selectedAttributeCategoryCombo.categories" ng-if="model.selectedDataSet && model.selectedPeriod && !model.selectedAttributeCategoryCombo.isDefault && !model.invalidDimensions">                
+                    <div class="row small-vertical-spacing">
+                        <div class="col-sm-4">                            
+                            <i class="fa fa-question-circle superscript" tooltip="{{category.code === 'FI' ? 'field_implementer_info' : 'delivery_mechanism_info'| translate}}" tooltip-class="custom-tooltip-class"></i>
+                            {{category.displayName}}
+                        </div>
+                        <div class="col-sm-8">
+                            <ui-select ng-model="category.selectedOption"                                        
+                                       theme="select2"  
+                                       on-select="getCategoryOptions(category)"
+                                       style="width:100%;">
+                                <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{category.categoryOptions && category.categoryOptions.length > 0 ? category.placeHolder : 'empty'| translate}}">{{$select.selected.displayName|| $select.selected}}</ui-select-match>
+                                <ui-select-choices  repeat="option in category.categoryOptions | filter: $select.search | limitTo:maxOptionSize">
+                                    <span ng-bind-html="option.displayName | highlight: $select.search"></span>
+                                </ui-select-choices>
+                            </ui-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--<div class="col-sm-6 selectionArea add-default-padding vertical-center-parent" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
+                <div class="vertical-center-child">
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            ng-click="model.showCustomForm = !model.showCustomForm" 
+                            title="{{ model.showCustomForm ? 'default_form' : 'custom_form' | translate}}">
+                        {{ model.showCustomForm ? 'default_form' : 'custom_form' | translate}}
+                    </button>
+                </div>
+            </div>-->
+        </div>        
+        <!-- selection ends -->        
+
+        <div class="alert alert-danger vertical-spacing" ng-if="model.invalidDimensions && model.selectedDataSet">
+            {{'data_set_have_invalid_dimension'| translate}}
+        </div>
+        
+        <!-- form begins -->
+        <form name="outerForm" novalidate>
+            <div class="vertical-spacing remove-left-padding" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
+                <div class="cde cde-NORMAL" ng-if="displayCustomForm && model.showCustomForm" ng-include="'components/dataentry/custom-form.html'"></div>
+                <div ng-if="!displayCustomForm || !model.showCustomForm">                    
+                    <div ng-include="'components/dataentry/default-form.html'"></div>
+                </div> 
+            </div>
+        </form>        
+        <!-- form ends -->
+
+    </div>
+
+</div>

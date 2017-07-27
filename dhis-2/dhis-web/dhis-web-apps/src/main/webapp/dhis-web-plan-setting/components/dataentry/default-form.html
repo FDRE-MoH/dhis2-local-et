@@ -1,0 +1,168 @@
+<div class="vertical-spacing remove-left-padding" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
+                              
+    <div class="col-sm-12" equal-height-nav-tabs>
+        <tabset justified="true">
+            <tab heading="{{section.displayName}}" class="bold" ng-repeat="section in model.selectedDataSet.sections | orderBy:'sortOrder'" active="section.active">
+                <div class="row col-sm-12 vertical-spacing">
+                    <div class="col-sm-12 pull-center ds-hdr">
+                        {{section.description}}
+                    </div>
+                    <table class="table table-bordered">
+                        <thead>                            
+                            <tr> 
+                                <th class="col-sm-3 pull-center de-table-hdr">
+                                    {{'s_no' | translate}}
+                                </th>
+                                <th class="col-sm-6 pull-center de-table-hdr">
+                                    {{'activity' | translate}}
+                                </th>
+                                <th class="col-sm-3 pull-center de-table-hdr">
+                                    {{'number' | translate}}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody ng-repeat="dataElement in section.dataElements"
+                               ng-init="de = model.dataElements[dataElement.id]; 
+                                   ocos = model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
+                            <tr ng-repeat="ind in section.indicators" ng-if="ind.params.indexOf(de.id) === 0">
+                                <td class="ind-style">
+                                    
+                                </td>
+                                <td class="ind-style">
+                                    {{ind.displayName}}
+                                </td>
+                                <td class="ind-style">
+                                    {{getIndicatorValue(ind)}}
+                                </td>
+                            </tr>
+                            <tr class="de-total-style" ng-if="ocos.length > 1">
+                                <td>
+                                </td>
+                                <td>
+                                    <div>
+                                        {{de.displayFormName}}
+                                    </div>
+                                    <div ng-repeat="vr in de.validationRules" class="alert alert-danger trimmed-alert small-vertical-spacing italic" ng-if="model.failedValidationRules.indexOf(vr.id) !== -1">
+                                        {{vr.instruction ? vr.instruction : vr.displayName}}
+                                    </div>                                    
+                                </td>
+                                <td>
+                                    <input type="text" 
+                                        name="foo"
+                                        ng-model="dataValues[de.id].total" 
+                                        ng-disabled="true"
+                                        class="form-control">
+                                </td>
+                            </tr>
+                            <tr class="de-style" ng-repeat="oco in ocos">
+                                <td>
+                                    
+                                </td>
+                                <td>
+                                    <div class="oco-left-padding" ng-if="ocos.length > 1">
+                                        {{oco.displayName }}
+                                    </div>
+                                    <div ng-if="ocos.length === 1">
+                                        {{de.displayFormName}}
+                                    </div>
+                                </td>
+                                <td>
+                                    <ng-form name="innerForm">
+                                        <span ng-switch="de.valueType">                                                        
+                                            <span ng-switch-when="LONG_TEXT">
+                                                <textarea rows="5" 
+                                                          name="foo"                                                          
+                                                          ng-model="dataValues[de.id][oco.id].value" 
+                                                          ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                          class="form-control" 
+                                                          ng-class="getInputNotifcationClass(de.id, oco.id)"                                                           
+                                                          d2-blur="saveDataValue(de.id, oco.id)">
+                                                </textarea>
+                                            </span>
+                                            <span ng-switch-when="TEXT">
+                                                <input type="text" 
+                                                       name="foo"
+                                                       ng-model="dataValues[de.id][oco.id].value" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="NUMBER">
+                                                <input type="number"  
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id].value" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER">
+                                                <input type="number"   
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id].value" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"  
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER_POSITIVE">
+                                                <input type="number" 
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id].value" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER_NEGATIVE">
+                                                <input type="number"   
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id].value" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
+                                                <input type="number"   
+                                                       name="foo"
+                                                       d2-number-validator
+                                                       number-type={{de.valueType}}
+                                                       ng-model="dataValues[de.id][oco.id].value" 
+                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                       ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-default>
+                                                <div class="alert alert-danger form-control">
+                                                    {{'unsupported_value_type' | translate}}:  {{de.valueType}}
+                                                </div>
+                                            </span>
+                                        </span>
+                                        <span ng-messages="innerForm.foo.$error" ng-if="interacted(innerForm.foo)" class="required" ng-messages-include="../dhis-web-commons/angular-forms/error-messages.html">                                         
+                                        </span>
+                                    </ng-form>
+                                </td>
+                            </tr>
+                        </tbody>                        
+                    </table>
+                </div>
+            </tab>                    
+        </tabset>
+    </div>
+</div>

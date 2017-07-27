@@ -17,6 +17,12 @@
 		    <result name="success" type="redirect">index.html</result>
 		</action>        
 	</package>	
+    
+    <package name="dhis-web-plan-setting" extends="dhis-web-commons" namespace="/dhis-web-plan-setting">
+		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
+		    <result name="success" type="redirect">index.html</result>
+		</action>        
+	</package>
 
     <!-- Apps pulled from Maven repository -->
 
