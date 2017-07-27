@@ -356,13 +356,13 @@ public class JdbcAnalyticsManager
 
                         List<String> itms = getUids( filter.getItems() );
 
-                        List<String> filteredItms = new ArrayList<>( itms );
+                        List<String> filteredItms = itms;
 
                         if ( params.isAggregationType( LAST_SUM_ORG_UNIT ) )
                         {
                             if ( filter.getDimensionType().equals( DimensionType.PERIOD ) )
                             {
-                                if ( itms != null && itms.size() > 0 )
+                                if ( !itms.isEmpty() )
                                 {
                                     filteredItms = new ArrayList<>();
                                     filteredItms.add( itms.get( itms.size() - 1 ) );
