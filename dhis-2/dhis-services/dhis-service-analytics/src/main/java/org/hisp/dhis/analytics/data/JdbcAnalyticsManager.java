@@ -322,7 +322,7 @@ public class JdbcAnalyticsManager
 
         // ---------------------------------------------------------------------
         // Dimensions
-        // ---------------------------------------------------------------------
+        // ---------------------------------------------------------------------        
 
         for ( DimensionalObject dim : params.getDimensions() )
         {
@@ -358,16 +358,10 @@ public class JdbcAnalyticsManager
 
                         List<String> filteredItms = itms;
 
-                        if ( params.isAggregationType( LAST_SUM_ORG_UNIT ) )
+                        if ( params.isAggregationType( LAST_SUM_ORG_UNIT ) && filter.getDimensionType().equals( DimensionType.PERIOD ) )
                         {
-                            if ( filter.getDimensionType().equals( DimensionType.PERIOD ) )
-                            {
-                                if ( !itms.isEmpty() )
-                                {
-                                    filteredItms = new ArrayList<>();
-                                    filteredItms.add( itms.get( itms.size() - 1 ) );
-                                }
-                            }
+                            filteredItms = new ArrayList<>();
+                            filteredItms.add( itms.get( itms.size() - 1 ) );
                         }
 
                         sql += col + " in (" + getQuotedCommaDelimitedString( filteredItms ) + ") or ";
