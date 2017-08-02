@@ -173,11 +173,17 @@ public class JdbcAnalyticsTableManager
         final String approvalClause = getApprovalJoinClause( table );
         final String numericClause = skipDataTypeValidation ? "" : ( "and dv.value " + statementBuilder.getRegexpMatch() + " '" + MathUtils.NUMERIC_LENIENT_REGEXP + "' " );
 
-        String intClause =
-            "( dv.value != '0' or de.aggregationtype in ('" + AggregationType.AVERAGE + ',' + AggregationType.AVERAGE_SUM_ORG_UNIT + "') or de.zeroissignificant = true ) " +
+        String intNonLastClause =
+            "(de.aggregationtype !='" + AggregationType.LAST_SUM_ORG_UNIT + "' and dv.value != '0' or de.aggregationtype in ('" + AggregationType.AVERAGE + ',' + AggregationType.AVERAGE_SUM_ORG_UNIT + "') or de.zeroissignificant = true ) " +
             numericClause;
 
-        populateTable( table, "cast(dv.value as " + dbl + ")", "null", ValueType.NUMERIC_TYPES, intClause, approvalClause );
+        String intLastClause =
+            "(de.aggregationtype ='" + AggregationType.LAST_SUM_ORG_UNIT + "' and dv.value != '0' or de.zeroissignificant = true ) " +
+            numericClause;
+        
+        populateTable( table, "cast(dv.value as " + dbl + ")", "null", ValueType.NUMERIC_TYPES, intNonLastClause, approvalClause );
+        
+        populateLastValueTable( table, "cast(dv.value as " + dbl + ")", "null", ValueType.NUMERIC_TYPES, intLastClause, approvalClause );
 
         populateTable( table, "1", "null", Sets.newHashSet( ValueType.BOOLEAN, ValueType.TRUE_ONLY ), "dv.value = 'true'", approvalClause );
 
@@ -218,7 +224,7 @@ public class JdbcAnalyticsTableManager
         sql += "daysxvalue, daysno, value, textvalue) select ";
 
         for ( AnalyticsTableColumn col : columns )
-        {
+        {            
             sql += col.getAlias() + ",";
         }
 
@@ -267,6 +273,97 @@ public class JdbcAnalyticsTableManager
 
         populateAndLog( sql, tableName + ", " + valueTypes );
     }
+    
+    /**
+     * Populates the given analytics table.
+     *
+     * @param table               analytics table to populate.
+     * @param valueExpression     numeric value expression.
+     * @param textValueExpression textual value expression.
+     * @param valueTypes          data element value types to include data for.
+     * @param whereClause         where clause to constrain data query.
+     */
+    private void populateLastValueTable( AnalyticsTable table, String valueExpression,
+        String textValueExpression, Set<ValueType> valueTypes, String whereClause, String approvalClause )
+    {
+        final String start = DateUtils.getMediumDateString( table.getPeriod().getStartDate() );
+        final String end = DateUtils.getMediumDateString( table.getPeriod().getEndDate() );
+        final String tableName = table.getTempTableName();
+        final String valTypes = TextUtils.getQuotedCommaDelimitedString( ObjectUtils.asStringList( valueTypes ) );
+        final boolean respectStartEndDates = (Boolean) systemSettingManager.getSystemSetting( SettingKey.RESPECT_META_DATA_START_END_DATES_IN_ANALYTICS_TABLE_EXPORT );
+
+        String sql = "insert into " + table.getTempTableName() + " (";
+
+        List<AnalyticsTableColumn> columns = getDimensionColumns( table );
+
+        validateDimensionColumns( columns );
+        
+        for ( AnalyticsTableColumn col : columns )
+        {
+            sql += col.getName() + ",";
+        }
+
+        sql += "daysxvalue, daysno, value, textvalue) select ";        
+        
+        List<String> periodTypes = new ArrayList<>();
+
+        for ( PeriodType periodType : PeriodType.getAvailablePeriodTypes() )
+        {
+            String column = quote( periodType.getName().toLowerCase() );
+            periodTypes.add( "ps." + column  );
+        }
+
+        for ( AnalyticsTableColumn col : columns )
+        {           
+            sql += col.getAlias() + ",";
+        }
+
+        sql +=
+            valueExpression + " * ps.daysno as daysxvalue, " +
+                "ps.daysno as daysno, " +
+                valueExpression + " as value, " +
+                textValueExpression + " as textvalue " +
+                "from datavalue dv " +
+                "inner join _dataelementgroupsetstructure degs on dv.dataelementid=degs.dataelementid " +
+                "inner join _organisationunitgroupsetstructure ougs on dv.sourceid=ougs.organisationunitid " +
+                "inner join _categorystructure dcs on dv.categoryoptioncomboid=dcs.categoryoptioncomboid " +
+                "inner join _categorystructure acs on dv.attributeoptioncomboid=acs.categoryoptioncomboid " +
+                "left join _orgunitstructure ous on dv.sourceid=ous.organisationunitid " +
+                "inner join _dataelementstructure des on dv.dataelementid = des.dataelementid " +
+                "inner join dataelement de on dv.dataelementid=de.dataelementid " +
+                "inner join categoryoptioncombo co on dv.categoryoptioncomboid=co.categoryoptioncomboid " +
+                "inner join categoryoptioncombo ao on dv.attributeoptioncomboid=ao.categoryoptioncomboid " +
+                "inner join period pe on dv.periodid=pe.periodid " +
+                "inner join _lastperiodstructure ps on dv.periodid=ps.periodid " +
+                "inner join organisationunit ou on dv.sourceid=ou.organisationunitid " +
+                "inner join _categoryoptioncomboname aon on dv.attributeoptioncomboid=aon.categoryoptioncomboid " +
+                "inner join _categoryoptioncomboname con on dv.categoryoptioncomboid=con.categoryoptioncomboid " +
+
+                approvalClause +
+                "where de.valuetype in (" + valTypes + ") " +
+                "and de.domaintype = 'AGGREGATE' " +
+                "and pe.startdate >= '" + start + "' " +
+                "and pe.startdate <= '" + end + "' " +
+                "and dv.value is not null " +
+                "and dv.deleted is false ";
+
+        if ( respectStartEndDates )
+        {
+            sql +=
+                "and (aon.startdate is null or aon.startdate <= pe.startdate) " +
+                "and (aon.enddate is null or aon.enddate >= pe.enddate) " +
+                "and (con.startdate is null or con.startdate <= pe.startdate) " +
+                "and (con.enddate is null or con.enddate >= pe.enddate) ";
+        }
+
+        if ( whereClause != null )
+        {
+            sql += "and " + whereClause;
+        }
+
+        populateAndLog( sql, tableName + ", " + valueTypes );
+    }
+
 
     /**
      * Returns sub-query for approval level. First looks for approval level in

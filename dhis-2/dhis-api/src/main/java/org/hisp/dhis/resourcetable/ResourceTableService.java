@@ -91,6 +91,11 @@ public interface ResourceTableService
     void generatePeriodTable();
     
     /**
+     * Generates a resource table for last periods.
+     */
+    void generateLastPeriodTable();
+    
+    /**
      * Generates a resource table for all data elements and relevant category
      * option combinations.
      */

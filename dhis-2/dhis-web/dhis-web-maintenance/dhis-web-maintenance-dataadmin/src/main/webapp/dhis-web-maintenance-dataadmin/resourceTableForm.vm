@@ -32,6 +32,7 @@ ul.resourceTables li
 <li>$i18n.getString( "data_element_structure" ) <span style="color:#606060">(_dataelementstructure)</span></li>
 <li>$i18n.getString( "period_structure" ) <span style="color:#606060">(_periodstructure)</span></li>
 <li>$i18n.getString( "date_period_structure" ) <span style="color:#606060">(_dateperiodstructure)</span></li>
+<li>$i18n.getString( "last_period_structure" ) <span style="color:#606060">(_lastperiodstructure)</span></li>
 <li>$i18n.getString( "data_element_category_option_combo" ) <span style="color:#606060">(_dataelementcategoryoptioncombo)</span></li>
 </ul>
 

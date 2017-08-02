@@ -210,6 +210,13 @@ public class DefaultResourceTableService
         resourceTableStore.generateResourceTable( new PeriodResourceTable( 
             periodService.getAllPeriods(), statementBuilder.getColumnQuote() ) );
     }
+    
+    @Override
+    public void generateLastPeriodTable()
+    {
+        resourceTableStore.generateResourceTable( new LastPeriodResourceTable( 
+            periodService.getAllPeriods(), statementBuilder.getColumnQuote() ) );
+    }
 
     @Override
     @Transactional
