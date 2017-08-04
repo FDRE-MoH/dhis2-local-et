@@ -172,7 +172,14 @@
                     </table>
                 </div>
             </tab>                    
-        </tabset>
-        <input type="button" value="{{'auto_zero' | translate}}" ng-click="performAutoZero()">
+        </tabset>        
+        <button type="button" 
+                class="btn btn-warning" 
+                ng-click="performAutoZero()" 
+                title="{{'auto_zero'| translate}}">
+            {{'auto_zero'| translate}}
+        </button>
+        
+        
     </div>
 </div>

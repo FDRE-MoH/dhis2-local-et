@@ -391,7 +391,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };        
 })
 
-.service('DataValueService', function($http, ActionMappingUtils) {   
+.service('DataValueService', function($http, ActionMappingUtils,$q) {   
     
     return {        
         saveDataValue: function( dv ){
@@ -416,10 +416,35 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             return promise;
         },
         saveDataValueSet: function(dvs){
-            var promise = $http.post('../api/dataValueSets.json', dvs).then(function(response){
-                return response.data;
+            var def = $q.defer();            
+            var promises = [], toBeSaved = [];
+            
+            angular.forEach(dvs.dataValues, function(dv){                
+                if( dv.value === "" || dv.value === null ){
+                    //deleting...                    
+                    var url = '?de='+dv.dataElement + '&ou='+dvs.orgUnit + '&pe='+dvs.period + '&co='+dv.categoryOptionCombo;
+                    
+                    if( dv.cc && dv.cp ){
+                        url += '&cc='+cc + '&cp='+cp;
+                    }                    
+                    promises.push( $http.delete('../api/dataValues.json' + url) );
+                }
+                else{
+                    //saving...
+                    toBeSaved.push( dv );
+                }                
             });
-            return promise;
+            
+            if( toBeSaved.length > 0 ){
+                dvs.dataValues = toBeSaved;
+                promises.push( $http.post('../api/dataValueSets.json', dvs) );
+            }
+            
+            $q.all(promises).then(function(){                
+                def.resolve();
+            });
+            
+            return def.promise;
         },
         getDataValueSet: function( params ){            
             var promise = $http.get('../api/dataValueSets.json?' + params ).then(function(response){               
