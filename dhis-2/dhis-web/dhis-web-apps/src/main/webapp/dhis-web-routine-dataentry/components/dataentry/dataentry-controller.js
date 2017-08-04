@@ -343,7 +343,7 @@ routineDataEntry.controller('dataEntryController',
                         response.completeDataSetRegistrations.length > 0){
                     
                     angular.forEach(response.completeDataSetRegistrations, function(cdr){
-                        $scope.model.dataSetCompletness[cdr.attributeOptionCombo.id] = true;                        
+                        $scope.model.dataSetCompletness[cdr.attributeOptionCombo] = true;                        
                     });
                 }
             });

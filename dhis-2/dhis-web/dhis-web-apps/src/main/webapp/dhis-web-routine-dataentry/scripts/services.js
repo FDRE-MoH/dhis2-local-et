@@ -469,7 +469,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             return promise;
         },
         save: function( ds, pe, ou, cc, cp, multiOu){
-            var promise = $http.post('../api/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
+            var promise = $http.post('../api/25/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
                 return response.data;
             }, function(response){
                 ActionMappingUtils.errorNotifier(response);

@@ -174,12 +174,25 @@
             </tab>                    
         </tabset>        
         <button type="button" 
+                class="btn btn-success" 
+                ng-click="saveCompletness(selectedOrgUnit.id,false)" 
+                ng-hide="model.dataSetCompletness[model.selectedAttributeOptionCombo]"
+                title="{{'mark_complete'| translate}}">
+            {{'mark_complete'| translate}}
+        </button>
+        <button type="button" 
+                class="btn btn-danger" 
+                ng-click="deleteCompletness(selectedOrgUnit.id,false)" 
+                ng-hide="!model.dataSetCompletness[model.selectedAttributeOptionCombo]"
+                title="{{'mark_incomplete'| translate}}">
+            {{'mark_incomplete'| translate}}
+        </button>
+        <button type="button" 
                 class="btn btn-warning" 
                 ng-click="performAutoZero()" 
                 title="{{'auto_zero'| translate}}">
             {{'auto_zero'| translate}}
         </button>
-        
         
     </div>
 </div>
