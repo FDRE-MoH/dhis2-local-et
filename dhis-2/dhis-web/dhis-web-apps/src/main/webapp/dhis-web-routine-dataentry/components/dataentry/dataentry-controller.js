@@ -139,6 +139,39 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.valueExists = false;
         $scope.loadDataEntryForm();
     });    
+    
+    
+    $scope.performAutoZero = function(){
+        var dataValueSet= {
+            dataSet: $scope.model.selectedDataSet.id,
+            period: $scope.model.selectedPeriod.id,
+            orgUnit: $scope.selectedOrgUnit.id,
+            dataValues: []
+        };
+        
+        angular.forEach($scope.model.selectedDataSet.dataElements, function (dataElement) {
+            if ((dataElement.valueType === 'NUMBER' || dataElement.valueType === "INTEGER" || dataElement.valueType === "INTEGER_ZERO_OR_POSITIVE") && !$scope.checkForGrayField(dataElement)) {
+                angular.forEach($scope.model.categoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function (categoryOptionCombo) {
+                    if (!$scope.dataValues[dataElement.id]) {
+                        $scope.dataValues[dataElement.id] = {};
+                    }
+                    if (!$scope.dataValues[dataElement.id][categoryOptionCombo.id]) {
+                        $scope.dataValues[dataElement.id][categoryOptionCombo.id] = 0;
+                        var val = {dataElement: dataElement.id, categoryOptionCombo: categoryOptionCombo.id, value: 0};
+                        dataValueSet.dataValues.push(val);
+                    }
+                });
+            }
+        });
+        //performing the save
+        DataValueService.saveDataValueSet(dataValueSet).then(function (response) {
+            console.log("successfully saved");
+            console.log(response);
+
+        }, function () {
+            console.log("error when saving");
+        });        
+    };
         
     $scope.loadDataSetDetails = function(){        
         if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.id && $scope.model.selectedDataSet.periodType){
