@@ -10,7 +10,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     var store = new dhis2.storage.Store({
         name: "dhis2rd",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules']
+        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules','dataElementGroups']
     });
     return{
         currentStore: store
@@ -65,6 +65,58 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 PMTStorageService.currentStore.get('optionSets', uid).done(function(optionSet){                    
                     $rootScope.$apply(function(){
                         def.resolve(optionSet);
+                    });
+                });
+            });                        
+            return def.promise;
+        },
+        getCode: function(options, key){
+            if(options){
+                for(var i=0; i<options.length; i++){
+                    if( key === options[i].displayName){
+                        return options[i].code;
+                    }
+                }
+            }            
+            return key;
+        },        
+        getName: function(options, key){
+            if(options){
+                for(var i=0; i<options.length; i++){                    
+                    if( key === options[i].code){
+                        return options[i].displayName;
+                    }
+                }
+            }            
+            return key;
+        }
+    };
+})
+
+/*service to fetch dataElementGroups*/
+.factory('dataElementGroupService', function($q, $rootScope, PMTStorageService) { 
+    return {
+        getAll: function(){
+            
+            var def = $q.defer();
+            
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.getAll('dataElementGroups').done(function(dataElementGroups){
+                    $rootScope.$apply(function(){
+                        def.resolve(dataElementGroups);
+                    });                    
+                });
+            });            
+            
+            return def.promise;            
+        },
+        get: function(uid){            
+            var def = $q.defer();
+            
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.get('dataElementGroups', uid).done(function(dataElementGroup){                    
+                    $rootScope.$apply(function(){
+                        def.resolve(dataElementGroup);
                     });
                 });
             });                        
@@ -641,6 +693,9 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     de.valueType === 'INTEGER_NEGATIVE' ||
                     de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ){
                 val = parseInt( val );
+            }
+            else if(de.valueType=== 'TRUE_ONLY'){
+                val=val==='true'? true: '';
             }
             
             return val;

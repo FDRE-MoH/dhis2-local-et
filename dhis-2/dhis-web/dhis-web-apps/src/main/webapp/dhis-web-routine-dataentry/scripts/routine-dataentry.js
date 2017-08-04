@@ -28,7 +28,7 @@ if( dhis2.routineDataEntry.memoryOnly ) {
 dhis2.routineDataEntry.store = new dhis2.storage.Store({
     name: 'dhis2rd',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules']
+    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules','dataElementGroups']
 });
 
 (function($) {
@@ -159,6 +159,11 @@ function downloadMetaData()
     promise = promise.then( filterMissingValidationRules );
     promise = promise.then( getValidationRules );
     
+    //fetch dataElementGroups
+    promise=promise.then(getMetaDataElementGroups);
+     promise=promise.then(filterMissingDataElementGroups);
+    promise=promise.then(getDataElementGroups);
+    
     
     promise.done(function() {        
         //Enable ou selection after meta-data has downloaded
@@ -262,4 +267,16 @@ function filterMissingValidationRules( objs ){
 
 function getValidationRules( ids ){    
     return dhis2.metadata.getBatches( ids, batchSize, 'validationRules', 'validationRules', '../api/validationRules.json', 'paging=false&fields=id,displayName,importance,operator,periodType,instruction,leftSide[:all],rightSide[:all]', 'idb', dhis2.routineDataEntry.store, dhis2.metadata.processObject);
+}
+
+function getMetaDataElementGroups(){
+    return dhis2.metadata.getMetaObjectIds('dataElementGroups', '../api/dataElementGroups.json', 'paging=false&fields=id,version');
+}
+
+function filterMissingDataElementGroups( objs ){
+    return dhis2.metadata.filterMissingObjIds('dataElementGroups', dhis2.routineDataEntry.store, objs);
+}
+
+function getDataElementGroups( ids ){    
+    return dhis2.metadata.getBatches( ids, batchSize, 'dataElementGroups', 'dataElementGroups', '../api/dataElementGroups.json', 'paging=false&fields=id,displayName,code,dataElements,attributeValues[value,attribute[id,name,valueType,code]] ','idb', dhis2.routineDataEntry.store, dhis2.metadata.processObject);
 }
