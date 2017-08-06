@@ -77,10 +77,14 @@ public class JdbcAnalyticsManager
 
     private static final String COL_APPROVALLEVEL = "approvallevel";
 
-    private static final Map<MeasureFilter, String> OPERATOR_SQL_MAP = ImmutableMap.<MeasureFilter, String> builder()
-        .put( MeasureFilter.EQ, "=" ).put( MeasureFilter.GT, ">" ).put( MeasureFilter.GE, ">=" )
-        .put( MeasureFilter.LT, "<" ).put( MeasureFilter.LE, "<=" ).build();
-
+    private static final Map<MeasureFilter, String> OPERATOR_SQL_MAP = ImmutableMap.<MeasureFilter, String>builder()
+        .put( MeasureFilter.EQ, "=" )
+        .put( MeasureFilter.GT, ">" )
+        .put( MeasureFilter.GE, ">=" )
+        .put( MeasureFilter.LT, "<" )
+        .put( MeasureFilter.LE, "<=" )
+        .build();
+    
     @Resource( name = "readOnlyJdbcTemplate" )
     private JdbcTemplate jdbcTemplate;
 
@@ -97,13 +101,14 @@ public class JdbcAnalyticsManager
     {
         try
         {
-            ListMap<DimensionalItemObject, DimensionalItemObject> dataPeriodAggregationPeriodMap = params
-                .getDataPeriodAggregationPeriodMap();
+            ListMap<DimensionalItemObject, DimensionalItemObject> dataPeriodAggregationPeriodMap = 
+                params.getDataPeriodAggregationPeriodMap();
 
             if ( params.isDisaggregation() && params.hasDataPeriodType() )
             {
                 params = DataQueryParams.newBuilder( params )
-                    .withDataPeriodsForAggregationPeriods( dataPeriodAggregationPeriodMap ).build();
+                    .withDataPeriodsForAggregationPeriods( dataPeriodAggregationPeriodMap )
+                    .build();
             }
 
             String sql = getSelectClause( params );
@@ -119,8 +124,7 @@ public class JdbcAnalyticsManager
 
             sql += getGroupByClause( params );
 
-            // Needs to use "having" to utilize aggregate functions, and needs
-            // to come after group by
+            // Needs to use "having" to utilize aggregate functions, and needs to come after group by
 
             if ( params.isDataType( DataType.NUMERIC ) && !params.getMeasureCriteria().isEmpty() )
             {
@@ -154,8 +158,8 @@ public class JdbcAnalyticsManager
     }
 
     @Override
-    public void replaceDataPeriodsWithAggregationPeriods( Map<String, Object> dataValueMap, DataQueryParams params,
-        ListMap<DimensionalItemObject, DimensionalItemObject> dataPeriodAggregationPeriodMap )
+    public void replaceDataPeriodsWithAggregationPeriods( Map<String, Object> dataValueMap, 
+        DataQueryParams params, ListMap<DimensionalItemObject, DimensionalItemObject> dataPeriodAggregationPeriodMap )
     {
         if ( params.isDisaggregation() )
         {
@@ -167,17 +171,16 @@ public class JdbcAnalyticsManager
             }
 
             Set<String> keys = new HashSet<>( dataValueMap.keySet() );
-
+            
             for ( String key : keys )
             {
                 String[] keyArray = key.split( DIMENSION_SEP );
-
+                
                 String periodKey = keyArray[periodIndex];
 
                 Assert.notNull( periodKey, "Period key cannot be null" );
 
-                List<DimensionalItemObject> periods = dataPeriodAggregationPeriodMap
-                    .get( PeriodType.getPeriodFromIsoString( periodKey ) );
+                List<DimensionalItemObject> periods = dataPeriodAggregationPeriodMap.get( PeriodType.getPeriodFromIsoString( periodKey ) );
 
                 Assert.notNull( periods, dataPeriodAggregationPeriodMap.toString() );
 
@@ -272,8 +275,8 @@ public class JdbcAnalyticsManager
     }
 
     /**
-     * Generates the from clause of the SQL query. This method should be used
-     * for queries where the period filter spans multiple partitions. This query
+     * Generates the from clause of the SQL query. This method should be used for
+     * queries where the period filter spans multiple partitions. This query
      * will return a result set which will be aggregated by the outer query.
      */
     private String getFromWhereClauseMultiplePartitionFilters( DataQueryParams params )
@@ -322,15 +325,15 @@ public class JdbcAnalyticsManager
 
         // ---------------------------------------------------------------------
         // Dimensions
-        // ---------------------------------------------------------------------        
+        // ---------------------------------------------------------------------
 
         for ( DimensionalObject dim : params.getDimensions() )
         {
             if ( !dim.getItems().isEmpty() && !dim.isFixed() )
             {
                 String col = statementBuilder.columnQuote( dim.getDimensionName() );
-                
-                sql += sqlHelper.whereAnd() + " " + col + " in (" + getQuotedCommaDelimitedString( getUids( dim.getItems() ) ) + ") ";                
+
+                sql += sqlHelper.whereAnd() + " " + col + " in (" + getQuotedCommaDelimitedString( getUids( dim.getItems() ) ) + ") ";
             }
         }
 
@@ -432,7 +435,7 @@ public class JdbcAnalyticsManager
 
     /**
      * If preAggregationMeasureCriteria is specified, generates a query which
-     * provides a filtered view of the data according to the criteria .If not,
+     * provides a filtered view of the data according to the criteria .If not, 
      * returns the full view of the partition.
      */
     private String getPartitionSql( DataQueryParams params, String partition )
@@ -479,13 +482,12 @@ public class JdbcAnalyticsManager
     }
 
     /**
-     * Returns a HAVING clause restricting the result based on the measure
-     * criteria
+     * Returns a HAVING clause restricting the result based on the measure criteria
      */
     private String getMeasureCriteriaSql( DataQueryParams params )
     {
         SqlHelper sqlHelper = new SqlHelper();
-
+        
         String sql = " ";
 
         for ( MeasureFilter filter : params.getMeasureCriteria().keySet() )

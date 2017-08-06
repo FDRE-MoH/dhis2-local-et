@@ -39,7 +39,6 @@
     </script>
     
     <script type="text/javascript" src="../dhis-web-commons/javascripts/ext/ext-all.js"></script>
-    <script type="text/javascript" src="../dhis-web-commons/javascripts/moment/moment-with-langs.min.js"></script>
 
     <script type="text/javascript" src="../dhis-web-commons/javascripts/jQuery/jquery.min.js?_rev=$!{buildRevision}"></script>
     <!-- Menu dependencies -->
