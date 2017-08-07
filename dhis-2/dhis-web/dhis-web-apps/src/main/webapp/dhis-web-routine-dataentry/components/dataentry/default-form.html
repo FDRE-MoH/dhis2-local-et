@@ -73,7 +73,7 @@
                                                 <textarea rows="5" 
                                                           name="foo"                                                          
                                                           ng-model="dataValues[de.id][oco.id].value" 
-                                                          ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                          ng-disabled="checkForGrayField(de)"
                                                           class="form-control" 
                                                           ng-class="getInputNotifcationClass(de.id, oco.id)"                                                           
                                                           d2-blur="saveDataValue(de.id, oco.id)">
@@ -83,7 +83,7 @@
                                                 <input type="text" 
                                                        name="foo"
                                                        ng-model="dataValues[de.id][oco.id].value" 
-                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       ng-disabled="checkForGrayField(de)"
                                                        class="form-control" 
                                                        ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                        d2-blur="saveDataValue(de.id, oco.id, false)">
@@ -94,7 +94,7 @@
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
                                                        ng-model="dataValues[de.id][oco.id].value" 
-                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       ng-disabled="checkForGrayField(de)"
                                                        class="form-control" 
                                                        ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                        ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -106,7 +106,7 @@
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
                                                        ng-model="dataValues[de.id][oco.id].value" 
-                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       ng-disabled="checkForGrayField(de)"
                                                        class="form-control" 
                                                        ng-class="getInputNotifcationClass(de.id, oco.id)"  
                                                        ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -118,7 +118,7 @@
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
                                                        ng-model="dataValues[de.id][oco.id].value" 
-                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       ng-disabled="checkForGrayField(de)"
                                                        class="form-control" 
                                                        ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                        ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -130,7 +130,7 @@
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
                                                        ng-model="dataValues[de.id][oco.id].value" 
-                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       ng-disabled="checkForGrayField(de)"
                                                        class="form-control" 
                                                        ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                        ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -142,10 +142,19 @@
                                                        d2-number-validator
                                                        number-type={{de.valueType}}
                                                        ng-model="dataValues[de.id][oco.id].value" 
-                                                       ng-disabled="dataSetCompletness[model.selectedAttributeOptionCombo]"
+                                                       ng-disabled="checkForGrayField(de)"
                                                        class="form-control" 
                                                        ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                        ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                       d2-blur="saveDataValue(de.id, oco.id, false)">
+                                            </span>
+                                            <span ng-switch-when="TRUE_ONLY">
+                                                <input type="checkbox"   
+                                                       name="foo"
+                                                       ng-model="dataValues[de.id][oco.id]" 
+                                                       ng-disabled="checkForGrayField(de) "
+                                                       class="form-control" 
+                                                       ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                        d2-blur="saveDataValue(de.id, oco.id, false)">
                                             </span>
                                             <span ng-switch-default>
@@ -163,6 +172,27 @@
                     </table>
                 </div>
             </tab>                    
-        </tabset>
+        </tabset>        
+        <button type="button" 
+                class="btn btn-success" 
+                ng-click="saveCompletness(selectedOrgUnit.id,false)" 
+                ng-hide="model.dataSetCompletness[model.selectedAttributeOptionCombo]"
+                title="{{'mark_complete'| translate}}">
+            {{'mark_complete'| translate}}
+        </button>
+        <button type="button" 
+                class="btn btn-danger" 
+                ng-click="deleteCompletness(selectedOrgUnit.id,false)" 
+                ng-hide="!model.dataSetCompletness[model.selectedAttributeOptionCombo]"
+                title="{{'mark_incomplete'| translate}}">
+            {{'mark_incomplete'| translate}}
+        </button>
+        <button type="button" 
+                class="btn btn-warning" 
+                ng-click="performAutoZero()" 
+                title="{{'auto_zero'| translate}}">
+            {{'auto_zero'| translate}}
+        </button>
+        
     </div>
 </div>

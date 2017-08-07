@@ -10,7 +10,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     var store = new dhis2.storage.Store({
         name: "dhis2rd",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules']
+        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules','dataElementGroups']
     });
     return{
         currentStore: store
@@ -65,6 +65,58 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 PMTStorageService.currentStore.get('optionSets', uid).done(function(optionSet){                    
                     $rootScope.$apply(function(){
                         def.resolve(optionSet);
+                    });
+                });
+            });                        
+            return def.promise;
+        },
+        getCode: function(options, key){
+            if(options){
+                for(var i=0; i<options.length; i++){
+                    if( key === options[i].displayName){
+                        return options[i].code;
+                    }
+                }
+            }            
+            return key;
+        },        
+        getName: function(options, key){
+            if(options){
+                for(var i=0; i<options.length; i++){                    
+                    if( key === options[i].code){
+                        return options[i].displayName;
+                    }
+                }
+            }            
+            return key;
+        }
+    };
+})
+
+/*service to fetch dataElementGroups*/
+.factory('dataElementGroupService', function($q, $rootScope, PMTStorageService) { 
+    return {
+        getAll: function(){
+            
+            var def = $q.defer();
+            
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.getAll('dataElementGroups').done(function(dataElementGroups){
+                    $rootScope.$apply(function(){
+                        def.resolve(dataElementGroups);
+                    });                    
+                });
+            });            
+            
+            return def.promise;            
+        },
+        get: function(uid){            
+            var def = $q.defer();
+            
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.get('dataElementGroups', uid).done(function(dataElementGroup){                    
+                    $rootScope.$apply(function(){
+                        def.resolve(dataElementGroup);
                     });
                 });
             });                        
@@ -339,7 +391,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };        
 })
 
-.service('DataValueService', function($http, ActionMappingUtils) {   
+.service('DataValueService', function($http, ActionMappingUtils,$q) {   
     
     return {        
         saveDataValue: function( dv ){
@@ -364,10 +416,35 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             return promise;
         },
         saveDataValueSet: function(dvs){
-            var promise = $http.post('../api/dataValueSets.json', dvs).then(function(response){
-                return response.data;
+            var def = $q.defer();            
+            var promises = [], toBeSaved = [];
+            
+            angular.forEach(dvs.dataValues, function(dv){                
+                if( dv.value === "" || dv.value === null ){
+                    //deleting...                    
+                    var url = '?de='+dv.dataElement + '&ou='+dvs.orgUnit + '&pe='+dvs.period + '&co='+dv.categoryOptionCombo;
+                    
+                    if( dv.cc && dv.cp ){
+                        url += '&cc='+cc + '&cp='+cp;
+                    }                    
+                    promises.push( $http.delete('../api/dataValues.json' + url) );
+                }
+                else{
+                    //saving...
+                    toBeSaved.push( dv );
+                }                
             });
-            return promise;
+            
+            if( toBeSaved.length > 0 ){
+                dvs.dataValues = toBeSaved;
+                promises.push( $http.post('../api/dataValueSets.json', dvs) );
+            }
+            
+            $q.all(promises).then(function(){                
+                def.resolve();
+            });
+            
+            return def.promise;
         },
         getDataValueSet: function( params ){            
             var promise = $http.get('../api/dataValueSets.json?' + params ).then(function(response){               
@@ -392,7 +469,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             return promise;
         },
         save: function( ds, pe, ou, cc, cp, multiOu){
-            var promise = $http.post('../api/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
+            var promise = $http.post('../api/25/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
                 return response.data;
             }, function(response){
                 ActionMappingUtils.errorNotifier(response);
@@ -641,6 +718,9 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     de.valueType === 'INTEGER_NEGATIVE' ||
                     de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ){
                 val = parseInt( val );
+            }
+            else if(de.valueType=== 'TRUE_ONLY'){
+                val=val==='true'? true: '';
             }
             
             return val;
