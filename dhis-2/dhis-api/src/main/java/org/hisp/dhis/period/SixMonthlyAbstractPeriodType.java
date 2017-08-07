@@ -187,9 +187,8 @@ public abstract class SixMonthlyAbstractPeriodType
 
         List<Period> periods = Lists.newArrayList();
 
-        Period p=getPreviousPeriod(period);
-        periods.add( p );
-        periods.add(period);
+        periods.add( getPreviousPeriod( period ) );
+        periods.add( period );
 
         return periods;
     }

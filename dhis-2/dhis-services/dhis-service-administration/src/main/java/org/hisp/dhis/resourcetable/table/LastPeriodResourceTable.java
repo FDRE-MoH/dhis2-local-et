@@ -115,6 +115,7 @@ public class LastPeriodResourceTable
         for ( PeriodType periodType : PeriodType.PERIOD_TYPES )
         {
             Map<String, List<String>> prds = new HashMap<>();
+            
             for ( Period period : objects )
             {                
                 if ( period.getPeriodType().getFrequencyOrder() < periodType.getFrequencyOrder() )
@@ -134,15 +135,14 @@ public class LastPeriodResourceTable
             }            
 
             periodMap.put( periodType.getName(), prds );
-        }
-
-        System.out.println( "Mapped periods: " + periodMap.toString() );
+        }        
 
         for ( Period period : objects )
         {
             if ( period != null && period.isValid() )
             {
                 final PeriodType rowType = period.getPeriodType();
+                
                 final String isoDate = period.getIsoDate();
 
                 if ( !uniqueIsoDates.add( isoDate ) )

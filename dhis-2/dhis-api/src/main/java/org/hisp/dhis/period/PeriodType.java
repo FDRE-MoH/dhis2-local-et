@@ -410,7 +410,6 @@ public abstract class PeriodType
             }
             catch ( Exception ex )
             {
-            	System.err.println("Error in PeriodType.java getPeriodFromIsoString Exception is "+ex);
                 // Do nothing and return null
             }
         }

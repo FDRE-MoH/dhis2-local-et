@@ -628,7 +628,8 @@ public class RelativePeriods
 
         if ( isThisFinancialYear() )
         {
-            periods.add( getRelativePeriod( new FinancialOctoberPeriodType(), THIS_FINANCIAL_YEAR, calendarDate, dynamicNames, format ) );
+            //periods.add( getRelativePeriod( new FinancialOctoberPeriodType(), THIS_FINANCIAL_YEAR, calendarDate, dynamicNames, format ) );
+            periods.add( getRelativePeriod( new FinancialJulyPeriodType(), THIS_FINANCIAL_YEAR, calendarDate, dynamicNames, format ) );
         }
 
         if ( isLast3Months() )
@@ -697,7 +698,8 @@ public class RelativePeriods
 
         if ( isLastFinancialYear() )
         {
-            periods.add( getRelativePeriod( new FinancialOctoberPeriodType(), LAST_FINANCIAL_YEAR, calendarDate, dynamicNames, format ) );
+            //periods.add( getRelativePeriod( new FinancialOctoberPeriodType(), LAST_FINANCIAL_YEAR, calendarDate, dynamicNames, format ) );
+            periods.add( getRelativePeriod( new FinancialJulyPeriodType(), LAST_FINANCIAL_YEAR, calendarDate, dynamicNames, format ) );
         }
 
         if ( isLast5Years() )
@@ -707,7 +709,8 @@ public class RelativePeriods
 
         if ( isLast5FinancialYears() )
         {
-            periods.addAll( getRollingRelativePeriodList( new FinancialOctoberPeriodType(), LAST_5_FINANCIAL_YEARS, date, dynamicNames, format ) );
+            //periods.addAll( getRollingRelativePeriodList( new FinancialOctoberPeriodType(), LAST_5_FINANCIAL_YEARS, date, dynamicNames, format ) );
+            periods.addAll( getRollingRelativePeriodList( new FinancialJulyPeriodType(), LAST_5_FINANCIAL_YEARS, date, dynamicNames, format ) );
         }
 
         return periods;
