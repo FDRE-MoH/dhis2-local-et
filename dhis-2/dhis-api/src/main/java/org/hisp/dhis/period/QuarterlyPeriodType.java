@@ -210,13 +210,13 @@ public class QuarterlyPeriodType
     	if(calendar instanceof EthiopianCalendar) {
     		switch(dateTimeUnit.getMonth()) {
     		case 11:
-    			return dateTimeUnit.getYear()+1+"Q1";
+    			return dateTimeUnit.getYear() + 1 + "Q1";
     		case 2:
-    			return dateTimeUnit.getYear()+"Q2";
+    			return dateTimeUnit.getYear() + "Q2";
     		case 5:
-    			return dateTimeUnit.getYear()+"Q3";
+    			return dateTimeUnit.getYear() + "Q3";
     		case 8:
-    			return dateTimeUnit.getYear()+"Q4";
+    			return dateTimeUnit.getYear() + "Q4";
     			default:
     				throw new IllegalArgumentException("Month not valid [11,2,5,8], was given "+dateTimeUnit.getMonth());
     		}
