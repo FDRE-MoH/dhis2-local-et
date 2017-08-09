@@ -30,7 +30,7 @@
                                 <thead>
                                     <tr>
                                         <th ng-repeat="col in auditColumns">
-                                            {{col.displayName}}
+                                            {{col.name}}
                                         </th>
                                     </tr>
                                 </thead>
@@ -51,35 +51,7 @@
                                 {{'no_audit_trail_exists'|translate}}
                             </div>
                         </div>
-
-                        <div class="col-sm-12" ng-repeat="prStDe in program.programStages[0].programStageDataElements">
-                            <span class="bold">{{prStDe.dataElement.displayName}}</span>
-                            <table class="listTable dhis2-table-striped-border dhis2-table-hover" ng-if="(eventValueAudits | filter: {dataElement: {id: prStDe.dataElement.id}}).length > 0">
-                                <thead>
-                                    <tr>
-                                        <th ng-repeat="col in auditColumns">
-                                            {{col.displayName}}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody> 
-                                    <tr ng-repeat="eventValueAudit in eventValueAudits| orderBy: 'created':reverse | filter: {dataElement: {id: prStDe.dataElement.id}}">
-                                        <td ng-repeat="col in auditColumns">
-                                            <span ng-if="col.id === 'created'">
-                                                {{eventValueAudit[col.id]| date:'dd MMM yyyy HH:mm'}}
-                                            </span>
-                                            <span ng-if="col.id !== 'created'">
-                                                {{eventValueAudit[col.id]}}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div class="alert alert-info" ng-if="!eventValueAudits || (eventValueAudits | filter: {dataElement: {id: prStDe.dataElement.id}}).length === 0">
-                                {{'no_audit_trail_exists'|translate}}
-                            </div>
-
-                        </div>                        
+                        
                     </div>
                 </tab> 
             </tabset>

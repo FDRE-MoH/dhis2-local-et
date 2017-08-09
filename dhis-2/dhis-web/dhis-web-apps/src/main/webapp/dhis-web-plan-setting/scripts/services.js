@@ -18,7 +18,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 })
 
 /* current selections */
-.service('PeriodService', function(DateUtils){
+.service('PeriodService', function(DateUtils, CalendarService){
     
     this.getPeriods = function(periodType, periodOffset){
         periodOffset = angular.isUndefined(periodOffset) ? 0 : periodOffset;
@@ -27,7 +27,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             return availablePeriods;
         }        
 
-        var pt = new PeriodType();
+        /*var pt = new PeriodType();
         var d2Periods = pt.get(periodType).generatePeriods({offset: periodOffset, filterFuturePeriods: false, reversePeriods: false});
         angular.forEach(d2Periods, function(p){
             p.endDate = DateUtils.formatFromApiToUser(p.endDate);
@@ -37,7 +37,39 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             }
         });        
         availablePeriods = availablePeriods.reverse();
-        return availablePeriods;
+        return availablePeriods;*/
+        
+        var calendarSetting = CalendarService.getSetting();
+        
+        dhis2.period.format = calendarSetting.keyDateFormat;
+        
+        dhis2.period.calendar = $.calendars.instance( calendarSetting.keyCalendar );
+                
+        dhis2.period.generator = new dhis2.period.PeriodGenerator( dhis2.period.calendar, dhis2.period.format );
+        
+        dhis2.period.picker = new dhis2.period.DatePicker( dhis2.period.calendar, dhis2.period.format );
+        
+        var d2Periods = dhis2.period.generator.generateReversedPeriods( periodType, periodOffset );
+                
+        angular.forEach(d2Periods, function(p){
+            p.id = p.iso;
+            var st = p.endDate.split('-');
+            st[1] = dhis2.routineDataEntry.monthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+            if( st[1] < 10 ){
+                st[1] = '0' + st[1];
+            }
+            p.endDate = st.join('-');
+            
+            st = p.startDate.split('-');
+            st[1] = dhis2.routineDataEntry.monthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+            if( st[1] < 10 ){
+                st[1] = '0' + st[1];
+            }
+            p.startDate = st.join('-');
+        });
+        
+        return d2Periods;
+
     };
 })
 

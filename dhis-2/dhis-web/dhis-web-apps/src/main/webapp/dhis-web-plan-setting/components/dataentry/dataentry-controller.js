@@ -113,7 +113,8 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.displayCustomForm = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
             DataSetFactory.getByOu( $scope.selectedOrgUnit, $scope.model.selectedDataSet ).then(function(response){                
-                $scope.model.dataSets = response.dataSets || [];
+                //$scope.model.dataSets = response.dataSets || [];
+                $scope.model.dataSets = [];
             });
         }        
     }; 

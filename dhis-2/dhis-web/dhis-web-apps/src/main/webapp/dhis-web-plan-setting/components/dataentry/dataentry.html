@@ -48,21 +48,21 @@
 
         <!-- selection begins-->
         <div class="selectionGroup remove-left-padding">
-            <div class="col-sm-6 selectionArea">
+            <div class="col-sm-10 selectionArea">
                 <div class="row">
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         {{'org_unit'| translate}}
                     </div>
-                    <div class="col-sm-8">
+                    <div class="col-sm-9">
                         <input type="text" class="form-control" selected-org-unit ng-model="selectedOrgUnit.displayName"
                                value="{{selectedOrgUnit.displayName|| pleaseSelectLabel}}" disabled="">
                     </div>
                 </div>                
                 <div class="row small-vertical-spacing">
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         {{'data_set'| translate}}
                     </div>
-                    <div class="col-sm-8">                        
+                    <div class="col-sm-9">                        
                         <ui-select ng-model="model.selectedDataSet" 
                                    theme="select2"                                 
                                    style="width:100%;">
@@ -74,12 +74,12 @@
                     </div>
                 </div>                
                 <div class="row small-vertical-spacing" ng-if="model.selectedDataSet && !model.invalidDimensions">
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         {{'period'| translate}}                        
                     </div>
-                    <div class="col-sm-8">
+                    <div class="col-sm-9">
                         <div class="row">
-                            <div class="col-sm-8">
+                            <div class="col-sm-6">
                                 <ui-select ng-model="model.selectedPeriod" 
                                            theme="select2"                                 
                                            style="width:100%;">
@@ -89,13 +89,14 @@
                                     </ui-select-choices>
                                 </ui-select>
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-sm-6">
                                 <div class="pull-right">                                    
                                     <button type="button" 
                                             class="btn btn-default" 
                                             ng-click="getPeriods('PRV')" 
                                             title="{{'previous_periods'| translate}}">
-                                        <i class="fa fa-caret-left"></i>
+                                        <!--<i class="fa fa-caret-left"></i>-->
+                                        {{'previous_periods' | translate}}
                                     </button>
 
                                     <button type="button" 
@@ -103,7 +104,8 @@
                                             ng-disabled="periodOffset > -1" 
                                             ng-click="getPeriods('NXT')" 
                                             title="{{'next_periods'| translate}}">
-                                        <i class="fa fa-caret-right"></i>
+                                        <!--<i class="fa fa-caret-right"></i>-->
+                                        {{'next_periods' | translate}}
                                     </button>                                    
                                 </div>                                
                             </div>
@@ -112,11 +114,11 @@
                 </div>
                 <div ng-repeat="category in model.selectedAttributeCategoryCombo.categories" ng-if="model.selectedDataSet && model.selectedPeriod && !model.selectedAttributeCategoryCombo.isDefault && !model.invalidDimensions">                
                     <div class="row small-vertical-spacing">
-                        <div class="col-sm-4">                            
+                        <div class="col-sm-3">                            
                             <i class="fa fa-question-circle superscript" tooltip="{{category.code === 'FI' ? 'field_implementer_info' : 'delivery_mechanism_info'| translate}}" tooltip-class="custom-tooltip-class"></i>
                             {{category.displayName}}
                         </div>
-                        <div class="col-sm-8">
+                        <div class="col-sm-9">
                             <ui-select ng-model="category.selectedOption"                                        
                                        theme="select2"  
                                        on-select="getCategoryOptions(category)"
@@ -130,16 +132,36 @@
                     </div>
                 </div>
             </div>
-            <!--<div class="col-sm-6 selectionArea add-default-padding vertical-center-parent" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
-                <div class="vertical-center-child">
+            <div class="col-sm-2 selectionArea add-default-padding vertical-center-parent" ng-if="model.selectedDataSet && model.selectedPeriod && model.categoryOptionsReady">
+                <div class="div-bottom">
                     <button type="button" 
+                            class="btn btn-success" 
+                            ng-click="saveCompletness(selectedOrgUnit.id,false)" 
+                            ng-hide="model.dataSetCompletness[model.selectedAttributeOptionCombo]"
+                            title="{{'mark_complete'| translate}}">
+                        {{'mark_complete'| translate}}
+                    </button>
+                    <button type="button" 
+                            class="btn btn-danger" 
+                            ng-click="deleteCompletness(selectedOrgUnit.id,false)" 
+                            ng-hide="!model.dataSetCompletness[model.selectedAttributeOptionCombo]"
+                            title="{{'mark_incomplete'| translate}}">
+                        {{'mark_incomplete'| translate}}
+                    </button>
+                    <!--<button type="button" 
+                            class="btn btn-warning" 
+                            ng-click="performAutoZero()" 
+                            title="{{'auto_zero'| translate}}">
+                        {{'auto_zero'| translate}}
+                    </button>-->
+                    <!--<button type="button" 
                             class="btn btn-primary" 
                             ng-click="model.showCustomForm = !model.showCustomForm" 
                             title="{{ model.showCustomForm ? 'default_form' : 'custom_form' | translate}}">
                         {{ model.showCustomForm ? 'default_form' : 'custom_form' | translate}}
-                    </button>
+                    </button>-->
                 </div>
-            </div>-->
+            </div>
         </div>        
         <!-- selection ends -->        
 

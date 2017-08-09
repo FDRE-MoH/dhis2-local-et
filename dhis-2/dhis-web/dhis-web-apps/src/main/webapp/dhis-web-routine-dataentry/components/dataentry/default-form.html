@@ -7,7 +7,7 @@
                     <div class="col-sm-12 pull-center ds-hdr">
                         {{section.description}}
                     </div>
-                    <table class="table table-bordered">
+                    <table class="report-table" ng-if="section.dataElements.length > 0">
                         <thead>                            
                             <tr> 
                                 <th class="col-sm-3 pull-center de-table-hdr">
@@ -170,6 +170,11 @@
                             </tr>
                         </tbody>                        
                     </table>
+                    <div ng-if="section.dataElements.length === 0 || !section.dataElements">
+                        <div class="alert alert-warning">
+                            {{'section_has_no_dataelements' | translate}}
+                        </div>
+                    </div>
                 </div>
             </tab>                    
         </tabset>        
