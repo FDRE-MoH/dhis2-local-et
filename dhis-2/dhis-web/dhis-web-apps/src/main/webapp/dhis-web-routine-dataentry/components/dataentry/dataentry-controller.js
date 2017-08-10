@@ -112,7 +112,7 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.valueExists = false;
         $scope.model.displayCustomForm = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
-            DataSetFactory.getByOu( $scope.selectedOrgUnit, $scope.model.selectedDataSet ).then(function(response){                
+            DataSetFactory.getByOuAndProperty( $scope.selectedOrgUnit, $scope.model.selectedDataSet,'DataSetCategory','Routine' ).then(function(response){                
                 $scope.model.dataSets = response.dataSets || [];
             });
         }        
