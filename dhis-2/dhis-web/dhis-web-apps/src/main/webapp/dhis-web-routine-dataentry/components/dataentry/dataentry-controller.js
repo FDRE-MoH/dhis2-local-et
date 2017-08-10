@@ -187,7 +187,7 @@ routineDataEntry.controller('dataEntryController',
         return false;
     }
     
-    $scope.performAutoZero = function(){
+    $scope.performAutoZero = function(section){
         var dataValueSet= {
             dataSet: $scope.model.selectedDataSet.id,
             period: $scope.model.selectedPeriod.id,
@@ -195,7 +195,8 @@ routineDataEntry.controller('dataEntryController',
             dataValues: []
         };
         
-        angular.forEach($scope.model.selectedDataSet.dataElements, function (dataElement) {
+        angular.forEach(section.dataElements, function (dataElement) {
+            dataElement=$scope.model.dataElements[dataElement.id];
             if ((dataElement.valueType === 'NUMBER' || dataElement.valueType === "INTEGER" || dataElement.valueType === "INTEGER_ZERO_OR_POSITIVE") && !$scope.checkForGrayField(dataElement)) {
                 angular.forEach($scope.model.categoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function (categoryOptionCombo) {
                     //check if the data value of the data element has a catagoroptiondownloaded
@@ -221,12 +222,11 @@ routineDataEntry.controller('dataEntryController',
         });
         //performing the save
         DataValueService.saveDataValueSet(dataValueSet).then(function (response) {
-            console.log("successfully saved");
-            console.log(response);
+            console.log("successfully saved",response);
 
         }, function () {
             console.log("error when saving");
-        });        
+        });
     };
         
     $scope.loadDataSetDetails = function(){        

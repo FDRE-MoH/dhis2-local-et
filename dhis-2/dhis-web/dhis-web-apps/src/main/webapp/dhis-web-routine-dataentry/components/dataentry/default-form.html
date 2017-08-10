@@ -6,6 +6,14 @@
                 <div class="row col-sm-12 vertical-spacing">
                     <div class="col-sm-12 pull-center ds-hdr">
                         {{section.description}}
+                        <br/>
+                        <button type="button" 
+                                class="btn btn-warning" 
+                                ng-click="performAutoZero(section)" 
+                                title="{{'fill_zero'| translate}}">
+                            {{'fill_zero'| translate}}
+                        </button>
+        
                     </div>
                     <table class="report-table" ng-if="section.dataElements.length > 0">
                         <thead>                            
@@ -192,12 +200,5 @@
                 title="{{'mark_incomplete'| translate}}">
             {{'mark_incomplete'| translate}}
         </button>
-        <button type="button" 
-                class="btn btn-warning" 
-                ng-click="performAutoZero()" 
-                title="{{'auto_zero'| translate}}">
-            {{'auto_zero'| translate}}
-        </button>
-        
     </div>
 </div>
