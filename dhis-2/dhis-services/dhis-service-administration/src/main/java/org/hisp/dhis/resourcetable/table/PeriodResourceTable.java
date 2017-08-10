@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.hisp.dhis.calendar.Calendar;
+import org.hisp.dhis.calendar.impl.EthiopianCalendar;
 import org.hisp.dhis.common.IdentifiableObjectUtils;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
@@ -62,17 +63,16 @@ public class PeriodResourceTable
     @Override
     public String getCreateTempTableStatement()
     {
-        String sql = 
-            "CREATE TABLE " + getTempTableName() + 
-            " (periodid INTEGER NOT NULL PRIMARY KEY, iso VARCHAR(15) NOT NULL, daysno INTEGER NOT NULL, startdate DATE NOT NULL, enddate DATE NOT NULL";
-        
+        String sql = "CREATE TABLE " + getTempTableName()
+            + " (periodid INTEGER NOT NULL PRIMARY KEY, iso VARCHAR(15) NOT NULL, daysno INTEGER NOT NULL, startdate DATE NOT NULL, enddate DATE NOT NULL";
+
         for ( PeriodType periodType : PeriodType.PERIOD_TYPES )
         {
             sql += ", " + columnQuote + periodType.getName().toLowerCase() + columnQuote + " VARCHAR(15)";
         }
-        
+
         sql += ")";
-        
+
         return sql;
     }
 
@@ -88,14 +88,15 @@ public class PeriodResourceTable
         Calendar calendar = PeriodType.getCalendar();
 
         List<Object[]> batchArgs = new ArrayList<>();
-        
+
         Set<String> uniqueIsoDates = new HashSet<>();
-        
+
         for ( Period period : objects )
         {
             if ( period != null && period.isValid() )
             {
                 final PeriodType rowType = period.getPeriodType();
+
                 final String isoDate = period.getIsoDate();
 
                 if ( !uniqueIsoDates.add( isoDate ) )
@@ -103,7 +104,7 @@ public class PeriodResourceTable
                     log.warn( "Duplicate ISO date for period, ignoring: " + period + ", ISO date: " + isoDate );
                     continue;
                 }
-                
+
                 List<Object> values = new ArrayList<>();
 
                 values.add( period.getId() );
@@ -116,8 +117,31 @@ public class PeriodResourceTable
                 {
                     if ( rowType.getFrequencyOrder() < periodType.getFrequencyOrder() || rowType.equals( periodType ) )
                     {
-                        Period targetPeriod = IdentifiableObjectUtils.getPeriodByPeriodType( period, periodType, calendar );
-                                                
+
+                        Period targetPeriod = null;
+
+                        if ( calendar instanceof EthiopianCalendar )
+                        {
+                            targetPeriod = IdentifiableObjectUtils.getPeriodByPeriodType( period, periodType,
+                                calendar );
+
+                            if ( !period.getStartDate().before( targetPeriod.getStartDate() )
+                                && !period.getEndDate().after( targetPeriod.getEndDate() ) )
+                            {
+                                targetPeriod = IdentifiableObjectUtils.getPeriodByPeriodType( period, periodType,
+                                    calendar );
+                            }
+                            else
+                            {
+                                targetPeriod = periodType.getPreviousPeriod( targetPeriod );
+                            }
+                        }
+                        else
+                        {
+                            targetPeriod = IdentifiableObjectUtils.getPeriodByPeriodType( period, periodType,
+                                calendar );
+                        }
+
                         values.add( IdentifiableObjectUtils.getLocalPeriodIdentifier( targetPeriod, calendar ) );
                     }
                     else
@@ -137,9 +161,9 @@ public class PeriodResourceTable
     public List<String> getCreateIndexStatements()
     {
         String name = "in_periodstructure_iso_" + getRandomSuffix();
-        
+
         String sql = "create unique index " + name + " on " + getTempTableName() + "(iso)";
-        
+
         return Lists.newArrayList( sql );
     }
 }
