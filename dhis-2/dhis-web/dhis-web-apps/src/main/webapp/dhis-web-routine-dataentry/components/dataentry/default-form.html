@@ -28,13 +28,12 @@
                                 </th>
                             </tr>
                         </thead>
-                        {{console.log(ind.params)}}
                         <tbody ng-repeat="dataElement in section.dataElements"
                                ng-init="de = model.dataElements[dataElement.id]; 
                                    ocos = model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
                             <tr ng-repeat="ind in section.indicators" ng-if="ind.params.indexOf(de.id) === 0 || ind.params[0].lastIndexOf(de.id,0) ===0"><!-- last index added for indicators that are defined with option combos-->
                                 <td class="ind-style">
-                                    {{ind.DE_Sr_No}} indicator
+                                    {{ind.DE_Sr_No}} 
                                 </td>
                                 <td class="ind-style">
                                     {{ind.displayName}}
@@ -49,7 +48,6 @@
                                 <td>
                                     <div>
                                         {{de.displayFormName}}
-                                        indic
                                     </div>
                                     <div ng-repeat="vr in de.validationRules" class="alert alert-danger trimmed-alert small-vertical-spacing italic" ng-if="model.failedValidationRules.indexOf(vr.id) !== -1">
                                         {{vr.instruction ? vr.instruction : vr.displayName}}
