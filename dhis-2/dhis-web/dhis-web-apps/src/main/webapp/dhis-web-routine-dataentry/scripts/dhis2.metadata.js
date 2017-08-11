@@ -277,20 +277,21 @@ dhis2.metadata.getMetaObjects = function( store, objs, url, filter, storage, db,
                         }*/
                     }                    
                 }
-                /*else if( store === 'dataSets' ){
+                else if( store === 'dataSets' ){
                     
                     if( obj.sections ){
                         _.each(obj.sections, function(sec){                
                             if( sec.indicators ){
                                 angular.forEach(sec.indicators, function(ind){
-                                    ind.params = [];                                    
-                                    ind = dhis2.metadata.expressionMatcher(ind, 'numerator', 'params', dhis2.metadata.expressionRegex, dhis2.metadata.operatorRegex);
-                                    ind = dhis2.metadata.expressionMatcher(ind, 'denominator', 'params', dhis2.metadata.expressionRegex, dhis2.metadata.operatorRegex);
+                                    ind=dhis2.metadata.processMetaDataAttribute(ind);
+                                    ind.params=[];
+                                    ind=dhis2.metadata.expressionMatcher(ind,'numerator','params',dhis2.metadata.expressionRegex,dhis2.metadata.operatorRegex);
+                                    ind=dhis2.metadata.expressionMatcher(ind,'denominator','params',dhis2.metadata.expressionRegex,dhis2.metadata.operatorRegex);
                                 });
                             }                
                         });
                     }                    
-                }*/
+                }
                 else if( store === 'validationRules' ){
                     obj.params = [];
                     obj = dhis2.metadata.expressionMatcher(obj, 'leftSide', 'params',dhis2.metadata.expressionRegex, dhis2.metadata.operatorRegex, 'expression');

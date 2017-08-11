@@ -828,7 +828,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                         for( var k in matcher ){
                             var match = matcher[k];
                             var operand = match.replace( dhis2.metadata.operatorRegex, '' );
-                            var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                            var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
                             var value = null;
                             if ( isTotal )
                             {                                
@@ -855,7 +855,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                         for( var k in matcher ){
                             var match = matcher[k];
                             var operand = match.replace( dhis2.metadata.operatorRegex, '' );
-                            var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                            var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
                             var value = null;
                             if ( isTotal )
                             {                                
@@ -938,7 +938,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 
                     var operand = match.replace( dhis2.metadata.operatorRegex, '' );
 
-                    var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                    var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
 
                     var value = '0';
 
@@ -950,8 +950,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     }
                     else
                     {
-                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.cstSeparator ) );
-                        var coc = operand.substring( operand.indexOf( dhis2.metadata.cstSeparator ) + 1, operand.length );
+                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.custSeparator ) );
+                        var coc = operand.substring( operand.indexOf( dhis2.metadata.custSeparator ) + 1, operand.length );
                         
                         if( dataValues && 
                                 dataValues[de] && 
@@ -978,7 +978,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 
                     var operand = match.replace( dhis2.metadata.operatorRegex, '' );
 
-                    var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                    var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
 
                     var value = '0';
 
@@ -990,8 +990,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     }
                     else
                     {
-                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.cstSeparator ) );
-                        var coc = operand.substring( operand.indexOf( dhis2.metadata.cstSeparator ) + 1, operand.length );
+                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.custSeparator ) );
+                        var coc = operand.substring( operand.indexOf( dhis2.metadata.custSeparator ) + 1, operand.length );
                         
                         if( dataValues && 
                                 dataValues[de] && 
