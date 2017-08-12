@@ -639,7 +639,7 @@ public class RelativePeriods
 
         if ( isLast6Months() )
         {
-            periods.addAll( getRollingRelativePeriodList( new MonthlyPeriodType(), MONTHS_LAST_12, new DateTime( date ).minusMonths( 1 ).toDate(), dynamicNames, format ).subList( 6, 12 ) );
+            periods.addAll( getRollingRelativePeriodList( new MonthlyPeriodType(), MONTHS_LAST_12, new DateTime( ( date != null ) ? date : new Date() ).minusMonths( 1 ).toDate(), dynamicNames, format ).subList( 6, 12 ) );
         }
 
         if ( isLast12Months() )
@@ -659,7 +659,7 @@ public class RelativePeriods
 
         if ( isLast2SixMonths() )
         {
-            periods.addAll( getRollingRelativePeriodList( new SixMonthlyPeriodType(), SIXMONHTS_LAST_2, new DateTime( date ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
+            periods.addAll( getRollingRelativePeriodList( new SixMonthlyPeriodType(), SIXMONHTS_LAST_2, new DateTime( calendarDate ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
         }
 
         if ( isLast4Weeks() )
