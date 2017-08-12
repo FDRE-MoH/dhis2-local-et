@@ -9,6 +9,7 @@ routineDataEntry.controller('dataEntryController',
         function($scope,
                 $filter,
                 $modal,
+                $translate,
                 orderByFilter,
                 SessionStorageService,
                 storage,
@@ -112,7 +113,7 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.valueExists = false;
         $scope.model.displayCustomForm = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
-            DataSetFactory.getByOu( $scope.selectedOrgUnit, $scope.model.selectedDataSet ).then(function(response){                
+            DataSetFactory.getByOuAndProperty( $scope.selectedOrgUnit, $scope.model.selectedDataSet,'DataSetCategory','Routine' ).then(function(response){                
                 $scope.model.dataSets = response.dataSets || [];
             });
         }        
@@ -140,6 +141,7 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.valueExists = false;
         reinitializeGroupDetails();
         $scope.loadDataEntryForm();
+        console.log($scope.model.selectedDataSet.sections[0].indicators);
     });    
     
     function reinitializeGroupDetails() {
@@ -187,15 +189,17 @@ routineDataEntry.controller('dataEntryController',
         return false;
     }
     
-    $scope.performAutoZero = function(){
-        var dataValueSet= {
+    $scope.performAutoZero = function(section){
+        var dataValueSet = {
             dataSet: $scope.model.selectedDataSet.id,
             period: $scope.model.selectedPeriod.id,
             orgUnit: $scope.selectedOrgUnit.id,
             dataValues: []
         };
-        
-        angular.forEach($scope.model.selectedDataSet.dataElements, function (dataElement) {
+        var counter=0;
+
+        angular.forEach(section.dataElements, function (dataElement) {
+            dataElement = $scope.model.dataElements[dataElement.id];
             if ((dataElement.valueType === 'NUMBER' || dataElement.valueType === "INTEGER" || dataElement.valueType === "INTEGER_ZERO_OR_POSITIVE") && !$scope.checkForGrayField(dataElement)) {
                 angular.forEach($scope.model.categoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function (categoryOptionCombo) {
                     //check if the data value of the data element has a catagoroptiondownloaded
@@ -203,30 +207,44 @@ routineDataEntry.controller('dataEntryController',
                         $scope.dataValues[dataElement.id] = {};
                     }
                     //check if the category option is null or had a value
-                    if(!$scope.dataValues[dataElement.id][categoryOptionCombo.id]) {
-                        $scope.dataValues[dataElement.id][categoryOptionCombo.id] = {};
-                        $scope.dataValues[dataElement.id][categoryOptionCombo.id].value = 0;
+                    if (!$scope.dataValues[dataElement.id][categoryOptionCombo.id]) {
+                        counter=counter+1;
                         var val = {dataElement: dataElement.id, categoryOptionCombo: categoryOptionCombo.id, value: '0'};
                         dataValueSet.dataValues.push(val);
-                        
+
                     }
                     //check if dataValue of thte data element and the exists but it's value is empty or null.
-                    else if($scope.dataValues[dataElement.id][categoryOptionCombo.id].value==='' ||$scope.dataValues[dataElement.id][categoryOptionCombo.id].value==="" || $scope.dataValues[dataElement.id][categoryOptionCombo.id].value===null){
-                        $scope.dataValues[dataElement.id][categoryOptionCombo.id].value = 0;
+                    else if ($scope.dataValues[dataElement.id][categoryOptionCombo.id].value === '' || $scope.dataValues[dataElement.id][categoryOptionCombo.id].value === "" || $scope.dataValues[dataElement.id][categoryOptionCombo.id].value === null) {
+                        counter=counter+1;
                         var val = {dataElement: dataElement.id, categoryOptionCombo: categoryOptionCombo.id, value: '0'};
                         dataValueSet.dataValues.push(val);
                     }
                 });
             }
         });
-        //performing the save
-        DataValueService.saveDataValueSet(dataValueSet).then(function (response) {
-            console.log("successfully saved");
-            console.log(response);
+        var modalOptions = {
+            closeButtonText: 'no',
+            actionButtonText: 'yes',
+            headerText: 'fill_zero',
+            bodyText: $translate.instant('are_you_sure_you_want_to_fill')+" "+ counter
+        };
 
-        }, function () {
-            console.log("error when saving");
-        });        
+        ModalService.showModal({}, modalOptions).then(function (result) {
+            angular.forEach(dataValueSet.dataValues,function (dataValue){
+                if (!$scope.dataValues[dataValue.dataElement][dataValue.categoryOptionCombo]) {
+                    $scope.dataValues[dataValue.dataElement][dataValue.categoryOptionCombo] = {};
+                }
+                $scope.dataValues[dataValue.dataElement][dataValue.categoryOptionCombo].value=0;
+            });
+            DataValueService.saveDataValueSet(dataValueSet).then(function (response) {
+                console.log("successfully saved", response);
+
+            }, function () {
+                console.log("error when saving");
+            });
+        });
+        //performing the save
+
     };
         
     $scope.loadDataSetDetails = function(){        

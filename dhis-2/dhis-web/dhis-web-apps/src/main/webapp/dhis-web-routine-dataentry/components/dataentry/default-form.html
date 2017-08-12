@@ -4,8 +4,15 @@
         <tabset justified="true">
             <tab heading="{{section.displayName}}" class="bold" ng-repeat="section in model.selectedDataSet.sections | orderBy:'sortOrder'" active="section.active">
                 <div class="row col-sm-12 vertical-spacing">
-                    <div class="col-sm-12 pull-center ds-hdr">
+                    <div class="col-sm-12 pull-left ds-hdr">
                         {{section.description}}
+                        <button type="button" 
+                                class="btn btn-warning pull-right" 
+                                ng-click="performAutoZero(section)" 
+                                title="{{'fill_zero'| translate}}">
+                            {{'fill_zero'| translate}}
+                        </button>
+        
                     </div>
                     <table class="report-table" ng-if="section.dataElements.length > 0">
                         <thead>                            
@@ -24,9 +31,9 @@
                         <tbody ng-repeat="dataElement in section.dataElements"
                                ng-init="de = model.dataElements[dataElement.id]; 
                                    ocos = model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
-                            <tr ng-repeat="ind in section.indicators" ng-if="ind.params.indexOf(de.id) === 0">
+                            <tr ng-repeat="ind in section.indicators" ng-if="ind.params.indexOf(de.id) === 0 || ind.params[0].lastIndexOf(de.id,0) ===0"><!-- last index added for indicators that are defined with option combos-->
                                 <td class="ind-style">
-                                    
+                                    {{ind.DE_Sr_No}} 
                                 </td>
                                 <td class="ind-style">
                                     {{ind.displayName}}
@@ -56,7 +63,8 @@
                             </tr>
                             <tr class="de-style" ng-repeat="oco in ocos">
                                 <td>
-                                    
+                                    <!-- serial number location-->
+                                    {{(de.DE_Sr_No && ocos.length>=1) ? (de.DE_Sr_No+ "." ) : ''}} {{ocos.length <=1? ' ' : $index+1 }}
                                 </td>
                                 <td>
                                     <div class="oco-left-padding" ng-if="ocos.length > 1">
@@ -192,12 +200,5 @@
                 title="{{'mark_incomplete'| translate}}">
             {{'mark_incomplete'| translate}}
         </button>
-        <button type="button" 
-                class="btn btn-warning" 
-                ng-click="performAutoZero()" 
-                title="{{'auto_zero'| translate}}">
-            {{'auto_zero'| translate}}
-        </button>
-        
     </div>
 </div>

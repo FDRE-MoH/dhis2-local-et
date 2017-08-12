@@ -378,6 +378,55 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 });
             });            
             return def.promise;
+        },
+        getByOuAndProperty: function(ou, selectedDataSet,propertyName,propertyValue){
+            var roles = SessionStorageService.get('USER_ROLES');
+            var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
+            var def = $q.defer();
+            
+            PMTStorageService.currentStore.open().done(function(){
+                PMTStorageService.currentStore.getAll('dataSets').done(function(dss){
+                    var dataSets = [];
+                    angular.forEach(dss, function(ds){                            
+                        if(ds.organisationUnits.hasOwnProperty( ou.id ) && CommonUtils.userHasValidRole(ds,'dataSets', userRoles) && ds[propertyName] && ds[propertyName]===propertyValue){
+                            ds = ActionMappingUtils.processDataSet( ds );
+                            dataSets.push(ds);
+                        }
+                    });
+                    
+                    dataSets = orderByFilter(dataSets, '-displayName').reverse();
+                    
+                    if(dataSets.length === 0){
+                        selectedDataSet = null;
+                    }
+                    else if(dataSets.length === 1){
+                        selectedDataSet = dataSets[0];
+                    } 
+                    else{
+                        if(selectedDataSet){
+                            var continueLoop = true;
+                            for(var i=0; i<dataSets.length && continueLoop; i++){
+                                if(dataSets[i].id === selectedDataSet.id){                                
+                                    selectedDataSet = dataSets[i];
+                                    continueLoop = false;
+                                }
+                            }
+                            if(continueLoop){
+                                selectedDataSet = null;
+                            }
+                        }
+                    }
+                                        
+                    if(!selectedDataSet || angular.isUndefined(selectedDataSet) && dataSets.legth > 0){
+                        selectedDataSet = dataSets[0];
+                    }
+                    
+                    $rootScope.$apply(function(){
+                        def.resolve({dataSets: dataSets, selectedDataSet: selectedDataSet});
+                    });                      
+                });
+            });            
+            return def.promise;
         }
     };
 })
@@ -779,7 +828,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                         for( var k in matcher ){
                             var match = matcher[k];
                             var operand = match.replace( dhis2.metadata.operatorRegex, '' );
-                            var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                            var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
                             var value = null;
                             if ( isTotal )
                             {                                
@@ -806,7 +855,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                         for( var k in matcher ){
                             var match = matcher[k];
                             var operand = match.replace( dhis2.metadata.operatorRegex, '' );
-                            var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                            var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
                             var value = null;
                             if ( isTotal )
                             {                                
@@ -889,7 +938,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 
                     var operand = match.replace( dhis2.metadata.operatorRegex, '' );
 
-                    var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                    var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
 
                     var value = '0';
 
@@ -901,8 +950,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     }
                     else
                     {
-                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.cstSeparator ) );
-                        var coc = operand.substring( operand.indexOf( dhis2.metadata.cstSeparator ) + 1, operand.length );
+                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.custSeparator ) );
+                        var coc = operand.substring( operand.indexOf( dhis2.metadata.custSeparator ) + 1, operand.length );
                         
                         if( dataValues && 
                                 dataValues[de] && 
@@ -929,7 +978,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 
                     var operand = match.replace( dhis2.metadata.operatorRegex, '' );
 
-                    var isTotal = !!( operand.indexOf( dhis2.metadata.cstSeparator ) == -1 );
+                    var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
 
                     var value = '0';
 
@@ -941,8 +990,8 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     }
                     else
                     {
-                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.cstSeparator ) );
-                        var coc = operand.substring( operand.indexOf( dhis2.metadata.cstSeparator ) + 1, operand.length );
+                        var de = operand.substring( 0, operand.indexOf( dhis2.metadata.custSeparator ) );
+                        var coc = operand.substring( operand.indexOf( dhis2.metadata.custSeparator ) + 1, operand.length );
                         
                         if( dataValues && 
                                 dataValues[de] && 
