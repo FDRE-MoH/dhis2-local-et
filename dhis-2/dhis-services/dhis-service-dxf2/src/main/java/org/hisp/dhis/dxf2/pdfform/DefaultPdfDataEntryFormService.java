@@ -272,7 +272,7 @@ public class DefaultPdfDataEntryFormService
                 }
 
                 addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), dataElement.getFormNameFallback() + " " +
-                    categoryOptionComboDisplayName, Element.ALIGN_RIGHT );
+                    categoryOptionComboDisplayName, Element.ALIGN_RIGHT, null );
 
                 String strFieldLabel = PdfDataEntryFormUtil.LABELCODE_DATAENTRYTEXTFIELD + dataElement.getUid() + "_"
                     + categoryOptionCombo.getUid();
@@ -411,15 +411,15 @@ public class DefaultPdfDataEntryFormService
         table.setWidths( cellWidths );
 
         // Create Header
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Date", Element.ALIGN_CENTER );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Date", Element.ALIGN_CENTER, null );
 
         // Add Program Data Elements Columns
         for ( DataElement dataElement : dataElements )
         {
-            addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), dataElement.getFormNameFallback(), Element.ALIGN_CENTER );
+            addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), dataElement.getFormNameFallback(), Element.ALIGN_CENTER, null );
         }
 
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), TEXT_BLANK, Element.ALIGN_CENTER );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), TEXT_BLANK, Element.ALIGN_CENTER, null );
 
         // ADD A HIDDEN INFO FOR ProgramStageID
         // Print rows, having the data elements repeating on each column.
@@ -462,7 +462,7 @@ public class DefaultPdfDataEntryFormService
                 }
             }
 
-            addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), TEXT_BLANK, Element.ALIGN_LEFT );
+            addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), TEXT_BLANK, Element.ALIGN_LEFT, null );
         }
 
         PdfPCell cell_withInnerTable = new PdfPCell( table );
@@ -509,14 +509,14 @@ public class DefaultPdfDataEntryFormService
         table.setHorizontalAlignment( Element.ALIGN_LEFT );
 
 
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Organization unit identifier", Element.ALIGN_RIGHT );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Organization unit identifier", Element.ALIGN_RIGHT, null );
         addCell_WithTextField( table, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), PdfDataEntryFormUtil.LABELCODE_ORGID,
             PdfFieldCell.TYPE_TEXT_ORGUNIT );
 
         String[] periodsTitle = getPeriodTitles( periods, format );
         String[] periodsValue = getPeriodValues( periods );
 
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Period", Element.ALIGN_RIGHT );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Period", Element.ALIGN_RIGHT, null );
         addCell_WithDropDownListField( table, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), PdfDataEntryFormUtil.LABELCODE_PERIODID, periodsTitle, periodsValue );
 
         // Add to the main table
@@ -563,7 +563,7 @@ public class DefaultPdfDataEntryFormService
         PdfPTable table = new PdfPTable( 1 );
         table.setHorizontalAlignment( Element.ALIGN_LEFT );
 
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), text, Element.ALIGN_LEFT, font );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), text, Element.ALIGN_LEFT, font, null );
 
         // Add to the main table
         PdfPCell cell_withInnerTable = new PdfPCell( table );
@@ -608,16 +608,18 @@ public class DefaultPdfDataEntryFormService
         document.add( tableButton );
     }
 
-    private void addCell_Text( PdfPTable table, PdfPCell cell, String text, int horizontalAlignment )
+    private void addCell_Text( PdfPTable table, PdfPCell cell, String text, int horizontalAlignment, Color backgroundColor )
     {
-        addCell_Text( table, cell, text, horizontalAlignment, pdfFormFontSettings.getFont( PdfFormFontSettings.FONTTYPE_BODY ) );
+        addCell_Text( table, cell, text, horizontalAlignment, pdfFormFontSettings.getFont( PdfFormFontSettings.FONTTYPE_BODY ), backgroundColor );
     }
 
-    private void addCell_Text( PdfPTable table, PdfPCell cell, String text, int horizontalAlignment, Font font )
+    private void addCell_Text( PdfPTable table, PdfPCell cell, String text, int horizontalAlignment, Font font, Color backgroundColor )
     {
         cell.setHorizontalAlignment( horizontalAlignment );
 
         cell.setPhrase( new Phrase( text, font ) );
+        
+        cell.setBackgroundColor(backgroundColor);
 
         table.addCell( cell ); // TODO: change this with cellEvent?
     }
