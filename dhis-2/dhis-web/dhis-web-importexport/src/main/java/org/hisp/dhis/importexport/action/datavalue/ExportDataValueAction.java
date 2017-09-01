@@ -62,11 +62,14 @@ public class ExportDataValueAction
     private final static String EXTENSION_XML_ZIP = ".xml.zip";
     private final static String EXTENSION_JSON_ZIP = ".json.zip";
     private final static String EXTENSION_CSV_ZIP = ".csv.zip";
+    private final static String EXTENSION_BIN_ZIP = ".enc.zip";
     private final static String EXTENSION_XML = ".xml";
     private final static String EXTENSION_JSON = ".json";
     private final static String EXTENSION_CSV = ".csv";
+    private final static String EXTENSION_BIN=".enc";
     private final static String FORMAT_CSV = "csv";
     private final static String FORMAT_JSON = "json";
+    private final static String FORMAT_BINARY="bin";
     private final static String COMPRESSION_ZIP = "zip";
 
     @Autowired
@@ -159,6 +162,8 @@ public class ExportDataValueAction
             getMediumDate( startDate ), getMediumDate( endDate ), orgUnits, true, null, null, false, null, null, null, idSchemes );
         
         boolean isCompression = compression == null || COMPRESSION_ZIP.equals( compression );
+        
+        System.out.println("The output form is "+ exportFormat);
 
         if ( FORMAT_CSV.equals( exportFormat ) )
         {
@@ -171,6 +176,11 @@ public class ExportDataValueAction
             ContextUtils.configureResponse( response, CONTENT_TYPE_JSON, true, getFileName( EXTENSION_JSON_ZIP ), isCompression );
 
             dataValueSetService.writeDataValueSetJson( params, isCompression ? getZipOut( out, getFileName( EXTENSION_JSON ) ) : out );
+        }
+        else if ( FORMAT_BINARY.equals( exportFormat )) {
+            System.out.println("entered into binary export format");
+            ContextUtils.configureResponse( response, CONTENT_TYPE_BIN,true, getFileName(EXTENSION_BIN) , true);//It is always going to be a file
+            dataValueSetService.writeDataValueSetBinary( params, isCompression ? getZipOut( out, getFileName (EXTENSION_BIN)): out );
         }
         else
         {

@@ -349,6 +349,15 @@ public class DefaultDataValueSetService
 
         dataValueSetStore.writeDataValueSetCsv( params, getCompleteDate( params ), writer );
     }
+    
+    @Override
+    public void writeDataValueSetBinary( DataExportParams params, OutputStream out )
+    {
+        decideAccess( params );
+        validate( params );
+        
+        dataValueSetStore.writeDataValueSetBinary( params, getCompleteDate( params ), out );
+    }
 
     private Date getCompleteDate( DataExportParams params )
     {
@@ -506,6 +515,12 @@ public class DefaultDataValueSetService
     {
         return saveDataValueSetCsv( in, importOptions, null );
     }
+    
+    @Override
+    public ImportSummary saveDataValueSetBinary(InputStream in, ImportOptions importOptions )
+    {
+        return saveDataValueSetBinary( in, importOptions , null );
+    }
 
     @Override
     public ImportSummary saveDataValueSet( InputStream in, ImportOptions importOptions, TaskId id )
@@ -556,6 +571,12 @@ public class DefaultDataValueSetService
             notifier.clear( id ).notify( id, ERROR, "Process failed: " + ex.getMessage(), true );
             return new ImportSummary( ImportStatus.ERROR, "The import process failed: " + ex.getMessage() );
         }
+    }
+    
+    @Override
+    public ImportSummary saveDataValueSetBinary( InputStream in, ImportOptions importOptions, TaskId id)
+    {
+        return null;
     }
 
     @Override

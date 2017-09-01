@@ -97,6 +97,14 @@ public class SpringDataValueSetStore
 
         IOUtils.closeQuietly( out );
     }
+    
+    public void writeDataValueSetBinary(DataExportParams params, Date completeDate, OutputStream out) {
+        DataValueSet dataValueSet=new StreamingBinaryDataValueSet( out );
+        String sql = getDataValueSql( params );
+        writeDataValueSet( sql, params, completeDate, dataValueSet );
+        
+        IOUtils.closeQuietly( out );
+    }
 
     @Override
     public void writeDataValueSetCsv( DataExportParams params, Date completeDate, Writer writer )
