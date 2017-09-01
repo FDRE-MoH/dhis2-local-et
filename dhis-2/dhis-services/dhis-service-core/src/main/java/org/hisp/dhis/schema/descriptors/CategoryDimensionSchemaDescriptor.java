@@ -1,4 +1,4 @@
-package org.hisp.dhis.user;
+package org.hisp.dhis.schema.descriptors;
 
 /*
  * Copyright (c) 2004-2017, University of Oslo
@@ -26,35 +26,27 @@ package org.hisp.dhis.user;
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-import org.apache.commons.lang.StringUtils;
+import org.hisp.dhis.dataelement.CategoryDimension;
+import org.hisp.dhis.schema.Schema;
+import org.hisp.dhis.schema.SchemaDescriptor;
 
 /**
- * Created by zubair on 16.03.17.
+ * @author Morten Olav Hansen <mortenoh@gmail.com>
  */
-public class UserParameterValidationRule
-    implements PasswordValidationRule
+public class CategoryDimensionSchemaDescriptor implements SchemaDescriptor
 {
-    @Override
-    public boolean isRuleApplicable( CredentialsInfo credentialsInfo )
-    {
-        return true;
-    }
+    public static final String SINGULAR = "categoryDimension";
+
+    public static final String PLURAL = "categoryDimensions";
+
+    public static final String API_ENDPOINT = "/" + PLURAL;
 
     @Override
-    public PasswordValidationResult validate( CredentialsInfo credentialsInfo )
+    public Schema getSchema()
     {
-        String email = credentialsInfo.getEmail();
-        String password = credentialsInfo.getPassword();
-        String username = credentialsInfo.getUsername();
-
-        if ( StringUtils.containsIgnoreCase( password, StringUtils.defaultIfEmpty( username, null ) ) ||
-            StringUtils.containsIgnoreCase( password, StringUtils.defaultIfEmpty( email, null ) ) )
-        {
-            return new PasswordValidationResult( "Username/Email must not be a part of password", "password_username_validation", false );
-        }
-
-        return new PasswordValidationResult( true );
+        return new Schema( CategoryDimension.class, SINGULAR, PLURAL );
     }
 }

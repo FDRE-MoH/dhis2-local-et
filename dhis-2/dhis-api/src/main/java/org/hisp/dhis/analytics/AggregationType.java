@@ -49,7 +49,7 @@ public enum AggregationType
     AVERAGE_SUM_INT_DISAGGREGATION( "avg_sum_int_disaggregation", true, true ), // Sum in organisation unit hierarchy
     AVERAGE_INT( "avg_int", true, true ),
     AVERAGE_INT_DISAGGREGATION( "avg_int_disaggregation", true, true ),
-    AVERAGE_BOOL( "avg_bool", true, true );	
+    AVERAGE_BOOL( "avg_bool", true, true );
 
     private final String value;
     

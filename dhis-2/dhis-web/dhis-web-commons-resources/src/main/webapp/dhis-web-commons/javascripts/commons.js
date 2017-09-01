@@ -936,7 +936,9 @@ function removeItem( itemId, itemName, confirmation, action, success )
 					setHeaderMessage( json.message );
     	    	}
     	    }
-    	);
+    	).fail( function(response){
+          setHeaderMessage( response.responseText );
+      });
     }
 }
 
@@ -1375,12 +1377,12 @@ function checkValueIsExist( inputId, url, params )
 }
 
 function checkPassword( inputId, password ) {
-    var parameter = $("#" + inputId ).val();
+    var username = $("#" + inputId ).val();
     var passWord = $("#" +  password).val();
     if (passWord) {
         if (parameter) {
-            if ((passWord.indexOf(parameter) !== -1) ||  (parameter.indexOf(passWord) !== -1)) {
-                alert("Username/Email cannot be part of password");
+            if ((passWord.indexOf(username) !== -1) ||  (username.indexOf(passWord) !== -1)) {
+                alert( i18n_username_email_in_password );
                 $("#" +  password).val("");
             }
         }
