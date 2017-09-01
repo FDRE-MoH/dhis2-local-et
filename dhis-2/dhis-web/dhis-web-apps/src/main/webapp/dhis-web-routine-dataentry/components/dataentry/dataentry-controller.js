@@ -140,8 +140,7 @@ routineDataEntry.controller('dataEntryController',
         $scope.dataValues = {};
         $scope.model.valueExists = false;
         reinitializeGroupDetails();
-        $scope.loadDataEntryForm();
-        console.log($scope.model.selectedDataSet.sections[0].indicators);
+        $scope.loadDataEntryForm();        
     });    
     
     function reinitializeGroupDetails() {
