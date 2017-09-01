@@ -131,6 +131,7 @@ public abstract class PeriodType
             add( new FinancialAprilPeriodType() );
             add( new FinancialJulyPeriodType() );
             add( new FinancialOctoberPeriodType() );
+            add( new FinancialNovemberPeriodType() );
         }
     };
 

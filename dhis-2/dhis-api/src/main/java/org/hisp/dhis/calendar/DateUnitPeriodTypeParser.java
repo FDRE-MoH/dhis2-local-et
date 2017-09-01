@@ -303,6 +303,20 @@ public class DateUnitPeriodTypeParser implements PeriodTypeParser
             end.setDayOfWeek( calendar.weekday( end ) );
 
             return new DateInterval( start, end );
+        }        
+        else if ( DateUnitType.FINANCIAL_NOVEMBER == dateUnitType )
+        {
+            int year = Integer.parseInt( matcher.group( 1 ) );
+
+            DateTimeUnit start = new DateTimeUnit( year, 11, 1, calendar.isIso8601() );
+            DateTimeUnit end = new DateTimeUnit( start );
+            end = calendar.plusYears( end, 1 );
+            end = calendar.minusDays( end, 1 );
+
+            start.setDayOfWeek( calendar.weekday( start ) );
+            end.setDayOfWeek( calendar.weekday( end ) );
+
+            return new DateInterval( start, end );
         }
 
         return null;
