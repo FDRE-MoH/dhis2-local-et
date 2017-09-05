@@ -1368,28 +1368,7 @@ function getHMISMonthsInYear(calendar, year) {
   }
 
   return monthsInYear;
-};
-
-
-function formatEthiopianDate(cDate,el){
-	if(cDate[0]){
-		var d=cDate[0]._day+'-'+cDate[0]._month+'-'+cDate[0]._year;
-		var arr=d.split('-');
-		var _d='';
-		
-		for(var i=0;i<arr.length;i++){
-			if(arr[i].length==1){
-				arr[i]="0"+arr[i];
-			}
-			_d+=arr[i]+'-';
-		}
-		
-		_d=_d.substring(0,d.length-1);
-		
-		$(el).val(_d);
-		$(el).attr("value",_d);
-	}
-};
+}
 
 /**
  * Convenience method to get month translations which are fetched by main.vm

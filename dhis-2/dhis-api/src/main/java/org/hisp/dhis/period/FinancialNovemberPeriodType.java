@@ -1,4 +1,4 @@
-package org.hisp.dhis.user;
+package org.hisp.dhis.period;
 
 /*
  * Copyright (c) 2004-2017, University of Oslo
@@ -28,33 +28,49 @@ package org.hisp.dhis.user;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.lang.StringUtils;
+import java.util.Calendar;
+
+import org.hisp.dhis.calendar.DateTimeUnit;
 
 /**
- * Created by zubair on 16.03.17.
+ * @author Abyot Asalefew Gizaw <abyota@gmail.com>
+ *
  */
-public class UserParameterValidationRule
-    implements PasswordValidationRule
-{
-    @Override
-    public boolean isRuleApplicable( CredentialsInfo credentialsInfo )
-    {
-        return true;
-    }
+public class FinancialNovemberPeriodType extends FinancialPeriodType {
+	/**
+	 * Determines if a de-serialized file is compatible with this class.
+	 */
+	private static final long serialVersionUID = -1623576547899897811L;
 
-    @Override
-    public PasswordValidationResult validate( CredentialsInfo credentialsInfo )
-    {
-        String email = credentialsInfo.getEmail();
-        String password = credentialsInfo.getPassword();
-        String username = credentialsInfo.getUsername();
+	private static final String ISO_FORMAT = "yyyyNov";	
 
-        if ( StringUtils.containsIgnoreCase( password, StringUtils.defaultIfEmpty( username, null ) ) ||
-            StringUtils.containsIgnoreCase( password, StringUtils.defaultIfEmpty( email, null ) ) )
-        {
-            return new PasswordValidationResult( "Username/Email must not be a part of password", "password_username_validation", false );
-        }
+	private static final String ISO8601_DURATION = "P1Y";
 
-        return new PasswordValidationResult( true );
-    }
+	public static final String NAME = "FinancialNov";
+
+	@Override
+	protected int getBaseMonth() {
+		return Calendar.NOVEMBER;
+	}
+
+	@Override
+	public String getName() {
+		return NAME;
+	}
+
+	@Override
+	public String getIsoDate(DateTimeUnit dateTimeUnit, org.hisp.dhis.calendar.Calendar calendar) {
+		return String.format("%dNov", dateTimeUnit.getYear());
+	}
+
+	@Override
+	public String getIsoFormat() {
+		return ISO_FORMAT;
+	}
+
+	@Override
+	public String getIso8601Duration() {
+		return ISO8601_DURATION;
+	}
+
 }

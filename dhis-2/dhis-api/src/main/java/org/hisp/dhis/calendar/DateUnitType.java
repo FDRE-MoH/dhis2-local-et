@@ -32,6 +32,7 @@ import org.hisp.dhis.period.BiMonthlyPeriodType;
 import org.hisp.dhis.period.DailyPeriodType;
 import org.hisp.dhis.period.FinancialAprilPeriodType;
 import org.hisp.dhis.period.FinancialJulyPeriodType;
+import org.hisp.dhis.period.FinancialNovemberPeriodType;
 import org.hisp.dhis.period.FinancialOctoberPeriodType;
 import org.hisp.dhis.period.MonthlyPeriodType;
 import org.hisp.dhis.period.QuarterlyPeriodType;
@@ -63,7 +64,8 @@ public enum DateUnitType
     YEARLY( YearlyPeriodType.NAME, "\\b(\\d{4})\\b" ),
     FINANCIAL_APRIL( FinancialAprilPeriodType.NAME, "\\b(\\d{4})April\\b" ),
     FINANCIAL_JULY( FinancialJulyPeriodType.NAME, "\\b(\\d{4})July\\b" ),
-    FINANCIAL_OCTOBER( FinancialOctoberPeriodType.NAME, "\\b(\\d{4})Oct\\b" );
+    FINANCIAL_OCTOBER( FinancialOctoberPeriodType.NAME, "\\b(\\d{4})Oct\\b" ),
+    FINANCIAL_NOVEMBER( FinancialNovemberPeriodType.NAME, "\\b(\\d{4})Nov\\b" ),;
 
     private final String name;
 

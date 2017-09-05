@@ -240,10 +240,10 @@ public class QuarterlyPeriodType
             case 10:
                 return dateTimeUnit.getYear() + "Q4";
             default:
-                throw new IllegalArgumentException(
-                    "Month not valid [1,4,7,10], was given " + dateTimeUnit.getMonth() );
+                throw new IllegalArgumentException( "Month not valid [1,4,7,10], was given " + dateTimeUnit.getMonth() );
             }
         }
+            
     }
 
     /**
@@ -260,6 +260,7 @@ public class QuarterlyPeriodType
     {
         return ISO8601_DURATION;
     }
+
 
     public enum Quarter
     {
@@ -281,16 +282,16 @@ public class QuarterlyPeriodType
         {
             switch ( month )
             {
-            case Calendar.JANUARY:
-                return Q1;
-            case Calendar.APRIL:
-                return Q2;
-            case Calendar.JULY:
-                return Q3;
-            case Calendar.OCTOBER:
-                return Q4;
-            default:
-                throw new IllegalArgumentException( "Not a valid quarterly starting month" );
+                case Calendar.JANUARY:
+                    return Q1;
+                case Calendar.APRIL:
+                    return Q2;
+                case Calendar.JULY:
+                    return Q3;
+                case Calendar.OCTOBER:
+                    return Q4;
+                default:
+                    throw new IllegalArgumentException( "Not a valid quarterly starting month" );
             }
         }
     }

@@ -224,7 +224,7 @@ public class JdbcAnalyticsTableManager
         sql += "daysxvalue, daysno, value, textvalue) select ";
 
         for ( AnalyticsTableColumn col : columns )
-        {            
+        {
             sql += col.getAlias() + ",";
         }
 

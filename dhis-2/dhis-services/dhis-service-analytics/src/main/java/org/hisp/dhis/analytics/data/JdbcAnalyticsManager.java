@@ -397,32 +397,25 @@ public class JdbcAnalyticsManager
         // ---------------------------------------------------------------------
         // Restrictions
         // ---------------------------------------------------------------------
-
+        
         if ( params.isRestrictByOrgUnitOpeningClosedDate() && params.hasStartEndDate() )
         {
-            sql += sqlHelper.whereAnd() + " (" + "(" + statementBuilder.columnQuote( "ouopeningdate" ) + " <= '"
-                + getMediumDateString( params.getStartDate() ) + "' or "
-                + statementBuilder.columnQuote( "ouopeningdate" ) + " is null) and " + "("
-                + statementBuilder.columnQuote( "oucloseddate" ) + " >= '" + getMediumDateString( params.getEndDate() )
-                + "' or " + statementBuilder.columnQuote( "oucloseddate" ) + " is null)) ";
+            sql += sqlHelper.whereAnd() + " (" +
+                "(" + statementBuilder.columnQuote( "ouopeningdate") + " <= '" + getMediumDateString( params.getStartDate() ) + "' or " + statementBuilder.columnQuote( "ouopeningdate" ) + " is null) and " +
+                "(" + statementBuilder.columnQuote( "oucloseddate" ) + " >= '" + getMediumDateString( params.getEndDate() ) + "' or " + statementBuilder.columnQuote( "oucloseddate" ) + " is null)) ";
         }
-
+        
         if ( params.isRestrictByCategoryOptionStartEndDate() && params.hasStartEndDate() )
         {
-            sql += sqlHelper.whereAnd() + " (" + "(" + statementBuilder.columnQuote( "costartdate" ) + " <= '"
-                + getMediumDateString( params.getStartDate() ) + "' or " + statementBuilder.columnQuote( "costartdate" )
-                + " is null) and " + "(" + statementBuilder.columnQuote( "coenddate" ) + " >= '"
-                + getMediumDateString( params.getEndDate() ) + "' or " + statementBuilder.columnQuote( "coenddate" )
-                + " is null)) ";
+            sql += sqlHelper.whereAnd() + " (" +
+                "(" + statementBuilder.columnQuote( "costartdate" ) + " <= '" + getMediumDateString( params.getStartDate() ) + "' or " + statementBuilder.columnQuote( "costartdate" ) + " is null) and " +
+                "(" + statementBuilder.columnQuote( "coenddate" ) + " >= '" + getMediumDateString( params.getEndDate() ) + "' or " + statementBuilder.columnQuote( "coenddate" ) +  " is null)) ";
         }
 
-        if ( !params.isRestrictByOrgUnitOpeningClosedDate() && !params.isRestrictByCategoryOptionStartEndDate()
-            && params.hasStartEndDate() )
+        if ( !params.isRestrictByOrgUnitOpeningClosedDate() && !params.isRestrictByCategoryOptionStartEndDate() && params.hasStartEndDate() )
         {
-            sql += sqlHelper.whereAnd() + " " + statementBuilder.columnQuote( "pestartdate" ) + "  >= '"
-                + getMediumDateString( params.getStartDate() ) + "' ";
-            sql += "and " + statementBuilder.columnQuote( "peenddate" ) + " <= '"
-                + getMediumDateString( params.getEndDate() ) + "' ";
+            sql += sqlHelper.whereAnd() + " " + statementBuilder.columnQuote( "pestartdate" ) + "  >= '" + getMediumDateString( params.getStartDate() ) + "' ";
+            sql += "and " + statementBuilder.columnQuote( "peenddate" ) + " <= '" + getMediumDateString( params.getEndDate() ) + "' ";
         }
 
         if ( params.isTimely() )
@@ -494,16 +487,15 @@ public class JdbcAnalyticsManager
         {
             Double criterion = params.getMeasureCriteria().get( filter );
 
-            sql += sqlHelper.havingAnd() + " " + getNumericValueColumn( params ) + " " + OPERATOR_SQL_MAP.get( filter )
-                + " " + criterion + " ";
+            sql += sqlHelper.havingAnd() + " " + getNumericValueColumn( params ) + " " + OPERATOR_SQL_MAP.get( filter ) + " " + criterion + " ";
         }
 
         return sql;
     }
 
     /**
-     * Retrieves data from the database based on the given query and SQL and
-     * puts into a value key and value mapping.
+     * Retrieves data from the database based on the given query and SQL and puts
+     * into a value key and value mapping.
      */
     private Map<String, Object> getKeyValueMap( DataQueryParams params, String sql, int maxLimit )
     {
@@ -514,20 +506,20 @@ public class JdbcAnalyticsManager
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet( sql );
 
         int counter = 0;
-
+        
         while ( rowSet.next() )
         {
             if ( maxLimit > 0 && ++counter > maxLimit )
             {
                 throw new IllegalQueryException( "Query result set exceeds max limit: " + maxLimit );
             }
-
+            
             StringBuilder key = new StringBuilder();
 
             for ( DimensionalObject dim : params.getDimensions() )
             {
                 String value = dim.isFixed() ? dim.getDimensionName() : rowSet.getString( dim.getDimensionName() );
-
+                
                 key.append( value ).append( DIMENSION_SEP );
             }
 
