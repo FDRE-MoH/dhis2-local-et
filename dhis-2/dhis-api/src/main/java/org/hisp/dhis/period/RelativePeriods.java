@@ -605,13 +605,17 @@ public class RelativePeriods
         if ( isThisSixMonth() )
         {
         	//periods.add( getRelativePeriod( new SixMonthlyPeriodType(), LAST_SIXMONTH, date, dynamicNames, format ) );
-            periods.add( getRelativePeriod( new SixMonthlyPeriodType(), LAST_SIXMONTH, calendarDate, dynamicNames, format ) );
+            periods.add( getRelativePeriod( new SixMonthlyNovemberPeriodType(), LAST_SIXMONTH, calendarDate, dynamicNames, format ) );
         }
 
         if ( isLastSixMonth() )
         {
         	//periods.add( getRelativePeriod( new SixMonthlyPeriodType(), LAST_SIXMONTH, new DateTime( date ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
-            periods.add( getRelativePeriod( new SixMonthlyPeriodType(), LAST_SIXMONTH, new DateTime( calendarDate ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
+            periods.add( getRelativePeriod( new SixMonthlyNovemberPeriodType(), LAST_SIXMONTH, new DateTime( calendarDate ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
+        	/*Date d = ( date != null ) ? date : new Date();
+        	System.out.println("d:  " + d);
+        	System.out.println("last six month: " + new DateTime( d ).minusMonths( 6 ).toDate() );
+        	periods.add( getRelativePeriod( new SixMonthlyNovemberPeriodType(), LAST_SIXMONTH, new DateTime( d ).minusMonths( 6 ).toDate(), dynamicNames, format ) );*/
         }
 
         if ( isWeeksThisYear() )
@@ -681,7 +685,7 @@ public class RelativePeriods
         if ( isLast2SixMonths() )
         {
         	//periods.addAll( getRollingRelativePeriodList( new SixMonthlyPeriodType(), SIXMONHTS_LAST_2, new DateTime( date ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
-            periods.addAll( getRollingRelativePeriodList( new SixMonthlyPeriodType(), SIXMONHTS_LAST_2, new DateTime( calendarDate ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
+            periods.addAll( getRollingRelativePeriodList( new SixMonthlyNovemberPeriodType(), SIXMONHTS_LAST_2, new DateTime( calendarDate ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
         }
 
         if ( isLast4Weeks() )
@@ -757,9 +761,9 @@ public class RelativePeriods
         periods.addAll( periodTypes.contains( MonthlyPeriodType.NAME ) ? new MonthlyPeriodType().generateRollingPeriods( date ) : NO );
         periods.addAll( periodTypes.contains( BiMonthlyPeriodType.NAME ) ? new BiMonthlyPeriodType().generateRollingPeriods( date ) : NO );
         periods.addAll( periodTypes.contains( QuarterlyPeriodType.NAME ) ? new QuarterlyPeriodType().generateRollingPeriods( date ) : NO );
-        periods.addAll( periodTypes.contains( SixMonthlyPeriodType.NAME ) ? new SixMonthlyPeriodType().generateRollingPeriods( date ) : NO );
+        periods.addAll( periodTypes.contains( SixMonthlyNovemberPeriodType.NAME ) ? new SixMonthlyNovemberPeriodType().generateRollingPeriods( date ) : NO );
         periods.addAll( periodTypes.contains( YearlyPeriodType.NAME ) ? new YearlyPeriodType().generateRollingPeriods( date ).subList( 4, 5 ) : NO );
-        periods.addAll( periodTypes.contains( FinancialOctoberPeriodType.NAME ) ? new FinancialOctoberPeriodType().generateRollingPeriods( date ).subList( 4, 5 ) : NO );
+        periods.addAll( periodTypes.contains( FinancialNovemberPeriodType.NAME ) ? new FinancialNovemberPeriodType().generateRollingPeriods( date ).subList( 4, 5 ) : NO );
 
         return periods;
     }
@@ -790,7 +794,7 @@ public class RelativePeriods
      * @param dynamicNames indication of whether dynamic names should be used.
      * @param format       the I18nFormat.
      * @return a list of periods.
-     */
+     */    
     private List<Period> getRollingRelativePeriodList( CalendarPeriodType periodType, String[] periodNames, Date date, boolean dynamicNames, I18nFormat format )
     {
         return getRelativePeriodList( periodType.generateRollingPeriods( date ), periodNames, dynamicNames, format );

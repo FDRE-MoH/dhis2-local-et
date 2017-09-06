@@ -127,6 +127,7 @@ public abstract class PeriodType
             add( new QuarterlyPeriodType() );
             add( new SixMonthlyPeriodType() );
             add( new SixMonthlyAprilPeriodType() );
+            add( new SixMonthlyNovemberPeriodType() );
             add( new YearlyPeriodType() );
             add( new FinancialAprilPeriodType() );
             add( new FinancialJulyPeriodType() );
