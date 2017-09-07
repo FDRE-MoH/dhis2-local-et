@@ -37,6 +37,7 @@ import org.hisp.dhis.period.FinancialOctoberPeriodType;
 import org.hisp.dhis.period.MonthlyPeriodType;
 import org.hisp.dhis.period.QuarterlyPeriodType;
 import org.hisp.dhis.period.SixMonthlyAprilPeriodType;
+import org.hisp.dhis.period.SixMonthlyNovemberPeriodType;
 import org.hisp.dhis.period.SixMonthlyPeriodType;
 import org.hisp.dhis.period.WeeklyPeriodType;
 import org.hisp.dhis.period.WeeklySaturdayPeriodType;
@@ -61,6 +62,7 @@ public enum DateUnitType
     QUARTERLY( QuarterlyPeriodType.NAME, "\\b(\\d{4})Q(\\d)\\b" ),
     SIX_MONTHLY( SixMonthlyPeriodType.NAME, "\\b(\\d{4})S(\\d)\\b" ),
     SIX_MONTHLY_APRIL( SixMonthlyAprilPeriodType.NAME, "\\b(\\d{4})AprilS(\\d)\\b" ),
+    SIX_MONTHLY_NOVEMBER( SixMonthlyNovemberPeriodType.NAME, "\\b(\\d{4})NovS(\\d)\\b" ),
     YEARLY( YearlyPeriodType.NAME, "\\b(\\d{4})\\b" ),
     FINANCIAL_APRIL( FinancialAprilPeriodType.NAME, "\\b(\\d{4})April\\b" ),
     FINANCIAL_JULY( FinancialJulyPeriodType.NAME, "\\b(\\d{4})July\\b" ),

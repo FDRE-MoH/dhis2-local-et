@@ -50,7 +50,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         dhis2.period.picker = new dhis2.period.DatePicker( dhis2.period.calendar, dhis2.period.format );
         
         var d2Periods = dhis2.period.generator.generateReversedPeriods( periodType, periodOffset );
-                
+                        
         angular.forEach(d2Periods, function(p){
             p.id = p.iso;
             var st = p.endDate.split('-');
@@ -728,7 +728,14 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 DialogService.showDialog({}, dialogOptions);
             }
         },
-        getNumeratorAndDenominatorIds: function( ind ){            
+        notify: function(headerMsg, bodyMsg){
+            var dialogOptions = {
+                headerText: $translate.instant(headerMsg),
+                bodyText: $translate.instant(bodyMsg)
+            };		
+            DialogService.showDialog({}, dialogOptions);
+        }
+        ,getNumeratorAndDenominatorIds: function( ind ){            
             var num = ind.numerator.substring(2,ind.numerator.length-1);
             num = num.split('.');            
             var den = ind.denominator.substring(2,ind.numerator.length-1);

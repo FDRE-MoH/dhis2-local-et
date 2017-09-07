@@ -1230,7 +1230,11 @@ $.extend( dhis2.period.YearlyGenerator.prototype, {
     // generate 11 years, thisYear +/- 5 years
     for ( var i = -5; i < 6; i++ ) {
       var startDate = this.calendar.newDate( year + i, 1, 1 );
-      var endDate = this.calendar.newDate( startDate ).set( this.calendar.monthsInYear( year + i ), 'm' );
+      
+      //getHMISMonthsInYear(calendar, year) {
+      //getHMISMonthsInYear( this.calendar, year )
+      //var endDate = this.calendar.newDate( startDate ).set( this.calendar.monthsInYear( year + i ), 'm' );
+      var endDate = this.calendar.newDate( startDate ).set( getHMISMonthsInYear( this.calendar, year + i ), 'm' );
       endDate.set( endDate.daysInMonth( endDate.month() ), 'd' );
 
       var period = {};

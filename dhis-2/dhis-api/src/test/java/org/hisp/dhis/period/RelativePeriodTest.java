@@ -202,7 +202,7 @@ public class RelativePeriodTest
         List<Period> relatives = periods.getRelativePeriods( getDate( 2001, 7, 15 ), I18N_FORMAT, false );
 
         assertEquals( 1, relatives.size() );
-        assertEquals( new Period( new SixMonthlyPeriodType(), getDate( 2001, 7, 1 ), getDate( 2001, 12, 31 ) ), relatives.get( 0 ) );
+        assertEquals( new Period( new SixMonthlyNovemberPeriodType(), getDate( 2001, 5, 1 ), getDate( 2001, 10, 31 ) ), relatives.get( 0 ) );
     }
 
     @Test
@@ -213,7 +213,7 @@ public class RelativePeriodTest
         List<Period> relatives = periods.getRelativePeriods( getDate( 2001, 7, 15 ), I18N_FORMAT, false );
 
         assertEquals( 1, relatives.size() );
-        assertEquals( new Period( new SixMonthlyPeriodType(), getDate( 2001, 1, 1 ), getDate( 2001, 6, 30 ) ), relatives.get( 0 ) );
+        assertEquals( new Period( new SixMonthlyNovemberPeriodType(), getDate( 2000, 11, 1 ), getDate( 2001, 4, 30 ) ), relatives.get( 0 ) );
     }
 
     @Test
@@ -309,8 +309,8 @@ public class RelativePeriodTest
         List<Period> relatives = new RelativePeriods().setLast2SixMonths( true ).getRelativePeriods( getDate( 2001, 1, 1 ), I18N_FORMAT, false );
 
         assertEquals( 2, relatives.size() );
-        assertEquals( new Period( new SixMonthlyPeriodType(), getDate( 2000, 1, 1 ), getDate( 2000, 6, 30 ) ), relatives.get( 0 ) );
-        assertEquals( new Period( new SixMonthlyPeriodType(), getDate( 2000, 7, 1 ), getDate( 2000, 12, 31 ) ), relatives.get( 1 ) );
+        assertEquals( new Period( new SixMonthlyNovemberPeriodType(), getDate( 1999, 11, 1 ), getDate( 2000, 4, 30 ) ), relatives.get( 0 ) );
+        assertEquals( new Period( new SixMonthlyNovemberPeriodType(), getDate( 2000, 5, 1 ), getDate( 2000, 10, 31 ) ), relatives.get( 1 ) );
     }
 
     @Test
@@ -434,8 +434,9 @@ public class RelativePeriodTest
         periodTypes.add( BiMonthlyPeriodType.NAME );
         periodTypes.add( QuarterlyPeriodType.NAME );
         periodTypes.add( SixMonthlyPeriodType.NAME );
+        periodTypes.add( SixMonthlyNovemberPeriodType.NAME );
         periodTypes.add( YearlyPeriodType.NAME );
-        periodTypes.add( FinancialOctoberPeriodType.NAME );
+        periodTypes.add( FinancialNovemberPeriodType.NAME );
 
         List<Period> periods = new RelativePeriods().getLast12Months( periodTypes );
 

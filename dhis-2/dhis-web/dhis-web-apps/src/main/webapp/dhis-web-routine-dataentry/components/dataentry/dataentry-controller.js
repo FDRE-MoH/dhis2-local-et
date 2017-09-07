@@ -250,11 +250,11 @@ routineDataEntry.controller('dataEntryController',
         if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.id && $scope.model.selectedDataSet.periodType){
             
             $scope.model.periods = PeriodService.getPeriods($scope.model.selectedDataSet.periodType, $scope.model.periodOffset);
-            
+
             if(!$scope.model.selectedDataSet.dataElements || $scope.model.selectedDataSet.dataElements.length < 1){                
-                $scope.invalidCategoryDimensionConfiguration('error', 'missing_data_elements_indicators');
+                ActionMappingUtils.notify('error', 'missing_data_elements_indicators');
                 return;
-            }            
+            }
                         
             $scope.model.selectedAttributeCategoryCombo = null;     
             if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.categoryCombo && $scope.model.selectedDataSet.categoryCombo.id ){
@@ -401,7 +401,7 @@ routineDataEntry.controller('dataEntryController',
             $scope.periodOffset = $scope.periodOffset - 1;
             $scope.model.selectedPeriod = null;
             $scope.model.periods = PeriodService.getPeriods($scope.model.selectedDataSet.periodType, $scope.periodOffset);
-        }
+        }        
     };
     
     $scope.saveDataValue = function( deId, ocId ){
