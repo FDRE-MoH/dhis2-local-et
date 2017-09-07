@@ -229,10 +229,6 @@ public class EthiopianCalendar extends ChronologyBasedCalendar
     {
         if ( month > 12 )
         {
-        	if( month == 13 )
-        	{
-        		return 30;
-        	}
             throw new RuntimeException( "Illegal month, must be between 1 and 12, was given " + month );
         }
 
