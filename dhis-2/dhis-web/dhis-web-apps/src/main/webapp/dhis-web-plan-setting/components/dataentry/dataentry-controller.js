@@ -246,8 +246,7 @@ routineDataEntry.controller('dataEntryController',
             $scope.model.dataSetCompletness = {};
             CompletenessService.get( $scope.model.selectedDataSet.id, 
                                     $scope.selectedOrgUnit.id,
-                                    $scope.model.selectedPeriod.startDate,
-                                    $scope.model.selectedPeriod.endDate,
+                                    $scope.model.selectedPeriod.id,
                                     $scope.model.allowMultiOrgUnitEntry).then(function(response){                
                 if( response && 
                         response.completeDataSetRegistrations && 
@@ -255,7 +254,7 @@ routineDataEntry.controller('dataEntryController',
                         response.completeDataSetRegistrations.length > 0){
                     
                     angular.forEach(response.completeDataSetRegistrations, function(cdr){
-                        $scope.model.dataSetCompletness[cdr.attributeOptionCombo.id] = true;                        
+                        $scope.model.dataSetCompletness[cdr.attributeOptionCombo] = true;                        
                     });
                 }
             });
@@ -407,22 +406,16 @@ routineDataEntry.controller('dataEntryController',
 
         ModalService.showModal({}, modalOptions).then(function(result){
             
-            CompletenessService.save($scope.model.selectedDataSet.id, 
-                $scope.model.selectedPeriod.id, 
-                orgUnit,
-                $scope.model.selectedAttributeCategoryCombo.id,
-                ActionMappingUtils.getOptionIds($scope.model.selectedOptions),
-                multiOrgUnit).then(function(response){
-                    
-                var dialogOptions = {
-                    headerText: 'success',
-                    bodyText: 'marked_complete'
-                };
-                DialogService.showDialog({}, dialogOptions);
-                //processCompletness(orgUnit, multiOrgUnit, true);                
-                //$scope.model.dataSetCompleted = angular.equals({}, $scope.model.dataSetCompletness);
-                $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = true;                
-                
+            var dsr = {completeDataSetRegistrations: [{dataSet: $scope.model.selectedDataSet.id, organisationUnit: $scope.selectedOrgUnit.id, period: $scope.model.selectedPeriod.id, attributeOptionCombo: $scope.model.selectedAttributeOptionCombo}]};
+            CompletenessService.save(dsr).then(function(response){                    
+                if( response && response.status === 'SUCCESS' ){
+                    var dialogOptions = {
+                        headerText: 'success',
+                        bodyText: 'marked_complete'
+                    };
+                    DialogService.showDialog({}, dialogOptions);
+                    $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = true;
+                }                
             }, function(response){
                 ActionMappingUtils.errorNotifier( response );
             });
