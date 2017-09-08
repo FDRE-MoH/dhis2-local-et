@@ -73,13 +73,8 @@ public class SixMonthlyNovemberPeriodType extends SixMonthlyAbstractPeriodType {
 
     @Override
     public String getIsoDate( DateTimeUnit dateTimeUnit, Calendar calendar )
-    {
-        int month = dateTimeUnit.getMonth();
-
-        if ( dateTimeUnit.isIso8601() )
-        {
-            month = calendar.fromIso( dateTimeUnit ).getMonth();
-        }
+    {        
+    	int month = dateTimeUnit.getMonth();
 
         switch ( month )
         {
