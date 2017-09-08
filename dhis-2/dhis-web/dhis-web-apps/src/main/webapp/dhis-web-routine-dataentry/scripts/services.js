@@ -18,7 +18,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 })
 
 /* current selections */
-.service('PeriodService', function(DateUtils, CalendarService){
+.service('PeriodService', function(CalendarService){
     
     this.getPeriods = function(periodType, periodOffset){
         periodOffset = angular.isUndefined(periodOffset) ? 0 : periodOffset;
@@ -26,18 +26,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         if(!periodType){
             return availablePeriods;
         }        
-
-        /*var pt = new PeriodType();
-        var d2Periods = pt.get(periodType).generatePeriods({offset: periodOffset, filterFuturePeriods: false, reversePeriods: false});
-        angular.forEach(d2Periods, function(p){
-            p.endDate = DateUtils.formatFromApiToUser(p.endDate);
-            p.startDate = DateUtils.formatFromApiToUser(p.startDate);
-            if(moment(DateUtils.getToday()).isAfter(p.endDate)){                    
-                availablePeriods.push( p );
-            }
-        });        
-        availablePeriods = availablePeriods.reverse();
-        return availablePeriods;*/
         
         var calendarSetting = CalendarService.getSetting();
         
