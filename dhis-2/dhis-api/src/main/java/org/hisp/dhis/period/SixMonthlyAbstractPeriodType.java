@@ -33,7 +33,6 @@ import com.google.common.collect.Lists;
 import org.hisp.dhis.calendar.Calendar;
 import org.hisp.dhis.calendar.DateTimeUnit;
 import org.hisp.dhis.calendar.impl.EthiopianCalendar;
-import org.joda.time.DateTime;
 
 import java.util.Date;
 import java.util.List;
@@ -66,9 +65,11 @@ public abstract class SixMonthlyAbstractPeriodType
     @Override
     public Period createPeriod( DateTimeUnit dateTimeUnit, org.hisp.dhis.calendar.Calendar calendar )
     {
-    	if (calendar instanceof EthiopianCalendar) {
+    	if (calendar instanceof EthiopianCalendar || this.getName().equalsIgnoreCase( SixMonthlyNovemberPeriodType.NAME ) ) 
+    	{    		
     		return getEthiopianSixMonthlyPeriod(calendar, dateTimeUnit);
     	}
+    	
         DateTimeUnit start = new DateTimeUnit( dateTimeUnit );
 
         int baseMonth = getBaseMonth();
@@ -91,7 +92,7 @@ public abstract class SixMonthlyAbstractPeriodType
     //Ethiopian calendar helper
     //-----------------------------------------------
     private Period getEthiopianSixMonthlyPeriod(org.hisp.dhis.calendar.Calendar calendar, DateTimeUnit dateTimeUnit) {
-    	DateTimeUnit start=new DateTimeUnit(dateTimeUnit);
+    	/*DateTimeUnit start=new DateTimeUnit(dateTimeUnit);
     	
     	int baseMonth=getBaseMonth();
     	
@@ -110,7 +111,35 @@ public abstract class SixMonthlyAbstractPeriodType
     	DateTimeUnit end=new DateTimeUnit(start);
     	end=calendar.plusMonths(end, 5);
     	end.setDay(calendar.daysInMonth(end.getYear(), end.getMonth()));
-    	return toIsoPeriod(start,end,calendar);
+    	return toIsoPeriod(start,end,calendar);*/    	
+
+        DateTimeUnit start = new DateTimeUnit( dateTimeUnit );
+        
+        int baseMonth = getBaseMonth();
+        int year = start.getYear();
+        int month = baseMonth;
+        
+        if( start.getMonth() < 5 )
+        {
+        	--year;
+        	month = baseMonth;
+        }
+        
+        if( start.getMonth() < baseMonth && start.getMonth() > 5 )
+        {
+        	month = baseMonth - 6;
+        }
+        
+    	start.setYear( year );
+        start.setMonth( month );
+        start.setDay( 1 );        
+
+        DateTimeUnit end = new DateTimeUnit( start );
+        end = calendar.plusMonths( end, 5 );
+        end.setDay( calendar.daysInMonth( end.getYear(), end.getMonth() ) );
+
+        return toIsoPeriod( start, end, calendar );
+    	
     }
 
     @Override
@@ -134,17 +163,9 @@ public abstract class SixMonthlyAbstractPeriodType
 
     @Override
     public Period getPreviousPeriod( Period period, Calendar calendar )
-    {
-    	if(calendar instanceof EthiopianCalendar) {
-    		DateTime jodaTime=new DateTime(period.getStartDate());
-    		DateTimeUnit dateTimeUnit=calendar.fromIso(jodaTime.getYear(),jodaTime.getMonthOfYear(),jodaTime.getDayOfMonth());
-    		dateTimeUnit=calendar.minusMonths(dateTimeUnit, 6);
-    		return createPeriod(dateTimeUnit,calendar);
-    		
-    	}
-        DateTimeUnit dateTimeUnit = calendar.fromIso( DateTimeUnit.fromJdkDate( period.getStartDate() ) );
+    {  	
+        DateTimeUnit dateTimeUnit = calendar.fromIso( DateTimeUnit.fromJdkDate( period.getStartDate() ) );        
         dateTimeUnit = calendar.minusMonths( dateTimeUnit, 6 );
-
         return createPeriod( dateTimeUnit, calendar );
     }
 

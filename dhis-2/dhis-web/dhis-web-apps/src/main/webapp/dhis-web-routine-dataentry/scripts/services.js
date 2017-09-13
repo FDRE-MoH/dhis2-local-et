@@ -18,7 +18,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 })
 
 /* current selections */
-.service('PeriodService', function(DateUtils, CalendarService){
+.service('PeriodService', function(CalendarService){
     
     this.getPeriods = function(periodType, periodOffset){
         periodOffset = angular.isUndefined(periodOffset) ? 0 : periodOffset;
@@ -26,18 +26,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         if(!periodType){
             return availablePeriods;
         }        
-
-        /*var pt = new PeriodType();
-        var d2Periods = pt.get(periodType).generatePeriods({offset: periodOffset, filterFuturePeriods: false, reversePeriods: false});
-        angular.forEach(d2Periods, function(p){
-            p.endDate = DateUtils.formatFromApiToUser(p.endDate);
-            p.startDate = DateUtils.formatFromApiToUser(p.startDate);
-            if(moment(DateUtils.getToday()).isAfter(p.endDate)){                    
-                availablePeriods.push( p );
-            }
-        });        
-        availablePeriods = availablePeriods.reverse();
-        return availablePeriods;*/
         
         var calendarSetting = CalendarService.getSetting();
         
@@ -50,7 +38,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         dhis2.period.picker = new dhis2.period.DatePicker( dhis2.period.calendar, dhis2.period.format );
         
         var d2Periods = dhis2.period.generator.generateReversedPeriods( periodType, periodOffset );
-                
+                        
         angular.forEach(d2Periods, function(p){
             p.id = p.iso;
             var st = p.endDate.split('-');
@@ -541,27 +529,30 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 .service('CompletenessService', function($http, ActionMappingUtils) {   
     
     return {        
-        get: function( ds, ou, startDate, endDate, children ){
-            var promise = $http.get('../api/completeDataSetRegistrations?dataSet='+ds+'&orgUnit='+ou+'&startDate='+startDate+'&endDate='+endDate+'&children='+children).then(function(response){
+        get: function( ds, ou, period, children ){
+            var promise = $http.get('../api/completeDataSetRegistrations?dataSet='+ds+'&orgUnit='+ou+'&period='+period+'&children='+children).then(function(response){
                 return response.data;
-            }, function(response){
+            }, function(response){                
                 ActionMappingUtils.errorNotifier(response);
+                return response.data;
             });
             return promise;
         },
-        save: function( ds, pe, ou, cc, cp, multiOu){
-            var promise = $http.post('../api/25/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
+        save: function( dsr ){
+            var promise = $http.post('../api/completeDataSetRegistrations', dsr ).then(function(response){
                 return response.data;
-            }, function(response){
+            }, function(response){                
                 ActionMappingUtils.errorNotifier(response);
+                return response.data;
             });
             return promise;
         },
         delete: function( ds, pe, ou, cc, cp, multiOu){
             var promise = $http.delete('../api/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
                 return response.data;
-            }, function(response){
+            }, function(response){                
                 ActionMappingUtils.errorNotifier(response);
+                return response.data;
             });
             return promise;
         }
@@ -728,7 +719,14 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 DialogService.showDialog({}, dialogOptions);
             }
         },
-        getNumeratorAndDenominatorIds: function( ind ){            
+        notify: function(headerMsg, bodyMsg){
+            var dialogOptions = {
+                headerText: $translate.instant(headerMsg),
+                bodyText: $translate.instant(bodyMsg)
+            };		
+            DialogService.showDialog({}, dialogOptions);
+        }
+        ,getNumeratorAndDenominatorIds: function( ind ){            
             var num = ind.numerator.substring(2,ind.numerator.length-1);
             num = num.split('.');            
             var den = ind.denominator.substring(2,ind.numerator.length-1);
