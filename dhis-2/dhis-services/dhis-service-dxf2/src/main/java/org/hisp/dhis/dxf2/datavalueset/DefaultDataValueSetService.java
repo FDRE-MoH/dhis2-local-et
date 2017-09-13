@@ -94,6 +94,7 @@ import org.hisp.quick.BatchHandlerFactory;
 import org.hisp.staxwax.factory.XMLFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -576,7 +577,19 @@ public class DefaultDataValueSetService
     @Override
     public ImportSummary saveDataValueSetBinary( InputStream in, ImportOptions importOptions, TaskId id)
     {
-        return null;
+        try
+        {
+            in=StreamUtils.wrapAndCheckCompressionFormat( in );
+            DataValueSet dataValueSet = new StreamingBinaryDataValueSet( in );
+            return saveDataValueSet(importOptions, id, dataValueSet);
+        }
+        catch ( IOException ex )
+        {
+            log.error( DebugUtils.getStackTrace( ex ) );
+            notifier.clear( id ).notify( id, ERROR, "Process failed: " + ex.getMessage(), true );
+            return new ImportSummary( ImportStatus.ERROR, "The import process failed: " + ex.getMessage() );
+        }
+        
     }
 
     @Override
@@ -807,6 +820,9 @@ public class DefaultDataValueSetService
         while ( dataValueSet.hasNextDataValue() )
         {
             org.hisp.dhis.dxf2.datavalue.DataValue dataValue = dataValueSet.getNextDataValue();
+            if(dataValue==null) {
+                break;
+            }
 
             totalCount++;
 

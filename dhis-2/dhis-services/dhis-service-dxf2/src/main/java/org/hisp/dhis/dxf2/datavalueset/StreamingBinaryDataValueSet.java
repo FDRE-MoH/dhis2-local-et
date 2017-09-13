@@ -1,15 +1,16 @@
 package org.hisp.dhis.dxf2.datavalueset;
 
 import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
 import org.hisp.dhis.dxf2.datavalue.DataValue;
 import org.hisp.dhis.dxf2.datavalue.StreamingBinaryDataValue;
-
-import com.lowagie.text.pdf.codec.Base64.InputStream;
 
 public class StreamingBinaryDataValueSet extends DataValueSet implements Serializable
 {
@@ -20,7 +21,7 @@ public class StreamingBinaryDataValueSet extends DataValueSet implements Seriali
 
     private ObjectOutputStream writer;
     
-    private InputStream reader;
+    private ObjectInputStream reader;
     
     public StreamingBinaryDataValueSet( OutputStream writer )
     {
@@ -34,49 +35,55 @@ public class StreamingBinaryDataValueSet extends DataValueSet implements Seriali
             e.printStackTrace();
         }
         
-        /*try
+    }
+    
+    public StreamingBinaryDataValueSet ( InputStream inputStream) {
+        try
         {
-            this.writer.writeRecord( StreamingCsvDataValue.getHeaders() ); // Write headers
+            this.reader=new ObjectInputStream( inputStream );
         }
-        catch ( IOException ex )
+        catch ( IOException e )
         {
-            throw new RuntimeException( "Failed to write CSV headers", ex );
-        }*/
+            throw new RuntimeException("Failed to create object reader from inputStream (file upload)");
+        }
     }
     
     @Override
+    //TODO test if this might block in a slow connection because if the 
+    //file is too large and the reading is fast, the available might return 0 before all file is uploaded.
     public boolean hasNextDataValue()
     {
-        
-        //TODO 
-        return false;
-        
-        /*
         try
         {
-            return reader.readRecord();
+            return reader.available()<0 ? false : true;
         }
-        catch ( IOException ex )
+        catch ( IOException e )
         {
-            throw new RuntimeException( "Failed to read record", ex );
-        }*/
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override
     public DataValue getNextDataValue()
     {
-        //TODO 
-        return new StreamingBinaryDataValue( writer );
-        
-        /*
         try
         {
-            return new StreamingCsvDataValue( reader.getValues() );
+            return new StreamingBinaryDataValue( reader.readObject() );
+        }
+        catch( EOFException ex) {
+            //because available doesn't work very well it needs to be edited to this.
+            return null;
         }
         catch ( IOException ex )
         {
-            throw new RuntimeException( "Failed to get CSV values", ex );
-        }*/
+            throw new RuntimeException( "Failed to read object from the encoded file", ex );
+        }
+        catch ( ClassNotFoundException ex )
+        {
+            throw new RuntimeException( "Failed to read object from the encoded file", ex );
+        }
     }
 
     @Override
@@ -90,11 +97,8 @@ public class StreamingBinaryDataValueSet extends DataValueSet implements Seriali
     {
         if ( writer != null )
         {
-            
-            
             try
             {
-                writer.write( "Closing binaryDataValueSet writer\n".getBytes());
                 writer.close();
             }
             catch ( IOException e )
@@ -112,7 +116,6 @@ public class StreamingBinaryDataValueSet extends DataValueSet implements Seriali
             }
             catch ( IOException e )
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
