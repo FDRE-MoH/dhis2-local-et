@@ -46,6 +46,7 @@ routineDataEntry.controller('dataEntryController',
                     attributeCategoryUrl: null,
                     showCustomForm: false,
                     valueExists: false};
+    $scope.model.booleanValues = [{displayName: 'yes', value: true},{displayName: 'no', value: false}];
     
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
@@ -411,7 +412,7 @@ routineDataEntry.controller('dataEntryController',
                     pe: $scope.model.selectedPeriod.id,
                     de: deId,
                     co: ocId,
-                    value: $scope.dataValues[deId][ocId] && $scope.dataValues[deId][ocId].value ? $scope.dataValues[deId][ocId].value : ''
+                    value: $scope.dataValues[deId][ocId] && $scope.dataValues[deId][ocId].value || $scope.dataValues[deId][ocId].value === false ? $scope.dataValues[deId][ocId].value : ''
                 };        
         
         if( $scope.model.selectedAttributeCategoryCombo && !$scope.model.selectedAttributeCategoryCombo.isDefault ){            

@@ -464,7 +464,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     
     return {        
         saveDataValue: function( dv ){
-            
+
             var url = '?de='+dv.de + '&ou='+dv.ou + '&pe='+dv.pe + '&co='+dv.co + '&value='+dv.value;            
             
             if( dv.cc && dv.cp ) {
@@ -801,6 +801,9 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             else if(de.valueType=== 'TRUE_ONLY'){
                 val=val==='true'? true: '';
             }
+            else if(de.valueType=== 'BOOLEAN'){
+                val = val === 'true' || val === true ? true : val === 'false' || val === false ? false : '';
+            }
             
             return val;
         },
@@ -808,7 +811,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             if( dataValues[dataElement] ){                
                 dataValues[dataElement].total = 0;                
                 angular.forEach(dataValues[dataElement], function(val, key){
-                    if( key !== 'total' && val && val.value ){                        
+                    if( key !== 'total' && val && val.value && dhis2.validation.isNumber( val.value ) ){                        
                         dataValues[dataElement].total += val.value;
                     }
                 });
@@ -1072,4 +1075,4 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         open: open,
         get: get
     };
-})
+});
