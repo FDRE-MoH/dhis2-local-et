@@ -530,7 +530,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     
     return {        
         get: function( ds, ou, period, children ){
-            var promise = $http.get('../api/completeDataSetRegistrations?dataSet='+ds+'&orgUnit='+ou+'&period='+period+'&children='+children).then(function(response){
+            var promise = $http.get('../api/completeDataSetRegistrations.json?dataSet='+ds+'&orgUnit='+ou+'&period='+period+'&children='+children).then(function(response){
                 return response.data;
             }, function(response){                
                 ActionMappingUtils.errorNotifier(response);
@@ -539,7 +539,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             return promise;
         },
         save: function( dsr ){
-            var promise = $http.post('../api/completeDataSetRegistrations', dsr ).then(function(response){
+            var promise = $http.post('../api/completeDataSetRegistrations.json', dsr ).then(function(response){
                 return response.data;
             }, function(response){                
                 ActionMappingUtils.errorNotifier(response);
