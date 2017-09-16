@@ -346,22 +346,22 @@ routineDataEntry.controller('dataEntryController',
                     var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[de.id], $scope.dataValues, $scope.model.failedValidationRules);
                     $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;                    
                 });
-            });
-            
-            $scope.model.dataSetCompletness = {};
-            CompletenessService.get( $scope.model.selectedDataSet.id, 
-                                    $scope.selectedOrgUnit.id,
-                                    $scope.model.selectedPeriod.id,
-                                    $scope.model.allowMultiOrgUnitEntry).then(function(response){                
-                if( response && 
-                        response.completeDataSetRegistrations && 
-                        response.completeDataSetRegistrations.length &&
-                        response.completeDataSetRegistrations.length > 0){
-                    
-                    angular.forEach(response.completeDataSetRegistrations, function(cdr){
-                        $scope.model.dataSetCompletness[cdr.attributeOptionCombo] = true;                        
-                    });
-                }
+                
+                $scope.model.dataSetCompletness = {};
+                CompletenessService.get( $scope.model.selectedDataSet.id, 
+                                        $scope.selectedOrgUnit.id,
+                                        $scope.model.selectedPeriod.id,
+                                        $scope.model.allowMultiOrgUnitEntry).then(function(response){                
+                    if( response && 
+                            response.completeDataSetRegistrations && 
+                            response.completeDataSetRegistrations.length &&
+                            response.completeDataSetRegistrations.length > 0){
+
+                        angular.forEach(response.completeDataSetRegistrations, function(cdr){
+                            $scope.model.dataSetCompletness[cdr.attributeOptionCombo] = true;                        
+                        });
+                    }
+                });
             });
         }
     };
