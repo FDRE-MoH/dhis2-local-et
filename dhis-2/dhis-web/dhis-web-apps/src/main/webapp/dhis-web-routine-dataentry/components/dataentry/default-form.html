@@ -166,6 +166,16 @@
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                            d2-blur="saveDataValue(de.id, oco.id, false)">
                                                 </span>
+                                                <span ng-switch-when="BOOLEAN">
+                                                    <d2-radio id="oco.id" 
+                                                        d2-name="foo" 
+                                                        d2-object="dataValues[de.id]" 
+                                                        d2-options="model.booleanValues"
+                                                        d2-disabled="checkForGrayField(de)"
+                                                        d2-value-save-status="getInputNotifcationClass(de.id, oco.id)"
+                                                        d2-function="saveDataValue(de.id, oco.id, false)">
+                                                    </d2-radio>
+                                                </span>
                                                 <span ng-switch-default>
                                                     <div class="alert alert-danger form-control">
                                                         {{'unsupported_value_type'| translate}}:  {{de.valueType}}
@@ -335,11 +345,21 @@
                                 <span ng-switch-when="TRUE_ONLY">
                                     <input type="checkbox"   
                                            name="foo"
-                                           ng-model="dataValues[de.id][oco.id]" 
+                                           ng-model="dataValues[de.id][oco.id].value" 
                                            ng-disabled="checkForGrayField(de)"
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                            d2-blur="saveDataValue(de.id, oco.id, false)">
+                                </span>
+                                <span ng-switch-when="BOOLEAN">
+                                    <d2-radio id="oco.id" 
+                                        d2-name="foo" 
+                                        d2-object="dataValues[de.id]" 
+                                        d2-options="model.booleanValues"
+                                        d2-disabled="checkForGrayField(de)"
+                                        d2-value-save-status="getInputNotifcationClass(de.id, oco.id)"
+                                        d2-function="saveDataValue(de.id, oco.id, false)">
+                                    </d2-radio>
                                 </span>
                                 <span ng-switch-default>
                                     <div class="alert alert-danger form-control">

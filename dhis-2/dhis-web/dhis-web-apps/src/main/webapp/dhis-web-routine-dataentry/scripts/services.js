@@ -210,7 +210,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 })
 
 /* Factory to fetch programs */
-.factory('DataSetFactory', function($q, $rootScope, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils, ActionMappingUtils) { 
+.factory('DataSetFactory', function($q, $rootScope, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils, DataEntryUtils) { 
   
     return {        
         getActionDataSets: function( ou ){            
@@ -230,7 +230,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     angular.forEach(dss, function(ds){
                         if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.organisationUnits.hasOwnProperty( ou.id ) ){
                             ds.entryMode = 'Single Entry';
-                            ds = ActionMappingUtils.processDataSet( ds );
+                            ds = DataEntryUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -243,7 +243,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                                 angular.forEach(ou.c, function(c){                                    
                                     if( ds.organisationUnits.hasOwnProperty( c ) && pushedDss.indexOf( ds.id ) === -1 && ds.dataSetType === "action"){
                                         ds.entryMode = 'Multiple Entry';
-                                        ds = ActionMappingUtils.processDataSet( ds );
+                                        ds = DataEntryUtils.processDataSet( ds );
                                         dataSets.push(ds);
                                         pushedDss.push( ds.id );                                            
                                     }
@@ -269,7 +269,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     var dataSets = [];                    
                     angular.forEach(dss, function(ds){
                         if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.dataSetType && ds.dataSetType === 'targetGroup'){                        
-                            ds = ActionMappingUtils.processDataSet( ds );
+                            ds = DataEntryUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -292,7 +292,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     var dataSets = [];                    
                     angular.forEach(dss, function(ds){
                         if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.dataSetType && ( ds.dataSetType === 'targetGroup' || ds.dataSetType === 'action') ){                        
-                            ds = ActionMappingUtils.processDataSet( ds );
+                            ds = DataEntryUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -310,7 +310,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             
             PMTStorageService.currentStore.open().done(function(){
                 PMTStorageService.currentStore.get('dataSets', uid).done(function(ds){
-                    ds = ActionMappingUtils.processDataSet( ds );
+                    ds = DataEntryUtils.processDataSet( ds );
                     $rootScope.$apply(function(){
                         def.resolve(ds);
                     });
@@ -328,7 +328,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     var dataSets = [];
                     angular.forEach(dss, function(ds){                            
                         if(ds.organisationUnits.hasOwnProperty( ou.id ) && CommonUtils.userHasValidRole(ds,'dataSets', userRoles)){
-                            ds = ActionMappingUtils.processDataSet( ds );
+                            ds = DataEntryUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -377,7 +377,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                     var dataSets = [];
                     angular.forEach(dss, function(ds){                            
                         if(ds.organisationUnits.hasOwnProperty( ou.id ) && CommonUtils.userHasValidRole(ds,'dataSets', userRoles) && ds[propertyName] && ds[propertyName]===propertyValue){
-                            ds = ActionMappingUtils.processDataSet( ds );
+                            ds = DataEntryUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -460,11 +460,11 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };        
 })
 
-.service('DataValueService', function($http, ActionMappingUtils,$q) {   
+.service('DataValueService', function($http, DataEntryUtils,$q) {   
     
     return {        
         saveDataValue: function( dv ){
-            
+
             var url = '?de='+dv.de + '&ou='+dv.ou + '&pe='+dv.pe + '&co='+dv.co + '&value='+dv.value;            
             
             if( dv.cc && dv.cp ) {
@@ -519,30 +519,30 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var promise = $http.get('../api/dataValueSets.json?' + params ).then(function(response){               
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });            
             return promise;
         }
     };    
 })
 
-.service('CompletenessService', function($http, ActionMappingUtils) {   
+.service('CompletenessService', function($http, DataEntryUtils) {   
     
     return {        
         get: function( ds, ou, period, children ){
-            var promise = $http.get('../api/completeDataSetRegistrations?dataSet='+ds+'&orgUnit='+ou+'&period='+period+'&children='+children).then(function(response){
+            var promise = $http.get('../api/completeDataSetRegistrations.json?dataSet='+ds+'&orgUnit='+ou+'&period='+period+'&children='+children).then(function(response){
                 return response.data;
             }, function(response){                
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
                 return response.data;
             });
             return promise;
         },
         save: function( dsr ){
-            var promise = $http.post('../api/completeDataSetRegistrations', dsr ).then(function(response){
+            var promise = $http.post('../api/completeDataSetRegistrations.json', dsr ).then(function(response){
                 return response.data;
             }, function(response){                
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
                 return response.data;
             });
             return promise;
@@ -551,7 +551,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var promise = $http.delete('../api/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&cc=' + cc + '&cp=' + cp + '&multiOu=' + multiOu ).then(function(response){
                 return response.data;
             }, function(response){                
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
                 return response.data;
             });
             return promise;
@@ -559,42 +559,42 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };
 })
 
-.service('DataValueAuditService', function($http, ActionMappingUtils) {   
+.service('DataValueAuditService', function($http, DataEntryUtils) {   
     
     return {        
         getDataValueAudit: function( dv ){
             var promise = $http.get('../api/audits/dataValue.json?paging=false&de='+dv.de+'&ou='+dv.ou+'&pe='+dv.pe+'&co='+dv.co+'&cc='+dv.cc).then(function(response){
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });
             return promise;
         }
     };
 })
 
-.service('EventValueAuditService', function($http, ActionMappingUtils) {   
+.service('EventValueAuditService', function($http, DataEntryUtils) {   
     
     return {        
         getEventValueAudit: function( event ){
             var promise = $http.get('../api/audits/trackedEntityDataValue.json?paging=false&psi='+event).then(function(response){
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });
             return promise;
         }
     };
 })
 
-.service('StakeholderService', function($http, ActionMappingUtils) {   
+.service('StakeholderService', function($http, DataEntryUtils) {   
     
     return {        
         addCategoryOption: function( categoryOption ){
             var promise = $http.post('../api/categoryOptions.json' , categoryOption ).then(function(response){
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });
             return promise;
         },
@@ -602,7 +602,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var promise = $http.put('../api/categories/' + category.id + '.json&mergeMode=MERGE', category ).then(function(response){
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });
             return promise;
         },
@@ -610,7 +610,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var promise = $http.get('../api/categoryCombos/' + uid + '.json?fields=id,displayName,code,skipTotal,isDefault,categoryOptionCombos[id,displayName,categoryOptions[displayName]],categories[id,displayName,code,dimension,dataDimensionType,attributeValues[value,attribute[id,name,valueType,code]],categoryOptions[id,displayName,code]]').then(function(response){
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });
             return promise;
         },
@@ -618,7 +618,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var promise = $http.post('../api/options.json' , opt ).then(function(response){
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });
             return promise;
         },
@@ -626,7 +626,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var promise = $http.put('../api/optionSets/' + optionSet.id + '.json&mergeMode=MERGE', optionSet ).then(function(response){
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });
             return promise;
         },
@@ -634,7 +634,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             var promise = $http.get('../api/optionSets/' + uid + '.json?paging=false&fields=id,name,displayName,version,valueType,attributeValues[value,attribute[id,name,valueType,code]],options[id,name,displayName,code]').then(function(response){
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });
             return promise;
         }
@@ -656,20 +656,20 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };
 })
 
-.service('MaintenanceService', function($http, ActionMappingUtils){
+.service('MaintenanceService', function($http, DataEntryUtils){
     return {
         updateOptionCombo: function(){
             var promise = $http.post('../api/maintenance/categoryOptionComboUpdate' , true ).then(function(response){
                 return response.data;
             }, function(response){
-                ActionMappingUtils.errorNotifier(response);
+                DataEntryUtils.errorNotifier(response);
             });
             return promise;
         }
     };
 })
 
-.service('ActionMappingUtils', function($q, $translate, $filter, DialogService, OrgUnitService){
+.service('DataEntryUtils', function($q, $translate, $filter, DialogService, OrgUnitService){
     return {
         getSum: function( op1, op2 ){
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
@@ -801,6 +801,9 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             else if(de.valueType=== 'TRUE_ONLY'){
                 val=val==='true'? true: '';
             }
+            else if(de.valueType=== 'BOOLEAN'){
+                val = val === 'true' || val === true ? true : val === 'false' || val === false ? false : '';
+            }
             
             return val;
         },
@@ -808,7 +811,7 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
             if( dataValues[dataElement] ){                
                 dataValues[dataElement].total = 0;                
                 angular.forEach(dataValues[dataElement], function(val, key){
-                    if( key !== 'total' && val && val.value ){                        
+                    if( key !== 'total' && val && val.value && dhis2.validation.isNumber( val.value ) ){                        
                         dataValues[dataElement].total += val.value;
                     }
                 });
@@ -1072,4 +1075,4 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
         open: open,
         get: get
     };
-})
+});

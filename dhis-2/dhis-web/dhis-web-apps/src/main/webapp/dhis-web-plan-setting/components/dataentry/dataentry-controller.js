@@ -46,6 +46,8 @@ routineDataEntry.controller('dataEntryController',
                     showCustomForm: false,
                     valueExists: false};
     
+    $scope.model.booleanValues = [{displayName: 'yes', value: true},{displayName: 'no', value: false}];
+    
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
         $scope.model.periods = [];
@@ -241,23 +243,23 @@ routineDataEntry.controller('dataEntryController',
                     var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[de.id], $scope.dataValues, $scope.model.failedValidationRules);
                     $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;                    
                 });
-            });
-            
-            $scope.model.dataSetCompletness = {};
-            CompletenessService.get( $scope.model.selectedDataSet.id, 
-                                    $scope.selectedOrgUnit.id,
-                                    $scope.model.selectedPeriod.id,
-                                    $scope.model.allowMultiOrgUnitEntry).then(function(response){                
-                if( response && 
-                        response.completeDataSetRegistrations && 
-                        response.completeDataSetRegistrations.length &&
-                        response.completeDataSetRegistrations.length > 0){
-                    
-                    angular.forEach(response.completeDataSetRegistrations, function(cdr){
-                        $scope.model.dataSetCompletness[cdr.attributeOptionCombo] = true;                        
-                    });
-                }
-            });
+                
+                $scope.model.dataSetCompletness = {};
+                CompletenessService.get( $scope.model.selectedDataSet.id, 
+                                        $scope.selectedOrgUnit.id,
+                                        $scope.model.selectedPeriod.id,
+                                        $scope.model.allowMultiOrgUnitEntry).then(function(response){                
+                    if( response && 
+                            response.completeDataSetRegistrations && 
+                            response.completeDataSetRegistrations.length &&
+                            response.completeDataSetRegistrations.length > 0){
+
+                        angular.forEach(response.completeDataSetRegistrations, function(cdr){
+                            $scope.model.dataSetCompletness[cdr.attributeOptionCombo] = true;                        
+                        });
+                    }
+                });
+            });            
         }
     };
     
@@ -305,8 +307,8 @@ routineDataEntry.controller('dataEntryController',
         var dataValue = {ou: $scope.selectedOrgUnit.id,
                     pe: $scope.model.selectedPeriod.id,
                     de: deId,
-                    co: ocId,
-                    value: $scope.dataValues[deId][ocId] && $scope.dataValues[deId][ocId].value ? $scope.dataValues[deId][ocId].value : ''
+                    co: ocId,                    
+                    value: $scope.dataValues[deId][ocId] && $scope.dataValues[deId][ocId].value || $scope.dataValues[deId][ocId].value === false ? $scope.dataValues[deId][ocId].value : ''
                 };        
         
         if( $scope.model.selectedAttributeCategoryCombo && !$scope.model.selectedAttributeCategoryCombo.isDefault ){            
