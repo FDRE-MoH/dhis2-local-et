@@ -11,12 +11,13 @@ function performMaintenance() {
     var dropSqlViews = $("#dropSqlViews").is(":checked");
     var createSqlViews = $("#createSqlViews").is(":checked");
     var updateCategoryOptionCombos = $("#updateCategoryOptionCombos").is(":checked");
+    var updateCategoryOptionComboNames = $("#updateCategoryOptionComboNames").is(":checked");
     var updateOrganisationUnitPaths = $("#updateOrganisationUnitPaths").is(":checked");
     var clearApplicationCache = $("#clearApplicationCache").is(":checked");
     var reloadApps = $("#reloadApps").is(":checked");
 
     if ( clearAnalytics || analyzeAnalytics || zeroValues || softDeletedValues || softDeletedEvents || softDeletedEnrollments || softDeletedTrackedEntityInstances || prunePeriods || removeExpiredInvitations ||
-        dropSqlViews || createSqlViews || updateCategoryOptionCombos || updateOrganisationUnitPaths || clearApplicationCache || reloadApps ) {
+        dropSqlViews || createSqlViews || updateCategoryOptionCombos || updateCategoryOptionComboNames || updateOrganisationUnitPaths || clearApplicationCache || reloadApps ) {
 
         setHeaderWaitMessage(i18n_performing_maintenance);
 
@@ -32,6 +33,7 @@ function performMaintenance() {
             "&sqlViewsDrop=" + dropSqlViews +
             "&sqlViewsCreate=" + createSqlViews +
             "&categoryOptionComboUpdate=" + updateCategoryOptionCombos +
+            "&categoryOptionComboNameUpdate=" + updateCategoryOptionComboNames +
             "&ouPathsUpdate=" + updateOrganisationUnitPaths +
             "&cacheClear=" + clearApplicationCache +
             "&appReload=" + reloadApps;
