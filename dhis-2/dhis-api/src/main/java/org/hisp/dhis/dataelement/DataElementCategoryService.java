@@ -474,6 +474,21 @@ public interface DataElementCategoryService
      * Updates the name property of all category option combinations.
      */
     void updateCategoryOptionComboNames();
+    
+    
+    /**
+     * Updates the name property of category option combinations for a give
+     * category combo.
+     * 
+     * @param categoryCombo the DataElementCategoryCombo.
+     */
+    void updateCategoryOptionComboNames( DataElementCategoryCombo categoryCombo );
+    
+    /**
+     * Updates the complete set of category option combo names for all category
+     * combos.
+     */
+    void updateAllCategoryOptionComboNames();
 
     // -------------------------------------------------------------------------
     // DataElementOperand
