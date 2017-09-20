@@ -34,7 +34,6 @@ routineDataEntry.controller('dataEntryController',
                     categoryOptionsReady: false,
                     allowMultiOrgUnitEntry: false,
                     selectedOptions: [],
-                    dataValues: {},
                     orgUnitsWithValues: [],
                     selectedAttributeOptionCombos: {},
                     selectedAttributeOptionCombo: null,
@@ -137,10 +136,10 @@ routineDataEntry.controller('dataEntryController',
         $scope.getControllerDataElementGroups();
     });
     
-    $scope.$watch('model.selectedPeriod', function(){        
+    $scope.$watch('model.selectedPeriod', function(){
         $scope.dataValues = {};
         $scope.model.valueExists = false;
-        reinitializeGroupDetails();
+        reinitializeGroupDetails();        
         $scope.loadDataEntryForm();        
     });    
     
@@ -175,7 +174,7 @@ routineDataEntry.controller('dataEntryController',
                 }
             });
         });
-    }
+    };
     
     $scope.checkForGrayField = function (dataElement) {
         if (dataElement.controlling_data_element) {
@@ -187,7 +186,7 @@ routineDataEntry.controller('dataEntryController',
             }
         }
         return false;
-    }
+    };
     
     $scope.performAutoZero = function(section){
         var dataValueSet = {
@@ -300,7 +299,7 @@ routineDataEntry.controller('dataEntryController',
     
     $scope.loadDataEntryForm = function(){
         
-        resetParams();
+        resetParams();        
         if( angular.isObject( $scope.selectedOrgUnit ) && $scope.selectedOrgUnit.id &&
                 angular.isObject( $scope.model.selectedDataSet ) && $scope.model.selectedDataSet.id &&
                 angular.isObject( $scope.model.selectedPeriod) && $scope.model.selectedPeriod.id &&
@@ -367,6 +366,14 @@ routineDataEntry.controller('dataEntryController',
         }
     };
     
+    $scope.interacted = function(field) {
+        var status = false;
+        if(field){            
+            status = $scope.outerForm.submitted || field.$dirty;
+        }
+        return status;
+    };
+    
     function checkOptions(){
         resetParams();
         for(var i=0; i<$scope.model.selectedAttributeCategoryCombo.categories.length; i++){
@@ -406,6 +413,14 @@ routineDataEntry.controller('dataEntryController',
     
     $scope.saveDataValue = function( deId, ocId ){
         
+        //check for form validity
+        $scope.outerForm.submitted = true;        
+        if( $scope.outerForm.$invalid ){
+            DataEntryUtils.notify('error', 'invalid_input');
+            return ;
+        }
+        
+        //form is valid        
         $scope.saveStatus[ deId + '-' + ocId] = {saved: false, pending: true, error: false};
         
         var dataValue = {ou: $scope.selectedOrgUnit.id,
