@@ -34,7 +34,6 @@ routineDataEntry.controller('dataEntryController',
                     categoryOptionsReady: false,
                     allowMultiOrgUnitEntry: false,
                     selectedOptions: [],
-                    dataValues: {},
                     orgUnitsWithValues: [],
                     selectedAttributeOptionCombos: {},
                     selectedAttributeOptionCombo: null,
@@ -61,6 +60,7 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.selectedAttributeOptionCombo = null;
         $scope.model.selectedProgram = null;
         $scope.dataValues = {};
+        $scope.dataValuesCopy = {};
         $scope.model.basicAuditInfo = {};
         $scope.model.orgUnitsWithValues = [];
         $scope.model.categoryOptionsReady = false;
@@ -126,6 +126,7 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.selectedPeriod = null;
         $scope.model.categoryOptionsReady = false;
         $scope.dataValues = {};
+        $scope.dataValuesCopy = {};
         $scope.model.selectedProgram = null;
         $scope.model.selectedEvent = {};
         $scope.model.orgUnitsWithValues = [];
@@ -137,10 +138,11 @@ routineDataEntry.controller('dataEntryController',
         $scope.getControllerDataElementGroups();
     });
     
-    $scope.$watch('model.selectedPeriod', function(){        
+    $scope.$watch('model.selectedPeriod', function(){
         $scope.dataValues = {};
+        $scope.dataValuesCopy = {};
         $scope.model.valueExists = false;
-        reinitializeGroupDetails();
+        reinitializeGroupDetails();        
         $scope.loadDataEntryForm();        
     });    
     
@@ -175,7 +177,7 @@ routineDataEntry.controller('dataEntryController',
                 }
             });
         });
-    }
+    };
     
     $scope.checkForGrayField = function (dataElement) {
         if (dataElement.controlling_data_element) {
@@ -187,7 +189,7 @@ routineDataEntry.controller('dataEntryController',
             }
         }
         return false;
-    }
+    };
     
     $scope.performAutoZero = function(section){
         var dataValueSet = {
@@ -237,6 +239,7 @@ routineDataEntry.controller('dataEntryController',
                 $scope.dataValues[dataValue.dataElement][dataValue.categoryOptionCombo].value=0;
             });
             DataValueService.saveDataValueSet(dataValueSet).then(function (response) {
+                copyDataValues();
                 console.log("successfully saved", response);
 
             }, function () {
@@ -288,6 +291,7 @@ routineDataEntry.controller('dataEntryController',
     
     var resetParams = function(){
         $scope.dataValues = {};
+        $scope.dataValuesCopy = {};
         $scope.model.orgUnitsWithValues = [];
         $scope.model.validationResults = [];
         $scope.model.failedValidationRules = [];
@@ -298,9 +302,13 @@ routineDataEntry.controller('dataEntryController',
         $scope.saveStatus = {};
     };
     
+    var copyDataValues = function(){
+        $scope.dataValuesCopy = angular.copy( $scope.dataValues );
+    };
+    
     $scope.loadDataEntryForm = function(){
         
-        resetParams();
+        resetParams();        
         if( angular.isObject( $scope.selectedOrgUnit ) && $scope.selectedOrgUnit.id &&
                 angular.isObject( $scope.model.selectedDataSet ) && $scope.model.selectedDataSet.id &&
                 angular.isObject( $scope.model.selectedPeriod) && $scope.model.selectedPeriod.id &&
@@ -348,6 +356,8 @@ routineDataEntry.controller('dataEntryController',
                     $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;                    
                 });
                 
+                copyDataValues();
+                
                 $scope.model.dataSetCompletness = {};
                 CompletenessService.get( $scope.model.selectedDataSet.id, 
                                         $scope.selectedOrgUnit.id,
@@ -365,6 +375,14 @@ routineDataEntry.controller('dataEntryController',
                 });
             });
         }
+    };
+    
+    $scope.interacted = function(field) {
+        var status = false;
+        if(field){            
+            status = $scope.outerForm.submitted || field.$dirty;
+        }
+        return status;
     };
     
     function checkOptions(){
@@ -406,6 +424,15 @@ routineDataEntry.controller('dataEntryController',
     
     $scope.saveDataValue = function( deId, ocId ){
         
+        //check for form validity                
+        if( $scope.outerForm.$invalid ){            
+            $scope.dataValues[deId][ocId] = $scope.dataValuesCopy[deId] && $scope.dataValuesCopy[deId][ocId] ? $scope.dataValuesCopy[deId][ocId] : {value: null};
+            $scope.outerForm.$error = {};
+            $scope.outerForm.$setPristine();
+            return ;
+        }
+        
+        //form is valid        
         $scope.saveStatus[ deId + '-' + ocId] = {saved: false, pending: true, error: false};
         
         var dataValue = {ou: $scope.selectedOrgUnit.id,
@@ -424,6 +451,7 @@ routineDataEntry.controller('dataEntryController',
            $scope.saveStatus[deId + '-' + ocId].saved = true;
            $scope.saveStatus[deId + '-' + ocId].pending = false;
            $scope.saveStatus[deId + '-' + ocId].error = false;
+           copyDataValues();
            
            $scope.dataValues[deId] = DataEntryUtils.getDataElementTotal( $scope.dataValues, deId);
            var vres = DataEntryUtils.getValidationResult($scope.model.dataElements[deId], $scope.dataValues, $scope.model.failedValidationRules);
@@ -480,6 +508,7 @@ routineDataEntry.controller('dataEntryController',
 
                                 //perform the delete by saving the dataValueSet created above
                                 DataValueService.saveDataValueSet(dataValueSet).then(function (response) {
+                                    copyDataValues();
                                     //show a success dialog
                                     console.log("successfully saved");
                                     console.log(response);

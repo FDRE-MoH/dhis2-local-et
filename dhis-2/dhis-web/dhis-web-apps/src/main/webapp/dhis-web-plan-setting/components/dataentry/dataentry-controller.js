@@ -15,7 +15,7 @@ routineDataEntry.controller('dataEntryController',
                 DataSetFactory,
                 PeriodService,
                 MetaDataFactory,
-                ActionMappingUtils,
+                DataEntryUtils,
                 DataValueService,
                 CompletenessService,
                 ModalService,
@@ -61,6 +61,7 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.selectedAttributeOptionCombo = null;
         $scope.model.selectedProgram = null;
         $scope.dataValues = {};
+        $scope.dataValuesCopy = {};
         $scope.model.basicAuditInfo = {};
         $scope.model.orgUnitsWithValues = [];
         $scope.model.categoryOptionsReady = false;
@@ -111,6 +112,7 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.selectedPeriod = null;
         $scope.model.orgUnitsWithValues = [];
         $scope.dataValues = {};
+        $scope.dataValuesCopy = {};
         $scope.model.valueExists = false;
         $scope.model.displayCustomForm = false;
         if (angular.isObject($scope.selectedOrgUnit)) {            
@@ -127,6 +129,7 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.selectedPeriod = null;
         $scope.model.categoryOptionsReady = false;
         $scope.dataValues = {};
+        $scope.dataValuesCopy = {};
         $scope.model.selectedProgram = null;
         $scope.model.selectedEvent = {};
         $scope.model.orgUnitsWithValues = [];
@@ -139,6 +142,7 @@ routineDataEntry.controller('dataEntryController',
     
     $scope.$watch('model.selectedPeriod', function(){        
         $scope.dataValues = {};
+        $scope.dataValuesCopy = {};
         $scope.model.valueExists = false;
         $scope.loadDataEntryForm();
     });    
@@ -184,6 +188,7 @@ routineDataEntry.controller('dataEntryController',
     
     var resetParams = function(){
         $scope.dataValues = {};
+        $scope.dataValuesCopy = {};
         $scope.model.orgUnitsWithValues = [];
         $scope.model.validationResults = [];
         $scope.model.failedValidationRules = [];
@@ -192,6 +197,10 @@ routineDataEntry.controller('dataEntryController',
         $scope.model.basicAuditInfo = {};
         $scope.model.basicAuditInfo.exists = false;
         $scope.saveStatus = {};
+    };
+    
+    var copyDataValues = function(){
+        $scope.dataValuesCopy = angular.copy( $scope.dataValues );
     };
     
     $scope.loadDataEntryForm = function(){
@@ -206,9 +215,9 @@ routineDataEntry.controller('dataEntryController',
 
             dataValueSetUrl += '&orgUnit=' + $scope.selectedOrgUnit.id;
             
-            $scope.model.selectedAttributeOptionCombo = ActionMappingUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
+            $scope.model.selectedAttributeOptionCombo = DataEntryUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
             
-            $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: ActionMappingUtils.getOptionIds($scope.model.selectedOptions)};
+            $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: DataEntryUtils.getOptionIds($scope.model.selectedOptions)};
                         
             //fetch data values...
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){
@@ -218,7 +227,7 @@ routineDataEntry.controller('dataEntryController',
                         $scope.model.valueExists = true;
                         angular.forEach(response.dataValues, function(dv){
                             
-                            dv.value = ActionMappingUtils.formatDataValue( $scope.model.dataElements[dv.dataElement], dv.value );
+                            dv.value = DataEntryUtils.formatDataValue( $scope.model.dataElements[dv.dataElement], dv.value );
                             
                             if(!$scope.dataValues[dv.dataElement]){                                
                                 $scope.dataValues[dv.dataElement] = {};
@@ -236,13 +245,15 @@ routineDataEntry.controller('dataEntryController',
                 }
                 
                 angular.forEach($scope.dataValues, function(vals, de) {
-                    $scope.dataValues[de] = ActionMappingUtils.getDataElementTotal( $scope.dataValues, de);
+                    $scope.dataValues[de] = DataEntryUtils.getDataElementTotal( $scope.dataValues, de);
                 });
                 
                 angular.forEach($scope.model.selectedDataSet.dataElements, function(de){                    
-                    var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[de.id], $scope.dataValues, $scope.model.failedValidationRules);
+                    var vres = DataEntryUtils.getValidationResult($scope.model.dataElements[de.id], $scope.dataValues, $scope.model.failedValidationRules);
                     $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;                    
                 });
+                
+                copyDataValues();
                 
                 $scope.model.dataSetCompletness = {};
                 CompletenessService.get( $scope.model.selectedDataSet.id, 
@@ -261,6 +272,14 @@ routineDataEntry.controller('dataEntryController',
                 });
             });            
         }
+    };
+    
+    $scope.interacted = function(field) {
+        var status = false;
+        if(field){            
+            status = $scope.outerForm.submitted || field.$dirty;
+        }
+        return status;
     };
     
     function checkOptions(){
@@ -301,7 +320,15 @@ routineDataEntry.controller('dataEntryController',
     };
     
     $scope.saveDataValue = function( deId, ocId ){
+        //check for form validity                
+        if( $scope.outerForm.$invalid ){            
+            $scope.dataValues[deId][ocId] = $scope.dataValuesCopy[deId] && $scope.dataValuesCopy[deId][ocId] ? $scope.dataValuesCopy[deId][ocId] : {value: null};
+            $scope.outerForm.$error = {};
+            $scope.outerForm.$setPristine();
+            return ;
+        }
         
+        //form is valid
         $scope.saveStatus[ deId + '-' + ocId] = {saved: false, pending: true, error: false};
         
         var dataValue = {ou: $scope.selectedOrgUnit.id,
@@ -313,7 +340,7 @@ routineDataEntry.controller('dataEntryController',
         
         if( $scope.model.selectedAttributeCategoryCombo && !$scope.model.selectedAttributeCategoryCombo.isDefault ){            
             dataValue.cc = $scope.model.selectedAttributeCategoryCombo.id;
-            dataValue.cp = ActionMappingUtils.getOptionIds($scope.model.selectedOptions);
+            dataValue.cp = DataEntryUtils.getOptionIds($scope.model.selectedOptions);
         }        
                 
         DataValueService.saveDataValue( dataValue ).then(function(response){
@@ -321,8 +348,10 @@ routineDataEntry.controller('dataEntryController',
            $scope.saveStatus[deId + '-' + ocId].pending = false;
            $scope.saveStatus[deId + '-' + ocId].error = false;
            
-           $scope.dataValues[deId] = ActionMappingUtils.getDataElementTotal( $scope.dataValues, deId);
-           var vres = ActionMappingUtils.getValidationResult($scope.model.dataElements[deId], $scope.dataValues, $scope.model.failedValidationRules);
+           copyDataValues();
+           
+           $scope.dataValues[deId] = DataEntryUtils.getDataElementTotal( $scope.dataValues, deId);
+           var vres = DataEntryUtils.getValidationResult($scope.model.dataElements[deId], $scope.dataValues, $scope.model.failedValidationRules);
            $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;           
            
         }, function(){
@@ -333,7 +362,7 @@ routineDataEntry.controller('dataEntryController',
     };
     
     $scope.getIndicatorValue = function( indicator ){  
-        return ActionMappingUtils.getIndicatorResult( indicator, $scope.dataValues );
+        return DataEntryUtils.getIndicatorResult( indicator, $scope.dataValues );
     };
     
     $scope.getInputNotifcationClass = function(deId, ocId){
@@ -383,7 +412,7 @@ routineDataEntry.controller('dataEntryController',
                     return $scope.model.selectedAttributeCategoryCombo;
                 },
                 attributeCategoryOptions: function(){
-                    return ActionMappingUtils.getOptionIds($scope.model.selectedOptions);
+                    return DataEntryUtils.getOptionIds($scope.model.selectedOptions);
                 },
                 attributeOptionCombo: function(){
                     return $scope.model.selectedAttributeOptionCombo;
@@ -419,7 +448,7 @@ routineDataEntry.controller('dataEntryController',
                     $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = true;
                 }                
             }, function(response){
-                ActionMappingUtils.errorNotifier( response );
+                DataEntryUtils.errorNotifier( response );
             });
         });        
     };
@@ -438,7 +467,7 @@ routineDataEntry.controller('dataEntryController',
                 $scope.model.selectedPeriod.id, 
                 orgUnit,
                 $scope.model.selectedAttributeCategoryCombo.id,
-                ActionMappingUtils.getOptionIds($scope.model.selectedOptions),
+                DataEntryUtils.getOptionIds($scope.model.selectedOptions),
                 multiOrgUnit).then(function(response){
                 
                 var dialogOptions = {
@@ -451,7 +480,7 @@ routineDataEntry.controller('dataEntryController',
                 $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = false;
                 
             }, function(response){
-                ActionMappingUtils.errorNotifier( response );
+                DataEntryUtils.errorNotifier( response );
             });
         });        
     };
