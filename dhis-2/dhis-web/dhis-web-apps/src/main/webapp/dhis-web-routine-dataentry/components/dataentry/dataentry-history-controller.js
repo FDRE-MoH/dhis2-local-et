@@ -33,10 +33,10 @@ routineDataEntry.controller('DataEntryHistoryController',
     var dataValueAudit = {de: dataElement.id, pe: period.id, ou: orgUnitId, co: optionCombo.id, cc: attributeOptionCombo};
     $scope.dataValue = {de: dataElement.id, pe: period.id, ou: orgUnitId, co: optionCombo.id, cc: attributeCategoryCombo.id, cp: attributeCategoryOptions, value: value, comment: comment};
     
-    $scope.auditColumns = [{id: 'created', name: $translate.instant('created')},
-                           {id: 'modifiedBy', name: $translate.instant('modified_by')},
-                           {id: 'value', name: $translate.instant('value')},
-                           {id: 'auditType', name: $translate.instant('audit_type')}];
+    $scope.auditColumns = [{id: 'created', displayName: $translate.instant('created')},
+                           {id: 'modifiedBy', displayName: $translate.instant('modified_by')},
+                           {id: 'value', displayName: $translate.instant('value')},
+                           {id: 'auditType', displayName: $translate.instant('audit_type')}];
     
     $scope.dataValueAudits = [];        
     DataValueAuditService.getDataValueAudit( dataValueAudit ).then(function( response ){
