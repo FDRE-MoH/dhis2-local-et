@@ -4,7 +4,7 @@
 
 /* Directives */
 
-var actionMappingDirectives = angular.module('actionMappingDirectives', [])
+var planSettingDirectives = angular.module('planSettingDirectives', [])
 
 .directive('d2Blur', function () {
     return function (scope, elem, attrs) {

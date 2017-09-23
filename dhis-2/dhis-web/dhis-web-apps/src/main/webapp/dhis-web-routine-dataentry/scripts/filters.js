@@ -2,7 +2,7 @@
 
 /* Filters */
 
-var actionMappingFilters = angular.module('actionMappingFilters', [])
+var routineDataEntryFilters = angular.module('routineDataEntryFilters', [])
 
 .filter('toCalendarDate', function($filter, CalendarService){
     

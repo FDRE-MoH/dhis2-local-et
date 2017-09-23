@@ -1,7 +1,7 @@
-/* global routineDataEntry, selection */
+/* global planSetting, selection */
 
 //Controller for column show/hide
-routineDataEntry.controller('LeftBarMenuController',
+planSetting.controller('LeftBarMenuController',
         function($scope, $location) {
     $scope.showDataEntry = function(){
         selection.load();

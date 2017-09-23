@@ -2,4 +2,4 @@
 
 /* Filters */
 
-var actionMappingFilters = angular.module('actionMappingFilters', []);
+var planSettingFilters = angular.module('planSettingFilters', []);

@@ -3,4 +3,4 @@
 'use strict';
 
 /* Controllers */
-var actionMappingControllers = angular.module('actionMappingControllers', []);
+var planSettingControllers = angular.module('planSettingControllers', []);

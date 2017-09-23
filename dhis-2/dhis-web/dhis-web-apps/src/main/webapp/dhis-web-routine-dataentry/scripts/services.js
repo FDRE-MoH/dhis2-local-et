@@ -4,7 +4,7 @@
 
 /* Services */
 
-var actionMappingServices = angular.module('actionMappingServices', ['ngResource'])
+var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngResource'])
 
 .factory('PMTStorageService', function(){
     var store = new dhis2.storage.Store({
@@ -213,97 +213,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
 .factory('DataSetFactory', function($q, $rootScope, SessionStorageService, storage, PMTStorageService, orderByFilter, CommonUtils, DataEntryUtils) { 
   
     return {        
-        getActionDataSets: function( ou ){            
-            var systemSetting = storage.get('SYSTEM_SETTING');
-            var allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
-    
-            var roles = SessionStorageService.get('USER_ROLES');
-            var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
-            var def = $q.defer();
-            
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll('dataSets').done(function(dss){
-                    var multiDs = angular.copy(dss);
-                    var dataSets = [];
-                    var pushedDss = [];
-                    
-                    angular.forEach(dss, function(ds){
-                        if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.organisationUnits.hasOwnProperty( ou.id ) ){
-                            ds.entryMode = 'Single Entry';
-                            ds = DataEntryUtils.processDataSet( ds );
-                            dataSets.push(ds);
-                        }
-                    });
-                    
-                    if( allowMultiOrgUnitEntry && ou.c && ou.c.length > 0 ){
-                        
-                        angular.forEach(multiDs, function(ds){  
-                            
-                            if( CommonUtils.userHasValidRole( ds, 'dataSets', userRoles ) ){
-                                angular.forEach(ou.c, function(c){                                    
-                                    if( ds.organisationUnits.hasOwnProperty( c ) && pushedDss.indexOf( ds.id ) === -1 && ds.dataSetType === "action"){
-                                        ds.entryMode = 'Multiple Entry';
-                                        ds = DataEntryUtils.processDataSet( ds );
-                                        dataSets.push(ds);
-                                        pushedDss.push( ds.id );                                            
-                                    }
-                                });                               
-                            }
-                        });
-                    }
-                    $rootScope.$apply(function(){
-                        def.resolve(dataSets);
-                    });
-                });
-            });            
-            return def.promise;            
-        },
-        getTargetDataSets: function(){
-            
-            var roles = SessionStorageService.get('USER_ROLES');
-            var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
-            var def = $q.defer();
-            
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll('dataSets').done(function(dss){
-                    var dataSets = [];                    
-                    angular.forEach(dss, function(ds){
-                        if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.dataSetType && ds.dataSetType === 'targetGroup'){                        
-                            ds = DataEntryUtils.processDataSet( ds );
-                            dataSets.push(ds);
-                        }
-                    });
-                    
-                    $rootScope.$apply(function(){
-                        def.resolve(dataSets);
-                    });
-                });
-            });
-            return def.promise;
-        },
-        getActionAndTargetDataSets: function(){
-            
-            var roles = SessionStorageService.get('USER_ROLES');
-            var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
-            var def = $q.defer();
-            
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll('dataSets').done(function(dss){
-                    var dataSets = [];                    
-                    angular.forEach(dss, function(ds){
-                        if( CommonUtils.userHasValidRole(ds, 'dataSets', userRoles ) && ds.dataSetType && ( ds.dataSetType === 'targetGroup' || ds.dataSetType === 'action') ){                        
-                            ds = DataEntryUtils.processDataSet( ds );
-                            dataSets.push(ds);
-                        }
-                    });
-                    
-                    $rootScope.$apply(function(){
-                        def.resolve(dataSets);
-                    });
-                });
-            });
-            return def.promise;
-        },
         get: function(uid){
             
             var def = $q.defer();
@@ -573,74 +482,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
     };
 })
 
-.service('EventValueAuditService', function($http, DataEntryUtils) {   
-    
-    return {        
-        getEventValueAudit: function( event ){
-            var promise = $http.get('../api/audits/trackedEntityDataValue.json?paging=false&psi='+event).then(function(response){
-                return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
-            });
-            return promise;
-        }
-    };
-})
-
-.service('StakeholderService', function($http, DataEntryUtils) {   
-    
-    return {        
-        addCategoryOption: function( categoryOption ){
-            var promise = $http.post('../api/categoryOptions.json' , categoryOption ).then(function(response){
-                return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
-            });
-            return promise;
-        },
-        updateCategory: function( category ){
-            var promise = $http.put('../api/categories/' + category.id + '.json&mergeMode=MERGE', category ).then(function(response){
-                return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
-            });
-            return promise;
-        },
-        getCategoryCombo: function(uid){            
-            var promise = $http.get('../api/categoryCombos/' + uid + '.json?fields=id,displayName,code,skipTotal,isDefault,categoryOptionCombos[id,displayName,categoryOptions[displayName]],categories[id,displayName,code,dimension,dataDimensionType,attributeValues[value,attribute[id,name,valueType,code]],categoryOptions[id,displayName,code]]').then(function(response){
-                return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
-            });
-            return promise;
-        },
-        addOption: function( opt ){
-            var promise = $http.post('../api/options.json' , opt ).then(function(response){
-                return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
-            });
-            return promise;
-        },
-        updateOptionSet: function( optionSet ){
-            var promise = $http.put('../api/optionSets/' + optionSet.id + '.json&mergeMode=MERGE', optionSet ).then(function(response){
-                return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
-            });
-            return promise;
-        },
-        getOptionSet: function( uid ){
-            var promise = $http.get('../api/optionSets/' + uid + '.json?paging=false&fields=id,name,displayName,version,valueType,attributeValues[value,attribute[id,name,valueType,code]],options[id,name,displayName,code]').then(function(response){
-                return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
-            });
-            return promise;
-        }
-    };    
-})
-
 .service('OrgUnitService', function($http){
     var orgUnit, orgUnitPromise;
     return {
@@ -652,19 +493,6 @@ var actionMappingServices = angular.module('actionMappingServices', ['ngResource
                 });
             }
             return orgUnitPromise;
-        }
-    };
-})
-
-.service('MaintenanceService', function($http, DataEntryUtils){
-    return {
-        updateOptionCombo: function(){
-            var promise = $http.post('../api/maintenance/categoryOptionComboUpdate' , true ).then(function(response){
-                return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
-            });
-            return promise;
         }
     };
 })
