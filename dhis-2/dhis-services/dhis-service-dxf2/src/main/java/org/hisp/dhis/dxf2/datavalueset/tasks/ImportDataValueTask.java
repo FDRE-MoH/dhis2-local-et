@@ -49,6 +49,7 @@ public class ImportDataValueTask
     public static final String FORMAT_CSV = "csv";
     public static final String FORMAT_PDF = "pdf";
     public static final String FORMAT_ADX = "adx";
+    public static final String FORMAT_BIN = "enc";
 
     private DataValueSetService dataValueSetService;
 
@@ -96,6 +97,9 @@ public class ImportDataValueTask
         else if ( FORMAT_ADX.equals( format ) )
         {
             adxDataService.saveDataValueSet( inputStream, importOptions, taskId );
+        }
+        else if (FORMAT_BIN.equals( format )) {
+            dataValueSetService.saveDataValueSetBinary( inputStream, importOptions, taskId );
         }
         else // FORMAT_XML
         {

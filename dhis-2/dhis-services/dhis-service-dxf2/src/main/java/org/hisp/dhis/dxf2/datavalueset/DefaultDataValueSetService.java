@@ -94,6 +94,7 @@ import org.hisp.quick.BatchHandlerFactory;
 import org.hisp.staxwax.factory.XMLFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -349,6 +350,15 @@ public class DefaultDataValueSetService
 
         dataValueSetStore.writeDataValueSetCsv( params, getCompleteDate( params ), writer );
     }
+    
+    @Override
+    public void writeDataValueSetBinary( DataExportParams params, OutputStream out )
+    {
+        decideAccess( params );
+        validate( params );
+        
+        dataValueSetStore.writeDataValueSetBinary( params, getCompleteDate( params ), out );
+    }
 
     private Date getCompleteDate( DataExportParams params )
     {
@@ -506,6 +516,12 @@ public class DefaultDataValueSetService
     {
         return saveDataValueSetCsv( in, importOptions, null );
     }
+    
+    @Override
+    public ImportSummary saveDataValueSetBinary(InputStream in, ImportOptions importOptions )
+    {
+        return saveDataValueSetBinary( in, importOptions , null );
+    }
 
     @Override
     public ImportSummary saveDataValueSet( InputStream in, ImportOptions importOptions, TaskId id )
@@ -556,6 +572,24 @@ public class DefaultDataValueSetService
             notifier.clear( id ).notify( id, ERROR, "Process failed: " + ex.getMessage(), true );
             return new ImportSummary( ImportStatus.ERROR, "The import process failed: " + ex.getMessage() );
         }
+    }
+    
+    @Override
+    public ImportSummary saveDataValueSetBinary( InputStream in, ImportOptions importOptions, TaskId id)
+    {
+        try
+        {
+            in=StreamUtils.wrapAndCheckCompressionFormat( in );
+            DataValueSet dataValueSet = new StreamingBinaryDataValueSet( in );
+            return saveDataValueSet(importOptions, id, dataValueSet);
+        }
+        catch ( IOException ex )
+        {
+            log.error( DebugUtils.getStackTrace( ex ) );
+            notifier.clear( id ).notify( id, ERROR, "Process failed: " + ex.getMessage(), true );
+            return new ImportSummary( ImportStatus.ERROR, "The import process failed: " + ex.getMessage() );
+        }
+        
     }
 
     @Override
@@ -786,6 +820,9 @@ public class DefaultDataValueSetService
         while ( dataValueSet.hasNextDataValue() )
         {
             org.hisp.dhis.dxf2.datavalue.DataValue dataValue = dataValueSet.getNextDataValue();
+            if(dataValue==null) {
+                break;
+            }
 
             totalCount++;
 

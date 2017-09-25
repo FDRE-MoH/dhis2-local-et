@@ -82,7 +82,7 @@
                                                     <textarea rows="5" 
                                                               name="foo"                                                          
                                                               ng-model="dataValues[de.id][oco.id].value" 
-                                                              ng-disabled="checkForGrayField(de)"
+                                                              ng-disabled="checkForGrayField(section, de, oco)"
                                                               class="form-control" 
                                                               ng-class="getInputNotifcationClass(de.id, oco.id)"                                                           
                                                               d2-blur="saveDataValue(de.id, oco.id)">
@@ -92,7 +92,7 @@
                                                     <input type="text" 
                                                            name="foo"
                                                            ng-model="dataValues[de.id][oco.id].value" 
-                                                           ng-disabled="checkForGrayField(de)"
+                                                           ng-disabled="checkForGrayField(section, de, oco)"
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                            d2-blur="saveDataValue(de.id, oco.id, false)">
@@ -103,7 +103,7 @@
                                                            d2-number-validator
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
-                                                           ng-disabled="checkForGrayField(de)"
+                                                           ng-disabled="checkForGrayField(section, de, oco)"
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -115,7 +115,7 @@
                                                            d2-number-validator
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
-                                                           ng-disabled="checkForGrayField(de)"
+                                                           ng-disabled="checkForGrayField(section, de, oco)"
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"  
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -127,7 +127,7 @@
                                                            d2-number-validator
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
-                                                           ng-disabled="checkForGrayField(de)"
+                                                           ng-disabled="checkForGrayField(section, de, oco)"
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -139,7 +139,7 @@
                                                            d2-number-validator
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
-                                                           ng-disabled="checkForGrayField(de)"
+                                                           ng-disabled="checkForGrayField(section, de, oco)"
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -151,7 +151,7 @@
                                                            d2-number-validator
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
-                                                           ng-disabled="checkForGrayField(de)"
+                                                           ng-disabled="checkForGrayField(section, de, oco)"
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -161,7 +161,7 @@
                                                     <input type="checkbox"   
                                                            name="foo"
                                                            ng-model="dataValues[de.id][oco.id]" 
-                                                           ng-disabled="checkForGrayField(de)"
+                                                           ng-disabled="checkForGrayField(section, de, oco)"
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                            d2-blur="saveDataValue(de.id, oco.id, false)">
@@ -171,7 +171,7 @@
                                                         d2-name="foo" 
                                                         d2-object="dataValues[de.id]" 
                                                         d2-options="model.booleanValues"
-                                                        d2-disabled="checkForGrayField(de)"
+                                                           ng-disabled="checkForGrayField(section, de, oco)"
                                                         d2-value-save-status="getInputNotifcationClass(de.id, oco.id)"
                                                         d2-function="saveDataValue(de.id, oco.id, false)">
                                                     </d2-radio>

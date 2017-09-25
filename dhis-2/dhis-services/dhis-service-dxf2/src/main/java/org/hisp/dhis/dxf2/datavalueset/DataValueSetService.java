@@ -83,6 +83,8 @@ public interface DataValueSetService
     void writeDataValueSetJson( Date lastUpdated, OutputStream outputStream, IdSchemes idSchemes );
 
     void writeDataValueSetCsv( DataExportParams params, Writer writer );
+    
+    void writeDataValueSetBinary(DataExportParams params, OutputStream writer );
 
     RootNode getDataValueSetTemplate( DataSet dataSet, Period period, List<String> orgUnits, boolean writeComments, String ouScheme, String deScheme );
 
@@ -95,12 +97,16 @@ public interface DataValueSetService
     ImportSummary saveDataValueSetJson( InputStream in, ImportOptions importOptions );
 
     ImportSummary saveDataValueSetCsv( InputStream in, ImportOptions importOptions );
+    
+    ImportSummary saveDataValueSetBinary( InputStream in, ImportOptions importOptions );
 
     ImportSummary saveDataValueSet( InputStream in, ImportOptions importOptions, TaskId taskId );
 
     ImportSummary saveDataValueSetJson( InputStream in, ImportOptions importOptions, TaskId taskId );
 
     ImportSummary saveDataValueSetCsv( InputStream in, ImportOptions importOptions, TaskId id );
+    
+    ImportSummary saveDataValueSetBinary( InputStream in, ImportOptions importOptions, TaskId id );
 
     ImportSummary saveDataValueSetPdf( InputStream in, ImportOptions importOptions, TaskId id );
 }
