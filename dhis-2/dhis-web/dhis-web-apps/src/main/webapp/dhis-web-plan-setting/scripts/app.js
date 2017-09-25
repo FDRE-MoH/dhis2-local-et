@@ -2,15 +2,15 @@
 
 /* App Module */
 
-var routineDataEntry = angular.module('routineDataEntry',
+var planSetting = angular.module('planSetting',
         ['ui.bootstrap', 
          'ngRoute', 
          'ngCookies',
          'ngSanitize',
          'ngMessages',
-         'actionMappingServices',
-         'actionMappingFilters',
-         'actionMappingDirectives',
+         'planSettingServices',
+         'planSettingFilters',
+         'planSettingDirectives',
          'd2Directives',
          'd2Filters',
          'd2Services',

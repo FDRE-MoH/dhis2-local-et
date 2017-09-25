@@ -4,7 +4,7 @@
 
 /* Directives */
 
-var actionMappingDirectives = angular.module('actionMappingDirectives', [])
+var routineDataEntryDirectives = angular.module('routineDataEntryDirectives', [])
 
 .directive('d2Blur', function () {
     return function (scope, elem, attrs) {

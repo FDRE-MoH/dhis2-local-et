@@ -3,4 +3,4 @@
 'use strict';
 
 /* Controllers */
-var actionMappingControllers = angular.module('actionMappingControllers', []);
+var routineDataEntryControllers = angular.module('routineDataEntryControllers', []);

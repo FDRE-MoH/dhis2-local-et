@@ -2,10 +2,10 @@
 
 'use strict';
 
-var routineDataEntry = angular.module('routineDataEntry');
+var planSetting = angular.module('planSetting');
 
 //Controller for settings page
-routineDataEntry.controller('DataEntryHistoryController',
+planSetting.controller('DataEntryHistoryController',
         function($scope,
                 $modalInstance,
                 $translate,
