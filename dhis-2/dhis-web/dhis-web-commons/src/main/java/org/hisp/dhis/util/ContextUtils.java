@@ -53,6 +53,7 @@ public class ContextUtils
     public static final String CONTENT_TYPE_ZIP = "application/zip";
     public static final String CONTENT_TYPE_GZIP = "application/gzip";
     public static final String CONTENT_TYPE_JSON = "application/json";
+    public static final String CONTENT_TYPE_BIN = "application/enc";
     public static final String CONTENT_TYPE_HTML = "text/html";
     public static final String CONTENT_TYPE_TEXT = "text/plain";
     public static final String CONTENT_TYPE_XML = "application/xml";

@@ -179,13 +179,25 @@ routineDataEntry.controller('dataEntryController',
         });
     };
     
-    $scope.checkForGrayField = function (dataElement) {
+    $scope.checkForGrayField = function (section,dataElement, categoryOptionCombo) {
+
+        //checking if dataElement is in special group because the section and category option combo might not be passed
         if (dataElement.controlling_data_element) {
             return false;
         }
         for (var i = 0; i < $scope.dataElementGroups.length; i++) {
             if ($scope.dataElementGroups[i].dataElements[dataElement.id]) {
                 return $scope.dataElementGroups[i].isDisabled;
+            }
+        }
+        if(section.greyedFields=== null){
+            return false;
+        }
+        for(var i = 0 ;i<section.greyedFields.length;i++){
+            var greyedField=section.greyedFields[i];
+            if(greyedField.dataElement.id=== dataElement.id && greyedField.categoryOptionCombo.id === categoryOptionCombo.id){
+                console.log("greyed field");
+                return true;
             }
         }
         return false;

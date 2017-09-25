@@ -18,6 +18,12 @@
   </build>
   
   <dependencies>
+
+<!--newly added-->
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>javax.servlet-api</artifactId>
+	</dependency>
     
     <!-- DHIS -->
     
@@ -57,6 +63,21 @@
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
     </dependency>
+
+<!-- newly added -->
+	<dependency>
+		<groupId>org.hisp.dhis</groupId>
+		<artifactId>dhis-web-ohie</artifactId>
+		<version>${project.version}</version>
+		<type>war</type>
+	</dependency>
+<!--newly added -->
+	<dependency>
+		<groupId>org.hisp.dhis</groupId>
+		<artifactId>dhis-web-uaa</artifactId>
+		<version>${project.version}</version>
+		<type>war</type>
+	</dependency>
     
   </dependencies>
   <properties>

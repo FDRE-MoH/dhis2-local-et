@@ -18,9 +18,6 @@
       }
     });
     
-    dhis2.period.picker.createInstance('#startDate');
-    dhis2.period.picker.createInstance('#endDate');
-    
   });
 
   var i18n_select_organisation_unit = '$encoder.jsEscape( $i18n.getString( "select_organisation_unit" ), "'")';
@@ -98,6 +95,7 @@
             <option value="json">JSON</option>
             <option value="xml">XML</option>
             <option value="csv">CSV</option>
+            <option value="bin">BINARY</option>
         </select></td>
     </tr>
 	<tr>

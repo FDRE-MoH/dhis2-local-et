@@ -19,6 +19,7 @@
             <option value="csv">CSV</option>
             <option value="pdf">PDF</option>
             <option value="adx">ADX</option>
+			<option value="enc">ENC</option>
         </select>
     </td>
 </tr>
