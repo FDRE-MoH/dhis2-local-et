@@ -43,14 +43,14 @@ var planSettingServices = angular.module('planSettingServices', ['ngResource'])
         angular.forEach(d2Periods, function(p){
             p.id = p.iso;
             var st = p.endDate.split('-');
-            st[1] = dhis2.routineDataEntry.monthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+            st[1] = dhis2.planSetting.monthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
             if( st[1] < 10 ){
                 st[1] = '0' + st[1];
             }
             p.endDate = st.join('-');
             
             st = p.startDate.split('-');
-            st[1] = dhis2.routineDataEntry.monthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+            st[1] = dhis2.planSetting.monthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
             if( st[1] < 10 ){
                 st[1] = '0' + st[1];
             }
