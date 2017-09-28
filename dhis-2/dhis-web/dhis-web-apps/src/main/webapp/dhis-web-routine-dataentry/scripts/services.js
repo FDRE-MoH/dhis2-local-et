@@ -17,15 +17,14 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
     };
 })
 
-/* current selections */
+/* Fetch periods */
 .service('PeriodService', function(CalendarService){
     
-    this.getPeriods = function(periodType, periodOffset){
-        periodOffset = angular.isUndefined(periodOffset) ? 0 : periodOffset;
+    this.getPeriods = function( opts ){
         var availablePeriods = [];
-        if(!periodType){
+        if(!opts.periodType){
             return availablePeriods;
-        }        
+        }
         
         var calendarSetting = CalendarService.getSetting();
         
@@ -37,8 +36,10 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
         
         dhis2.period.picker = new dhis2.period.DatePicker( dhis2.period.calendar, dhis2.period.format );
         
-        var d2Periods = dhis2.period.generator.generateReversedPeriods( periodType, periodOffset );
-                        
+        var d2Periods = dhis2.period.generator.generateReversedPeriods( opts.periodType, opts.periodOffset );
+        
+        d2Periods = dhis2.period.generator.filterOpenPeriods( opts.periodType, d2Periods, opts.futurePeriods, null, null );        
+        
         angular.forEach(d2Periods, function(p){
             p.id = p.iso;
             var st = p.endDate.split('-');
@@ -54,10 +55,9 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                 st[1] = '0' + st[1];
             }
             p.startDate = st.join('-');
-        });
+        });  
         
         return d2Periods;
-
     };
 })
 
