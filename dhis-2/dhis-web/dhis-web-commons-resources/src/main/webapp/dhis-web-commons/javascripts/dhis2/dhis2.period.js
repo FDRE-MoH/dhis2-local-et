@@ -992,7 +992,7 @@ $.extend( dhis2.period.BiMonthlyGenerator.prototype, {
     var year = offset + this.calendar.today().year();
     var periods = [];
 
-    for ( var month = 1, idx = 1; month <= this.calendar.monthsInYear( year ); month += 2, idx++ ) {
+    for ( var month = 1, idx = 1; month <= getHMISMonthsInYear( this.calendar, year ); month += 2, idx++ ) {
       var startDate = this.calendar.newDate( year, month, 1 );
       var endDate = this.calendar.newDate( startDate ).set( month + 1, 'm' );
       endDate.set( endDate.daysInMonth( month + 1 ), 'd' );
@@ -1128,7 +1128,7 @@ $.extend( dhis2.period.SixMonthlyGenerator.prototype, {
     periods.push( period );
 
     startDate = this.calendar.newDate( year, 7, 1 );
-    endDate = this.calendar.newDate( startDate ).set( this.calendar.monthsInYear( year ), 'm' );
+    endDate = this.calendar.newDate( startDate ).set( getHMISMonthsInYear( this.calendar, year ), 'm' );
     endDate.set( endDate.daysInMonth( 12 ), 'd' );
 
     period = {};
