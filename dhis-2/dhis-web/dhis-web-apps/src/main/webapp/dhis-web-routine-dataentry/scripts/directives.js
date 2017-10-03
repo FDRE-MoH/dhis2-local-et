@@ -88,4 +88,71 @@ var routineDataEntryDirectives = angular.module('routineDataEntryDirectives', []
             };
         }
     };
-});  
+})
+
+.directive('d2TabIndex', function(){
+    return{
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            
+            var setFieldFocus = function( field ){
+                
+                if( field ){                    
+                    field.focus();                    
+                }
+                else{                    
+                    console.log('Invalid field to focus:  ', field);                    
+                }
+            };
+            
+            var handleEvent = function( event ){
+                event.preventDefault(); 
+                event.stopPropagation();
+            };
+                
+            element.bind("keydown keypress", function (event) {                
+                
+                var key = event.keyCode || event.charCode || event.which;
+                
+                var currentTabIndex = parseInt( attrs.tabindex );
+                
+                var field = null;                               
+                
+                if (key === 38 || key === 37 ) {//get previous input field
+                    
+                    handleEvent( event );                   
+                    
+                    field = $( 'input[name="foo"][tabindex="' + ( --currentTabIndex ) + '"]' );
+                    
+                    while( field ){
+                        if ( field.is( ':disabled' ) || field.is( ':hidden' ) ) {
+                            field = $( 'input[name="foo"][tabindex="' + ( --currentTabIndex ) + '"]' );
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    
+                    setFieldFocus( field );
+                }                
+                if( key === 9 || key === 13 || key === 39 || key === 40 ){//get next input field
+                    
+                    handleEvent( event );
+                    
+                    field = $( 'input[name="foo"][tabindex="' + ( ++currentTabIndex ) + '"]' );
+                    
+                    while( field ){
+                        if ( field.is( ':disabled' ) || field.is( ':hidden' ) ) {
+                            field = $( 'input[name="foo"][tabindex="' + ( ++currentTabIndex ) + '"]' );
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    
+                    setFieldFocus( field );                    
+                }
+            });
+        }
+    };
+});

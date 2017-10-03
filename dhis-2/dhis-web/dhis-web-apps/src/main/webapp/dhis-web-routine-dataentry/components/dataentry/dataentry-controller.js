@@ -290,6 +290,8 @@ routineDataEntry.controller('dataEntryController',
             }
             
             $scope.model.dataElements = [];
+            $scope.tabOrder = {};
+            var idx = 0;
             angular.forEach($scope.model.selectedDataSet.dataElements, function(de){
                 de.validationRules = [];
                 angular.forEach($scope.model.validationRules, function(vr){
@@ -298,7 +300,31 @@ routineDataEntry.controller('dataEntryController',
                     }
                 });
                 $scope.model.dataElements[de.id] = de;
+                
+                $scope.tabOrder[de.id] = {};
+                angular.forEach($scope.model.categoryCombos[de.categoryCombo.id].categoryOptionCombos, function(oco){
+                    $scope.tabOrder[de.id][oco.id] = idx++;
+                });
             });
+            
+            if( $scope.model.selectedDataSet.sections.length > 0 ){
+                $scope.tabOrder = {};
+                idx = 0;
+                angular.forEach($scope.model.selectedDataSet.sections, function(section){                    
+                    angular.forEach(section.dataElements, function(de){
+                        $scope.tabOrder[de.id] = {};
+                        var dataElement = $scope.model.dataElements[de.id];
+                        if( dataElement && dataElement.categoryCombo ){
+                            angular.forEach($scope.model.categoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
+                                $scope.tabOrder[de.id][oco.id] = idx++;
+                            });
+                        }
+                        else{
+                            console.log('dataSet:  ', $scope.model.selectedDataSet.displayName, ', section:  ', section.displayName, ', dataElement:  ', de.id);
+                        }
+                    });
+                });
+            }
             
             $scope.customDataEntryForm = CustomFormService.getForDataSet($scope.model.selectedDataSet, $scope.model.dataElements);
             $scope.displayCustomForm = $scope.customDataEntryForm ? true : false;

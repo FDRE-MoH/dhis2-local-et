@@ -31,7 +31,7 @@
                             </thead>
                             <tbody ng-repeat="dataElement in section.dataElements"
                                    ng-init="de = model.dataElements[dataElement.id];
-                                                   ocos = model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
+                                       ocos = model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
                                 <tr ng-repeat="ind in section.indicators" ng-if="ind.params.indexOf(de.id) === 0 || ind.params[0].lastIndexOf(de.id, 0) === 0"><!-- last index added for indicators that are defined with option combos-->
                                     <td class="ind-style">
                                         {{ind.DE_Sr_No}} 
@@ -75,7 +75,7 @@
                                             {{de.displayFormName}}
                                         </div>
                                     </td>
-                                    <td>
+                                    <td>                                        
                                         <ng-form name="innerForm">
                                             <span ng-switch="de.valueType">                                                        
                                                 <span ng-switch-when="LONG_TEXT">
@@ -83,6 +83,8 @@
                                                               name="foo"                                                          
                                                               ng-model="dataValues[de.id][oco.id].value" 
                                                               ng-disabled="checkForGrayField(section,de,oco)"
+                                                              d2-tab-index
+                                                              tabindex={{tabOrder[de.id][oco.id]}}
                                                               class="form-control" 
                                                               ng-class="getInputNotifcationClass(de.id, oco.id)"                                                           
                                                               d2-blur="saveDataValue(de.id, oco.id)">
@@ -93,6 +95,8 @@
                                                            name="foo"
                                                            ng-model="dataValues[de.id][oco.id].value" 
                                                            ng-disabled="checkForGrayField(section,de,oco)"
+                                                           d2-tab-index
+                                                           tabindex={{tabOrder[de.id][oco.id]}}
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                            d2-blur="saveDataValue(de.id, oco.id, false)">
@@ -104,6 +108,8 @@
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
                                                            ng-disabled="checkForGrayField(section,de,oco)"
+                                                           d2-tab-index
+                                                           tabindex={{tabOrder[de.id][oco.id]}}
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -116,6 +122,8 @@
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
                                                            ng-disabled="checkForGrayField(section,de,oco)"
+                                                           d2-tab-index
+                                                           tabindex={{tabOrder[de.id][oco.id]}}
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"  
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -128,6 +136,8 @@
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
                                                            ng-disabled="checkForGrayField(section,de,oco)"
+                                                           d2-tab-index
+                                                           tabindex={{tabOrder[de.id][oco.id]}}
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -140,6 +150,8 @@
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
                                                            ng-disabled="checkForGrayField(section,de,oco)"
+                                                           d2-tab-index
+                                                           tabindex={{tabOrder[de.id][oco.id]}}
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -152,6 +164,8 @@
                                                            number-type={{de.valueType}}
                                                            ng-model="dataValues[de.id][oco.id].value" 
                                                            ng-disabled="checkForGrayField(section,de,oco)"
+                                                           d2-tab-index
+                                                           tabindex={{tabOrder[de.id][oco.id]}}
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -162,6 +176,8 @@
                                                            name="foo"
                                                            ng-model="dataValues[de.id][oco.id]" 
                                                            ng-disabled="checkForGrayField(section,de,oco)"
+                                                           d2-tab-index
+                                                           tabindex={{tabOrder[de.id][oco.id]}}
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                            d2-blur="saveDataValue(de.id, oco.id, false)">
@@ -214,9 +230,8 @@
                     </th>
                 </tr>
             </thead>
-            <tbody ng-repeat="dataElement in model.selectedDataSet.dataElements"
-                   ng-init="de = model.dataElements[dataElement.id];
-                               ocos = model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
+            <tbody ng-repeat="de in model.selectedDataSet.dataElements"
+                   ng-init="ocos = model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
                 <tr ng-repeat="ind in model.selectedDataSet.indicators" ng-if="ind.params.indexOf(de.id) === 0 || ind.params[0].lastIndexOf(de.id, 0) === 0"><!-- last index added for indicators that are defined with option combos-->
                     <td class="ind-style">
                         {{ind.DE_Sr_No}} 
@@ -260,7 +275,7 @@
                             {{de.displayFormName}}
                         </div>
                     </td>
-                    <td>
+                    <td>                        
                         <ng-form name="innerForm">
                             <span ng-switch="de.valueType">                                                        
                                 <span ng-switch-when="LONG_TEXT">
@@ -268,6 +283,8 @@
                                               name="foo"                                                          
                                               ng-model="dataValues[de.id][oco.id].value" 
                                               d2-disabled="checkForGrayField(section,de,oco)"
+                                              d2-tab-index
+                                              tabindex={{tabOrder[de.id][oco.id]}}
                                               class="form-control" 
                                               ng-class="getInputNotifcationClass(de.id, oco.id)"                                                           
                                               d2-blur="saveDataValue(de.id, oco.id)">
@@ -278,6 +295,8 @@
                                            name="foo"
                                            ng-model="dataValues[de.id][oco.id].value" 
                                            d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-tab-index
+                                           tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                            d2-blur="saveDataValue(de.id, oco.id, false)">
@@ -289,6 +308,8 @@
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
                                            d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-tab-index
+                                           tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -301,6 +322,8 @@
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
                                            d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-tab-index
+                                           tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)"  
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -313,6 +336,8 @@
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
                                            d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-tab-index
+                                           tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -325,6 +350,8 @@
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
                                            d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-tab-index
+                                           tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -337,6 +364,8 @@
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
                                            d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-tab-index
+                                           tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -347,6 +376,8 @@
                                            name="foo"
                                            ng-model="dataValues[de.id][oco.id].value" 
                                            d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-tab-index
+                                           tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                            d2-blur="saveDataValue(de.id, oco.id, false)">
