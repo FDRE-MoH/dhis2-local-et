@@ -70,9 +70,9 @@ public class PeriodResourceTable
         {
             sql += ", " + columnQuote + periodType.getName().toLowerCase() + columnQuote + " VARCHAR(15)";
         }
-
+        
         sql += ")";
-
+        
         return sql;
     }
 
@@ -88,15 +88,14 @@ public class PeriodResourceTable
         Calendar calendar = PeriodType.getCalendar();
 
         List<Object[]> batchArgs = new ArrayList<>();
-
+        
         Set<String> uniqueIsoDates = new HashSet<>();
-
+        
         for ( Period period : objects )
         {
             if ( period != null && period.isValid() )
             {
                 final PeriodType rowType = period.getPeriodType();
-
                 final String isoDate = period.getIsoDate();
 
                 if ( !uniqueIsoDates.add( isoDate ) )
@@ -104,7 +103,7 @@ public class PeriodResourceTable
                     log.warn( "Duplicate ISO date for period, ignoring: " + period + ", ISO date: " + isoDate );
                     continue;
                 }
-
+                
                 List<Object> values = new ArrayList<>();
 
                 values.add( period.getId() );
@@ -161,9 +160,9 @@ public class PeriodResourceTable
     public List<String> getCreateIndexStatements()
     {
         String name = "in_periodstructure_iso_" + getRandomSuffix();
-
+        
         String sql = "create unique index " + name + " on " + getTempTableName() + "(iso)";
-
+        
         return Lists.newArrayList( sql );
     }
 }

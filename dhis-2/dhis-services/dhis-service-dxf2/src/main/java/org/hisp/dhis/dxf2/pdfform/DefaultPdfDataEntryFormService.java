@@ -34,9 +34,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-import org.hisp.dhis.attribute.AttributeValue;
 import org.hisp.dhis.common.ValueType;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementCategoryOptionCombo;
@@ -89,18 +87,6 @@ import com.lowagie.text.pdf.TextField;
 public class DefaultPdfDataEntryFormService
     implements PdfDataEntryFormService
 {
-	private static float[] tempTitle=Color.RGBtoHSB(102, 102, 102, null);
-	private static float[] tempIndicator=Color.RGBtoHSB(204,204,204, null);
-	private static float[] tempTotal=Color.RGBtoHSB(80,80,80, null);
-	private static float[] tempDataElement=Color.RGBtoHSB(255,255,150, null);
-	private static float[] tempSectionHeader=Color.RGBtoHSB(255,255,204, null);
-	
-	private static Color COLOR_BACKGROUNDTITLE =Color.getHSBColor(tempTitle[0], tempTitle[1], tempTitle[2]);
-	private static Color COLOR_BACKGROUNDINDICATOR = Color.getHSBColor(tempIndicator[0], tempIndicator[1], tempIndicator[2]);
-	private static Color COLOR_BACKGROUNDTOTAL = Color.getHSBColor(tempTotal[0], tempTotal[1], tempTotal[2]);
-	private static Color COLOR_BACKGROUNDOPTIONS = Color.getHSBColor(tempDataElement[0], tempDataElement[1], tempDataElement[2]);
-	private static Color COLOR_BACKGROUNDSECTIONHEADER = Color.getHSBColor(tempSectionHeader[0], tempSectionHeader[1], tempSectionHeader[2]);
-	
     private static final Color COLOR_BACKGROUDTEXTBOX = Color.getHSBColor( 0.0f, 0.0f, 0.961f );
 
     private static final String TEXT_BLANK = " ";
@@ -234,29 +220,18 @@ public class DefaultPdfDataEntryFormService
         throws IOException, DocumentException
     {
         Rectangle rectangle = new Rectangle( TEXTBOXWIDTH, PdfDataEntryFormUtil.CONTENT_HEIGHT_DEFAULT );
-        
-        //create one inner table for all sections.
-        PdfPTable table=new PdfPTable(3);
-        table.setWidths(new int[] {1,3,1});
-        table.setWidthPercentage(100.0f);
-        table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
         if ( dataSet.getSections().size() > 0 )
         {
             for ( Section section : dataSet.getSections() )
             {
-                insertTable_DataSetSections( table, writer, rectangle, section.getDataElements(), section.getDisplayName() );
+                insertTable_DataSetSections( mainTable, writer, rectangle, section.getDataElements(), section.getDisplayName() );
             }
         }
         else
         {
-            insertTable_DataSetSections( table, writer, rectangle, dataSet.getDataElements(), "" );
+            insertTable_DataSetSections( mainTable, writer, rectangle, dataSet.getDataElements(), "" );
         }
-        
-        PdfPCell cell_withInnerTable=new PdfPCell(table);
-        cell_withInnerTable.setBorder(Rectangle.NO_BORDER);
-        
-        mainTable.addCell(cell_withInnerTable);
     }
 
     private void insertTable_DataSetSections( PdfPTable mainTable, PdfWriter writer, Rectangle rectangle,
@@ -265,68 +240,39 @@ public class DefaultPdfDataEntryFormService
     {
         boolean hasBorder = true;
 
-        // insert the section name
+        // Add Section Name and Section Spacing
+        insertTable_TextRow( writer, mainTable, TEXT_BLANK );
 
         if ( sectionName != null && !sectionName.isEmpty() )
         {
-        	PdfPCell cell=PdfDataEntryFormUtil.getPdfPCell(hasBorder);
-        	cell.setColspan(3);
-        	cell.setPhrase(new Phrase(sectionName, pdfFormFontSettings.getFont(PdfFormFontSettings.FONTTYPE_SECTIONHEADER)));
-			cell.setBackgroundColor(COLOR_BACKGROUNDSECTIONHEADER);
-			cell.setHorizontalAlignment(PdfPCell.ALIGN_CENTER);
-			mainTable.addCell(cell);
-			
-			addCell_Text(mainTable, PdfDataEntryFormUtil.getPdfPCell(hasBorder), "S.No", Element.ALIGN_CENTER, COLOR_BACKGROUNDTITLE);
-			addCell_Text(mainTable, PdfDataEntryFormUtil.getPdfPCell(hasBorder), "Activity", Element.ALIGN_CENTER, COLOR_BACKGROUNDTITLE);
-			addCell_Text(mainTable, PdfDataEntryFormUtil.getPdfPCell(hasBorder), "Number", Element.ALIGN_CENTER, COLOR_BACKGROUNDTITLE);
+            insertTable_TextRow( writer, mainTable, sectionName,
+                pdfFormFontSettings.getFont( PdfFormFontSettings.FONTTYPE_SECTIONHEADER ) );
         }
+
+        // Create A Table To Add For Each Section
+        PdfPTable table = new PdfPTable( 2 );
+
+        table.setWidths( new int[]{ 2, 1 } );
+        table.setWidthPercentage( 100.0f );
+        table.setHorizontalAlignment( Element.ALIGN_LEFT );
+
 
         // For each DataElement and Category Combo of the dataElement, create
         // row.
         for ( DataElement dataElement : dataElements )
         {
-        	String serialNumber="";
-        	Set<AttributeValue> attributeValues = dataElement.getAttributeValues();
-			for (AttributeValue attributeValue : attributeValues) {
-				if (attributeValue.getAttribute().getCode().equals( "DE_Sr_No") ){
-					serialNumber = attributeValue.getValue();
-					break;
-				}
-			}
-			
-			int categoryOptionComboIndex = 1;
-			addCell_Text(mainTable, PdfDataEntryFormUtil.getPdfPCell(hasBorder),serialNumber , Element.ALIGN_LEFT,COLOR_BACKGROUNDTOTAL);
-
-			addCell_Text(mainTable, PdfDataEntryFormUtil.getPdfPCell(hasBorder),
-					dataElement.getFormNameFallback() , Element.ALIGN_LEFT,COLOR_BACKGROUNDTOTAL);
-			//used for making the input field of the dataElement field empty if there are more than one categoryOptinCombo
-			boolean emptiedDataElementField=false;
-			
-			int catOptionComboSize=dataElement.getCategoryOptionCombos().size();
-        	
             for ( DataElementCategoryOptionCombo categoryOptionCombo : dataElement.getSortedCategoryOptionCombos() )
             {
                 String categoryOptionComboDisplayName = "";
+
                 // Hide Default category option combo name
                 if ( !categoryOptionCombo.isDefault() )
                 {
                     categoryOptionComboDisplayName = categoryOptionCombo.getDisplayName();
-                    if(!emptiedDataElementField) {
-                    	//empty the input field of the data element
-                    	addCell_Text(mainTable, PdfDataEntryFormUtil.getPdfPCell(hasBorder), TEXT_BLANK, Element.ALIGN_CENTER, COLOR_BACKGROUNDTOTAL);
-                    	emptiedDataElementField=true;
-                    }
-                    addCell_Text(mainTable, PdfDataEntryFormUtil.getPdfPCell(hasBorder), serialNumber + 
-							"." + categoryOptionComboIndex, Element.ALIGN_LEFT,COLOR_BACKGROUNDOPTIONS);
-					categoryOptionComboIndex++;
+                }
 
-					addCell_Text(mainTable, PdfDataEntryFormUtil.getPdfPCell(hasBorder),
-							categoryOptionComboDisplayName, Element.ALIGN_RIGHT,COLOR_BACKGROUNDOPTIONS);
-                }
-                else if(catOptionComboSize>1) {
-                	//continue to next iteration if the data element has more than one cat optioncombo
-                	continue;
-                }
+                addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), dataElement.getFormNameFallback() + " " +
+                    categoryOptionComboDisplayName, Element.ALIGN_RIGHT );
 
                 String strFieldLabel = PdfDataEntryFormUtil.LABELCODE_DATAENTRYTEXTFIELD + dataElement.getUid() + "_"
                     + categoryOptionCombo.getUid();
@@ -336,7 +282,7 @@ public class DefaultPdfDataEntryFormService
                 // Yes Only case - render as check-box
                 if ( ValueType.TRUE_ONLY == valueType )
                 {
-                    addCell_WithCheckBox( mainTable, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel );
+                    addCell_WithCheckBox( table, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel );
                 }
                 else if ( ValueType.BOOLEAN == valueType )
                 {
@@ -345,20 +291,25 @@ public class DefaultPdfDataEntryFormService
                     String[] valueList = new String[]{ "", "true", "false" };
 
                     // addCell_WithRadioButton(table, writer, strFieldLabel);
-                    addCell_WithDropDownListField( mainTable, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel, optionList, valueList );
+                    addCell_WithDropDownListField( table, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel, optionList, valueList );
                 }
                 else if ( valueType.isNumeric() )
                 {
                     Rectangle rectNum = new Rectangle( TEXTBOXWIDTH_NUMBERTYPE, PdfDataEntryFormUtil.CONTENT_HEIGHT_DEFAULT );
 
-                    addCell_WithTextField( mainTable, rectNum, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel, PdfFieldCell.TYPE_TEXT_NUMBER, catOptionComboSize>1?COLOR_BACKGROUNDOPTIONS:COLOR_BACKGROUNDTOTAL );
+                    addCell_WithTextField( table, rectNum, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel, PdfFieldCell.TYPE_TEXT_NUMBER );
                 }
                 else
                 {
-                    addCell_WithTextField( mainTable, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel, catOptionComboSize>1?COLOR_BACKGROUNDOPTIONS:COLOR_BACKGROUNDTOTAL );
+                    addCell_WithTextField( table, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel );
                 }
             }
         }
+
+        PdfPCell cell_withInnerTable = new PdfPCell( table );
+        cell_withInnerTable.setBorder( Rectangle.NO_BORDER );
+
+        mainTable.addCell( cell_withInnerTable );
     }
 
     private void setProgramStage_DocumentContent( Document document, PdfWriter writer, String programStageUid )
@@ -460,15 +411,15 @@ public class DefaultPdfDataEntryFormService
         table.setWidths( cellWidths );
 
         // Create Header
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Date", Element.ALIGN_CENTER, null );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Date", Element.ALIGN_CENTER );
 
         // Add Program Data Elements Columns
         for ( DataElement dataElement : dataElements )
         {
-            addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), dataElement.getFormNameFallback(), Element.ALIGN_CENTER, null );
+            addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), dataElement.getFormNameFallback(), Element.ALIGN_CENTER );
         }
 
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), TEXT_BLANK, Element.ALIGN_CENTER, null );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), TEXT_BLANK, Element.ALIGN_CENTER );
 
         // ADD A HIDDEN INFO FOR ProgramStageID
         // Print rows, having the data elements repeating on each column.
@@ -478,7 +429,7 @@ public class DefaultPdfDataEntryFormService
             // Add Date Column
             String strFieldDateLabel = PdfDataEntryFormUtil.LABELCODE_DATADATETEXTFIELD + Integer.toString( rowNo );
 
-            addCell_WithTextField( table, rectangleDate, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldDateLabel, null );
+            addCell_WithTextField( table, rectangleDate, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldDateLabel );
 
             // Add Program Data Elements Columns
             for ( DataElement dataElement : dataElements )
@@ -507,11 +458,11 @@ public class DefaultPdfDataEntryFormService
                     // NOTE: When Rendering for DataSet, DataElement's OptionSet
                     // does not get rendered.
                     // Only for events, it gets rendered as dropdown list.
-                    addCell_WithTextField( table, rectangleDataElement, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel, null );
+                    addCell_WithTextField( table, rectangleDataElement, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), strFieldLabel );
                 }
             }
 
-            addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), TEXT_BLANK, Element.ALIGN_LEFT, null );
+            addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), TEXT_BLANK, Element.ALIGN_LEFT );
         }
 
         PdfPCell cell_withInnerTable = new PdfPCell( table );
@@ -558,14 +509,14 @@ public class DefaultPdfDataEntryFormService
         table.setHorizontalAlignment( Element.ALIGN_LEFT );
 
 
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Organization unit identifier", Element.ALIGN_RIGHT, null );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Organization unit identifier", Element.ALIGN_RIGHT );
         addCell_WithTextField( table, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), PdfDataEntryFormUtil.LABELCODE_ORGID,
-            PdfFieldCell.TYPE_TEXT_ORGUNIT, null );
+            PdfFieldCell.TYPE_TEXT_ORGUNIT );
 
         String[] periodsTitle = getPeriodTitles( periods, format );
         String[] periodsValue = getPeriodValues( periods );
 
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Period", Element.ALIGN_RIGHT, null );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), "Period", Element.ALIGN_RIGHT );
         addCell_WithDropDownListField( table, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), PdfDataEntryFormUtil.LABELCODE_PERIODID, periodsTitle, periodsValue );
 
         // Add to the main table
@@ -588,7 +539,7 @@ public class DefaultPdfDataEntryFormService
         // Create A table to add for each group AT HERE
         PdfPTable table = new PdfPTable( 1 ); // Code 1
 
-        addCell_WithTextField( table, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), fieldName, value, null );
+        addCell_WithTextField( table, rectangle, writer, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), fieldName, value );
 
         // Add to the main table
         PdfPCell cell_withInnerTable = new PdfPCell( table );
@@ -612,7 +563,7 @@ public class DefaultPdfDataEntryFormService
         PdfPTable table = new PdfPTable( 1 );
         table.setHorizontalAlignment( Element.ALIGN_LEFT );
 
-        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), text, Element.ALIGN_LEFT, font, null );
+        addCell_Text( table, PdfDataEntryFormUtil.getPdfPCell( hasBorder ), text, Element.ALIGN_LEFT, font );
 
         // Add to the main table
         PdfPCell cell_withInnerTable = new PdfPCell( table );
@@ -657,44 +608,42 @@ public class DefaultPdfDataEntryFormService
         document.add( tableButton );
     }
 
-    private void addCell_Text( PdfPTable table, PdfPCell cell, String text, int horizontalAlignment, Color backgroundColor )
+    private void addCell_Text( PdfPTable table, PdfPCell cell, String text, int horizontalAlignment )
     {
-        addCell_Text( table, cell, text, horizontalAlignment, pdfFormFontSettings.getFont( PdfFormFontSettings.FONTTYPE_BODY ), backgroundColor );
+        addCell_Text( table, cell, text, horizontalAlignment, pdfFormFontSettings.getFont( PdfFormFontSettings.FONTTYPE_BODY ) );
     }
 
-    private void addCell_Text( PdfPTable table, PdfPCell cell, String text, int horizontalAlignment, Font font, Color backgroundColor )
+    private void addCell_Text( PdfPTable table, PdfPCell cell, String text, int horizontalAlignment, Font font )
     {
         cell.setHorizontalAlignment( horizontalAlignment );
 
         cell.setPhrase( new Phrase( text, font ) );
-        
-        cell.setBackgroundColor(backgroundColor);
 
         table.addCell( cell ); // TODO: change this with cellEvent?
     }
 
-    private void addCell_WithTextField( PdfPTable table, Rectangle rect, PdfWriter writer, PdfPCell cell, String strfldName, Color cellBackgroundColor )
+    private void addCell_WithTextField( PdfPTable table, Rectangle rect, PdfWriter writer, PdfPCell cell, String strfldName )
         throws IOException, DocumentException
     {
-        addCell_WithTextField( table, rect, writer, cell, strfldName, PdfFieldCell.TYPE_DEFAULT, "", cellBackgroundColor );
+        addCell_WithTextField( table, rect, writer, cell, strfldName, PdfFieldCell.TYPE_DEFAULT, "" );
     }
 
     private void addCell_WithTextField( PdfPTable table, Rectangle rect, PdfWriter writer, PdfPCell cell, String strfldName,
-        int fieldCellType, Color cellBackgroundColor )
+        int fieldCellType )
         throws IOException, DocumentException
     {
-        addCell_WithTextField( table, rect, writer, cell, strfldName, fieldCellType, "", cellBackgroundColor );
+        addCell_WithTextField( table, rect, writer, cell, strfldName, fieldCellType, "" );
     }
 
     private void addCell_WithTextField( PdfPTable table, Rectangle rect, PdfWriter writer, PdfPCell cell, String strfldName,
-        String value, Color cellBackgroundColor )
+        String value )
         throws IOException, DocumentException
     {
-        addCell_WithTextField( table, rect, writer, cell, strfldName, PdfFieldCell.TYPE_DEFAULT, value, cellBackgroundColor );
+        addCell_WithTextField( table, rect, writer, cell, strfldName, PdfFieldCell.TYPE_DEFAULT, value );
     }
 
     private void addCell_WithTextField( PdfPTable table, Rectangle rect, PdfWriter writer, PdfPCell cell, String strfldName,
-        int fieldCellType, String value, Color cellBackgroundColor )
+        int fieldCellType, String value )
         throws IOException, DocumentException
     {
         TextField nameField = new TextField( writer, rect, strfldName );
@@ -702,7 +651,7 @@ public class DefaultPdfDataEntryFormService
         nameField.setBorderWidth( 1 );
         nameField.setBorderColor( Color.BLACK );
         nameField.setBorderStyle( PdfBorderDictionary.STYLE_SOLID );
-        nameField.setBackgroundColor(cellBackgroundColor );
+        nameField.setBackgroundColor( COLOR_BACKGROUDTEXTBOX );
 
         nameField.setText( value );
 
@@ -710,7 +659,6 @@ public class DefaultPdfDataEntryFormService
         nameField.setFont( pdfFormFontSettings.getFont( PdfFormFontSettings.FONTTYPE_BODY ).getBaseFont() );
 
         cell.setCellEvent( new PdfFieldCell( nameField.getTextField(), rect.getWidth(), rect.getHeight(), fieldCellType, writer ) );
-        cell.setBackgroundColor(cellBackgroundColor);
 
         table.addCell( cell );
     }

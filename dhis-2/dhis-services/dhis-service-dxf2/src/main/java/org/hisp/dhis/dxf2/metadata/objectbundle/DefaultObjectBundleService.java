@@ -207,7 +207,11 @@ public class DefaultObjectBundleService implements ObjectBundleService
             notifier.notify( bundle.getTaskId(), message );
         }
 
-        objects.forEach( object -> objectBundleHooks.forEach( hook -> hook.preCreate( object, bundle ) ) );
+        objects.forEach( object -> objectBundleHooks.forEach( hook -> {
+            hook.preCreate( object, bundle );
+        } ) );
+
+        session.flush();
 
         for ( int idx = 0; idx < objects.size(); idx++ )
         {
@@ -222,11 +226,6 @@ public class DefaultObjectBundleService implements ObjectBundleService
             preheatService.connectReferences( object, bundle.getPreheat(), bundle.getPreheatIdentifier() );
 
             session.save( object );
-
-            if ( MetadataObject.class.isInstance( object ) )
-            {
-                deletedObjectService.deleteDeletedObjects( new DeletedObjectQuery( object ) );
-            }
 
             bundle.getPreheat().replace( bundle.getPreheatIdentifier(), object );
 
@@ -268,6 +267,8 @@ public class DefaultObjectBundleService implements ObjectBundleService
             objectBundleHooks.forEach( hook -> hook.preUpdate( object, persistedObject, bundle ) );
         } );
 
+        session.flush();
+
         for ( int idx = 0; idx < objects.size(); idx++ )
         {
             IdentifiableObject object = objects.get( idx );
@@ -289,11 +290,6 @@ public class DefaultObjectBundleService implements ObjectBundleService
             }
 
             session.update( persistedObject );
-
-            if ( MetadataObject.class.isInstance( object ) )
-            {
-                deletedObjectService.deleteDeletedObjects( new DeletedObjectQuery( object ) );
-            }
 
             objectBundleHooks.forEach( hook -> hook.postUpdate( persistedObject, bundle ) );
 
@@ -340,6 +336,11 @@ public class DefaultObjectBundleService implements ObjectBundleService
 
             objectBundleHooks.forEach( hook -> hook.preDelete( object, bundle ) );
             manager.delete( object, bundle.getUser() );
+
+            if ( MetadataObject.class.isInstance( object ) )
+            {
+                deletedObjectService.deleteDeletedObjects( new DeletedObjectQuery( object ) );
+            }
 
             bundle.getPreheat().remove( bundle.getPreheatIdentifier(), object );
 
