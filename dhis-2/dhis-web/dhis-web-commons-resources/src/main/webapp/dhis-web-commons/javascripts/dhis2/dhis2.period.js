@@ -225,7 +225,7 @@ dhis2.period.PeriodGenerator = function(calendar, format) {
   this.registerGenerator( dhis2.period.FinancialAprilGenerator );
   this.registerGenerator( dhis2.period.FinancialJulyGenerator );
   this.registerGenerator( dhis2.period.FinancialOctoberGenerator );
-  //this.registerGenerator( dhis2.period.FinancialNovemberGenerator );
+  this.registerGenerator( dhis2.period.FinancialNovemberGenerator );
 };
 
 /**
@@ -1417,6 +1417,22 @@ dhis2.period.FinancialOctoberGenerator = function(calendar, format) {
 };
 
 dhis2.period.FinancialOctoberGenerator.prototype = Object.create( dhis2.period.FinancialBaseGenerator.prototype );
+
+/**
+ * Implementation of dhis2.period.FinancialBaseGenerator that generates FinancialNovember periods
+ *
+ * @param {$.calendars.baseCalendar} calendar Calendar to use, this must come from $.calendars.instance(chronology).
+ * @param {String} format Date format to use for formatting, will default to ISO 8601
+ * @constructor
+ * @augments dhis2.period.FinancialBaseGenerator
+ * @see dhis2.period.BaseGenerator
+ * @see dhis2.period.FinancialBaseGenerator
+ */
+dhis2.period.FinancialNovemberGenerator = function(calendar, format) {
+  dhis2.period.FinancialBaseGenerator.call( this, 'FinancialNov', calendar, format, 11, 'Nov' );
+};
+
+dhis2.period.FinancialNovemberGenerator.prototype = Object.create( dhis2.period.FinancialBaseGenerator.prototype );
 
 /**
  * Convenience method to get DHIS2/HMIS months in a year
