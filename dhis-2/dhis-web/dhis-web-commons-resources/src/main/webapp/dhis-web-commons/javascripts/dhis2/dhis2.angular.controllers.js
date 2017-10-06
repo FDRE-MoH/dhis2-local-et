@@ -599,4 +599,17 @@ var d2Controllers = angular.module('d2Controllers', [])
     $scope.close = function(){
         $modalInstance.close();
     };
+})
+
+.controller('LeftBarMenuController',
+        function($scope, $location) {
+    $scope.showDataEntry = function(){
+        selection.load();
+        $location.path('/dataentry').search();
+    };
+    
+    $scope.showReports = function(){
+        selection.load();
+        $location.path('/reports').search();
+    };
 });

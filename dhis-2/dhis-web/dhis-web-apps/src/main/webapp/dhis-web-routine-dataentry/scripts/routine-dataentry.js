@@ -15,11 +15,6 @@ var optionSetsInPromise = [];
 var attributesInPromise = [];
 var batchSize = 50;
 
-dhis2.routineDataEntry.monthNames = {
-                                        ethiopian: ['Meskerem', 'Tikemet', 'Hidar', 'Tahesas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase'], 
-                                        gregorian: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-                                    };
-
 dhis2.routineDataEntry.store = null;
 dhis2.rd.metaDataCached = dhis2.routineDataEntry.metaDataCached || false;
 dhis2.routineDataEntry.memoryOnly = $('html').hasClass('ie7') || $('html').hasClass('ie8');
