@@ -6,7 +6,7 @@
 
 var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngResource'])
 
-.factory('PMTStorageService', function(){
+.factory('StorageService', function(){
     var store = new dhis2.storage.Store({
         name: "dhis2rd",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
@@ -18,14 +18,14 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
 })
 
 /* Factory to fetch optionSets */
-.factory('OptionSetService', function($q, $rootScope, PMTStorageService) { 
+.factory('OptionSetService', function($q, $rootScope, StorageService) { 
     return {
         getAll: function(){
             
             var def = $q.defer();
             
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll('optionSets').done(function(optionSets){
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getAll('optionSets').done(function(optionSets){
                     $rootScope.$apply(function(){
                         def.resolve(optionSets);
                     });                    
@@ -37,8 +37,8 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
         get: function(uid){            
             var def = $q.defer();
             
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.get('optionSets', uid).done(function(optionSet){                    
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.get('optionSets', uid).done(function(optionSet){                    
                     $rootScope.$apply(function(){
                         def.resolve(optionSet);
                     });
@@ -69,112 +69,16 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
     };
 })
 
-/*service to fetch dataElementGroups*/
-.factory('dataElementGroupService', function($q, $rootScope, PMTStorageService) { 
-    return {
-        getAll: function(){
-            
-            var def = $q.defer();
-            
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll('dataElementGroups').done(function(dataElementGroups){
-                    $rootScope.$apply(function(){
-                        def.resolve(dataElementGroups);
-                    });                    
-                });
-            });            
-            
-            return def.promise;            
-        },
-        get: function(uid){            
-            var def = $q.defer();
-            
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.get('dataElementGroups', uid).done(function(dataElementGroup){                    
-                    $rootScope.$apply(function(){
-                        def.resolve(dataElementGroup);
-                    });
-                });
-            });                        
-            return def.promise;
-        },
-        getCode: function(options, key){
-            if(options){
-                for(var i=0; i<options.length; i++){
-                    if( key === options[i].displayName){
-                        return options[i].code;
-                    }
-                }
-            }            
-            return key;
-        },        
-        getName: function(options, key){
-            if(options){
-                for(var i=0; i<options.length; i++){                    
-                    if( key === options[i].code){
-                        return options[i].displayName;
-                    }
-                }
-            }            
-            return key;
-        }
-    };
-})
-
-/* Service to fetch option combos */
-.factory('OptionComboService', function($q, $rootScope, PMTStorageService) { 
-    return {
-        getAll: function(){            
-            var def = $q.defer();            
-            var optionCombos = [];
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll('categoryCombos').done(function(categoryCombos){
-                    angular.forEach(categoryCombos, function(cc){
-                        optionCombos = optionCombos.concat( cc.categoryOptionCombos );
-                    });
-                    $rootScope.$apply(function(){
-                        def.resolve(optionCombos);
-                    });                    
-                });
-            });            
-            
-            return def.promise;            
-        },
-        getMappedOptionCombos: function(uid){            
-            var def = $q.defer();            
-            var optionCombos = [];
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll('categoryCombos').done(function(categoryCombos){
-                    angular.forEach(categoryCombos, function(cc){
-                        angular.forEach(cc.categoryOptionCombos, function(oco){
-                            oco.categories = [];
-                            angular.forEach(cc.categories, function(c){
-                                oco.categories.push({id: c.id, displayName: c.displayName});
-                            });
-                            optionCombos[oco.id] = oco;
-                        });
-                    });
-                    $rootScope.$apply(function(){
-                        def.resolve(optionCombos);
-                    });                    
-                });
-            });            
-            
-            return def.promise;            
-        }
-    };
-})
-
-/* Factory to fetch programs */
-.factory('DataSetFactory', function($q, $rootScope, SessionStorageService, PMTStorageService, orderByFilter, DataEntryUtils) { 
+/* Factory to fetch data sets */
+.factory('DataSetFactory', function($q, $rootScope, SessionStorageService, StorageService, orderByFilter, DataEntryUtils) { 
   
     return {        
         get: function(uid){
             
             var def = $q.defer();
             
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.get('dataSets', uid).done(function(ds){
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.get('dataSets', uid).done(function(ds){
                     ds = DataEntryUtils.processDataSet( ds );
                     $rootScope.$apply(function(){
                         def.resolve(ds);
@@ -188,8 +92,8 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
             var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
             var def = $q.defer();
             
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll('dataSets').done(function(dss){
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getAll('dataSets').done(function(dss){
                     var dataSets = [];
                     angular.forEach(dss, function(ds){                            
                         if(ds.organisationUnits.hasOwnProperty( ou.id ) && DataEntryUtils.userHasValidRole(ds,'dataSets', userRoles)){
@@ -237,8 +141,8 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
             var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
             var def = $q.defer();
             
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll('dataSets').done(function(dss){
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getAll('dataSets').done(function(dss){
                     var dataSets = [];
                     angular.forEach(dss, function(ds){                            
                         if(ds.organisationUnits.hasOwnProperty( ou.id ) && DataEntryUtils.userHasValidRole(ds,'dataSets', userRoles) && ds[propertyName] && ds[propertyName]===propertyValue){
@@ -285,13 +189,13 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
 })
 
 /* factory to fetch and process programValidations */
-.factory('MetaDataFactory', function($q, $rootScope, PMTStorageService, orderByFilter) {  
+.factory('MetaDataFactory', function($q, $rootScope, StorageService, orderByFilter) {  
     
     return {        
         get: function(store, uid){            
             var def = $q.defer();            
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.get(store, uid).done(function(obj){                    
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.get(store, uid).done(function(obj){                    
                     $rootScope.$apply(function(){
                         def.resolve(obj);
                     });
@@ -301,8 +205,8 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
         },
         set: function(store, obj){            
             var def = $q.defer();            
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.set(store, obj).done(function(obj){                    
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.set(store, obj).done(function(obj){                    
                     $rootScope.$apply(function(){
                         def.resolve(obj);
                     });
@@ -312,8 +216,8 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
         },
         getAll: function(store){
             var def = $q.defer();
-            PMTStorageService.currentStore.open().done(function(){
-                PMTStorageService.currentStore.getAll(store).done(function(objs){                    
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getAll(store).done(function(objs){                    
                     objs = orderByFilter(objs, '-displayName').reverse();                    
                     $rootScope.$apply(function(){
                         def.resolve(objs);
