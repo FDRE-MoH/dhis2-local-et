@@ -99,7 +99,7 @@
                                                            tabindex={{tabOrder[de.id][oco.id]}}
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
-                                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                                           d2-blur="saveDataValue(de.id, oco.id)">
                                                 </span>
                                                 <span ng-switch-when="NUMBER">
                                                     <input type="number"  
@@ -113,7 +113,7 @@
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                                           d2-blur="saveDataValue(de.id, oco.id)">
                                                 </span>
                                                 <span ng-switch-when="INTEGER">
                                                     <input type="number"   
@@ -127,7 +127,7 @@
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"  
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                                           d2-blur="saveDataValue(de.id, oco.id)">
                                                 </span>
                                                 <span ng-switch-when="INTEGER_POSITIVE">
                                                     <input type="number" 
@@ -141,7 +141,7 @@
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                                           d2-blur="saveDataValue(de.id, oco.id)">
                                                 </span>
                                                 <span ng-switch-when="INTEGER_NEGATIVE">
                                                     <input type="number"   
@@ -155,7 +155,7 @@
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                                           d2-blur="saveDataValue(de.id, oco.id)">
                                                 </span>
                                                 <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
                                                     <input type="number"   
@@ -169,7 +169,7 @@
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                                           d2-blur="saveDataValue(de.id, oco.id)">
                                                 </span>
                                                 <span ng-switch-when="TRUE_ONLY">
                                                     <input type="checkbox"   
@@ -180,17 +180,26 @@
                                                            tabindex={{tabOrder[de.id][oco.id]}}
                                                            class="form-control" 
                                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
-                                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                                           d2-blur="saveDataValue(de.id, oco.id)">
                                                 </span>
-                                                <span ng-switch-when="BOOLEAN">
-                                                    <d2-radio id="oco.id" 
-                                                        d2-name="foo" 
-                                                        d2-object="dataValues[de.id]" 
-                                                        d2-options="model.booleanValues"
-                                                        d2-disabled="checkForGrayField(section,de,oco)"
-                                                        d2-value-save-status="getInputNotifcationClass(de.id, oco.id)"
-                                                        d2-function="saveDataValue(de.id, oco.id, false)">
-                                                    </d2-radio>
+                                                <span ng-switch-when="BOOLEAN">                                                    
+                                                    <ui-select theme="select2" 
+                                                               ng-model="dataValues[de.id][oco.id].value" 
+                                                               ng-disabled="checkForGrayField(section,de,oco)" 
+                                                               name="foo"                                                                  
+                                                               on-select="saveDataValue(de.id, oco.id)" 
+                                                               on-remove="saveDataValue(de.id, oco.id)" 
+                                                               style="width:100%;">
+                                                        <ui-select-match allow-clear="true" 
+                                                                         class="form-control-ui-select" 
+                                                                         ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                                         placeholder="{{'select_or_search' | translate}}">
+                                                            {{$select.selected.displayName  || $select.selected}}
+                                                        </ui-select-match>
+                                                        <ui-select-choices repeat="option.value as option in model.booleanValues | filter: $select.search">
+                                                            <span ng-bind-html="option.displayName | highlight: $select.search"></span>
+                                                        </ui-select-choices>
+                                                    </ui-select>
                                                 </span>
                                                 <span ng-switch-default>
                                                     <div class="alert alert-danger form-control">
@@ -282,7 +291,7 @@
                                     <textarea rows="5" 
                                               name="foo"                                                          
                                               ng-model="dataValues[de.id][oco.id].value" 
-                                              d2-disabled="checkForGrayField(section,de,oco)"
+                                              d2-disabled="checkForGrayField(null,de,oco)"
                                               d2-tab-index
                                               tabindex={{tabOrder[de.id][oco.id]}}
                                               class="form-control" 
@@ -294,12 +303,12 @@
                                     <input type="text" 
                                            name="foo"
                                            ng-model="dataValues[de.id][oco.id].value" 
-                                           d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-disabled="checkForGrayField(null,de,oco)"
                                            d2-tab-index
                                            tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
-                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                           d2-blur="saveDataValue(de.id, oco.id)">
                                 </span>
                                 <span ng-switch-when="NUMBER">
                                     <input type="number"  
@@ -307,13 +316,13 @@
                                            d2-number-validator
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
-                                           d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-disabled="checkForGrayField(null,de,oco)"
                                            d2-tab-index
                                            tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                           d2-blur="saveDataValue(de.id, oco.id)">
                                 </span>
                                 <span ng-switch-when="INTEGER">
                                     <input type="number"   
@@ -321,13 +330,13 @@
                                            d2-number-validator
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
-                                           d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-disabled="checkForGrayField(null,de,oco)"
                                            d2-tab-index
                                            tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)"  
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                           d2-blur="saveDataValue(de.id, oco.id)">
                                 </span>
                                 <span ng-switch-when="INTEGER_POSITIVE">
                                     <input type="number" 
@@ -335,13 +344,13 @@
                                            d2-number-validator
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
-                                           d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-disabled="checkForGrayField(null,de,oco)"
                                            d2-tab-index
                                            tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                           d2-blur="saveDataValue(de.id, oco.id)">
                                 </span>
                                 <span ng-switch-when="INTEGER_NEGATIVE">
                                     <input type="number"   
@@ -349,13 +358,13 @@
                                            d2-number-validator
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
-                                           d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-disabled="checkForGrayField(null,de,oco)"
                                            d2-tab-index
                                            tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                           d2-blur="saveDataValue(de.id, oco.id)">
                                 </span>
                                 <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
                                     <input type="number"   
@@ -363,34 +372,45 @@
                                            d2-number-validator
                                            number-type={{de.valueType}}
                                            ng-model="dataValues[de.id][oco.id].value" 
-                                           d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-disabled="checkForGrayField(null,de,oco)"
                                            d2-tab-index
                                            tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                            ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
-                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                           d2-blur="saveDataValue(de.id, oco.id)">
                                 </span>
                                 <span ng-switch-when="TRUE_ONLY">
                                     <input type="checkbox"   
                                            name="foo"
                                            ng-model="dataValues[de.id][oco.id].value" 
-                                           d2-disabled="checkForGrayField(section,de,oco)"
+                                           d2-disabled="checkForGrayField(null,de,oco)"
                                            d2-tab-index
                                            tabindex={{tabOrder[de.id][oco.id]}}
                                            class="form-control" 
                                            ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
-                                           d2-blur="saveDataValue(de.id, oco.id, false)">
+                                           d2-blur="saveDataValue(de.id, oco.id)">
                                 </span>
                                 <span ng-switch-when="BOOLEAN">
-                                    <d2-radio id="oco.id" 
-                                        d2-name="foo" 
-                                        d2-object="dataValues[de.id]" 
-                                        d2-options="model.booleanValues"
-                                        d2-disabled="checkForGrayField(section,de,oco)"
-                                        d2-value-save-status="getInputNotifcationClass(de.id, oco.id)"
-                                        d2-function="saveDataValue(de.id, oco.id, false)">
-                                    </d2-radio>
+                                    <span ng-switch-when="BOOLEAN">                                                    
+                                        <ui-select theme="select2" 
+                                                   ng-model="dataValues[de.id][oco.id].value" 
+                                                   ng-disabled="checkForGrayField(section,de,oco)" 
+                                                   name="foo"                                                                
+                                                   on-select="saveDataValue(de.id, oco.id)" 
+                                                   on-remove="saveDataValue(de.id, oco.id)" 
+                                                   style="width:100%;">
+                                            <ui-select-match allow-clear="true" 
+                                                             class="form-control-ui-select" 
+                                                             ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                             placeholder="{{'select_or_search' | translate}}">
+                                                {{$select.selected.displayName  || $select.selected}}
+                                            </ui-select-match>
+                                            <ui-select-choices repeat="option.value as option in model.booleanValues | filter: $select.search">
+                                                <span ng-bind-html="option.displayName | highlight: $select.search"></span>
+                                            </ui-select-choices>
+                                        </ui-select>
+                                    </span>
                                 </span>
                                 <span ng-switch-default>
                                     <div class="alert alert-danger form-control">

@@ -45,7 +45,7 @@ routineDataEntry.controller('dataEntryController',
                     attributeCategoryUrl: null,
                     showCustomForm: false,
                     valueExists: false};
-    $scope.model.booleanValues = [{displayName: 'yes', value: true},{displayName: 'no', value: false}];
+    $scope.model.booleanValues = [{displayName: $translate.instant('yes'), value: true},{displayName: $translate.instant('no'), value: false}];
     
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
