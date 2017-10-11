@@ -23,6 +23,7 @@ routineDataEntry.controller('dataEntryController',
                 DialogService,
                 CustomFormService) {
     $scope.periodOffset = 0;
+    $scope.maxOptionSize = 30;
     $scope.saveStatus = {};    
     $scope.model = {invalidDimensions: false,
                     selectedAttributeCategoryCombo: null,
@@ -69,37 +70,33 @@ routineDataEntry.controller('dataEntryController',
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit); 
             var systemSetting = storage.get('SYSTEM_SETTING');
             $scope.model.allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
-            loadOptionSets();
-            loadOptionCombos();
-            loadValidationRules();
-            $scope.loadDataSets($scope.selectedOrgUnit);
+            
+            if(!$scope.model.optionSets){
+                $scope.model.optionSets = [];                
+                MetaDataFactory.getAll('optionSets').then(function(opts){
+                    angular.forEach(opts, function(op){
+                        $scope.model.optionSets[op.id] = op;
+                    });
+
+                    console.log('optionSets:  ', $scope.model.optionSets);
+                    MetaDataFactory.getAll('categoryCombos').then(function(ccs){
+                        angular.forEach(ccs, function(cc){
+                            $scope.model.categoryCombos[cc.id] = cc;
+                        });
+
+                        MetaDataFactory.getAll('validationRules').then(function(vrs){
+                            $scope.model.validationRules = vrs;
+                            
+                            $scope.loadDataSets($scope.selectedOrgUnit);
+                        });
+                    }); 
+                });
+            }
+            else{
+                $scope.loadDataSets($scope.selectedOrgUnit);
+            }
         }
     });
-        
-    function loadOptionSets() {        
-        if(!$scope.model.optionSets){
-            $scope.model.optionSets = [];
-            MetaDataFactory.getAll('optionSets').then(function(optionSets){
-                angular.forEach(optionSets, function(optionSet){
-                    $scope.model.optionSets[optionSet.id] = optionSet;
-                });
-            });
-        }
-    }
-    
-    function loadOptionCombos(){        
-        MetaDataFactory.getAll('categoryCombos').then(function(ccs){            
-            angular.forEach(ccs, function(cc){
-                $scope.model.categoryCombos[cc.id] = cc;
-            });
-        });
-    }
-    
-    function loadValidationRules(){
-        MetaDataFactory.getAll('validationRules').then(function(vrs){            
-            $scope.model.validationRules = vrs;
-        });
-    }
     
     //load datasets associated with the selected org unit.
     $scope.loadDataSets = function(orgUnit) {
@@ -372,7 +369,7 @@ routineDataEntry.controller('dataEntryController',
                         $scope.model.valueExists = true;
                         angular.forEach(response.dataValues, function(dv){
                             
-                            dv.value = DataEntryUtils.formatDataValue( $scope.model.dataElements[dv.dataElement], dv.value );
+                            dv.value = DataEntryUtils.formatDataValue( $scope.model.dataElements[dv.dataElement], dv.value, $scope.model.optionSets, 'USER' );
                             
                             if(!$scope.dataValues[dv.dataElement]){                                
                                 $scope.dataValues[dv.dataElement] = {};
@@ -478,7 +475,9 @@ routineDataEntry.controller('dataEntryController',
                     de: deId,
                     co: ocId,
                     value: $scope.dataValues[deId][ocId] && $scope.dataValues[deId][ocId].value || $scope.dataValues[deId][ocId].value === false ? $scope.dataValues[deId][ocId].value : ''
-                };        
+                };
+                
+        dataValue.value = DataEntryUtils.formatDataValue( $scope.model.dataElements[deId], dataValue.value, $scope.model.optionSets, 'API' );
         
         if( $scope.model.selectedAttributeCategoryCombo && !$scope.model.selectedAttributeCategoryCombo.isDefault ){            
             dataValue.cc = $scope.model.selectedAttributeCategoryCombo.id;

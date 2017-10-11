@@ -17,58 +17,6 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
     };
 })
 
-/* Factory to fetch optionSets */
-.factory('OptionSetService', function($q, $rootScope, StorageService) { 
-    return {
-        getAll: function(){
-            
-            var def = $q.defer();
-            
-            StorageService.currentStore.open().done(function(){
-                StorageService.currentStore.getAll('optionSets').done(function(optionSets){
-                    $rootScope.$apply(function(){
-                        def.resolve(optionSets);
-                    });                    
-                });
-            });            
-            
-            return def.promise;            
-        },
-        get: function(uid){            
-            var def = $q.defer();
-            
-            StorageService.currentStore.open().done(function(){
-                StorageService.currentStore.get('optionSets', uid).done(function(optionSet){                    
-                    $rootScope.$apply(function(){
-                        def.resolve(optionSet);
-                    });
-                });
-            });                        
-            return def.promise;
-        },
-        getCode: function(options, key){
-            if(options){
-                for(var i=0; i<options.length; i++){
-                    if( key === options[i].displayName){
-                        return options[i].code;
-                    }
-                }
-            }            
-            return key;
-        },        
-        getName: function(options, key){
-            if(options){
-                for(var i=0; i<options.length; i++){                    
-                    if( key === options[i].code){
-                        return options[i].displayName;
-                    }
-                }
-            }            
-            return key;
-        }
-    };
-})
-
 /* Factory to fetch data sets */
 .factory('DataSetFactory', function($q, $rootScope, SessionStorageService, StorageService, orderByFilter, DataEntryUtils) { 
   
