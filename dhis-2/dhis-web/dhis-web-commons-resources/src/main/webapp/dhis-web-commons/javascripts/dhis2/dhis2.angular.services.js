@@ -134,6 +134,32 @@ var d2Services = angular.module('d2Services', ['ngResource'])
     };
 })
 
+/* Service for option name<->code conversion */
+.factory('OptionSetService', function() {
+    return {
+        getCode: function(options, key){
+            if(options){
+                for(var i=0; i<options.length; i++){
+                    if( key === options[i].displayName){
+                        return options[i].code;
+                    }
+                }
+            }
+            return key;
+        },
+        getName: function(options, key){
+            if(options){
+                for(var i=0; i<options.length; i++){
+                    if( key === options[i].code){
+                        return options[i].displayName;
+                    }
+                }
+            }
+            return key;
+        }
+    };
+})
+
 /* service for getting calendar setting */
 .service('CalendarService', function (storage, $rootScope) {
 
@@ -809,7 +835,7 @@ var d2Services = angular.module('d2Services', ['ngResource'])
     };
 })
 
-.service('DataEntryUtils', function($q, $translate, $filter, DialogService, OrgUnitService){
+.service('DataEntryUtils', function($q, $translate, $filter, DialogService, OrgUnitService, OptionSetService){
     return {
         getSum: function( op1, op2 ){
             op1 = dhis2.validation.isNumber(op1) ? parseInt(op1) : 0;
@@ -928,21 +954,32 @@ var d2Services = angular.module('d2Services', ['ngResource'])
             
             return ds;
         },
-        formatDataValue: function( de, val){            
-            if( de.valueType === 'NUMBER' ){
-                val = parseFloat( val );
+        formatDataValue: function( de, val, optionSets, destination ){
+            
+            if( de.optionSetValue ){
+                if(destination === 'USER'){
+                    val = OptionSetService.getName(optionSets[de.optionSet.id].options, String(val));
+                }
+                else{
+                    val = OptionSetService.getCode(optionSets[de.optionSet.id].options, val);
+                }
             }
-            else if(de.valueType === 'INTEGER' ||
-                    de.valueType === 'INTEGER_POSITIVE' ||
-                    de.valueType === 'INTEGER_NEGATIVE' ||
-                    de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ){
-                val = parseInt( val );
-            }
-            else if(de.valueType=== 'TRUE_ONLY'){
-                val=val==='true'? true: '';
-            }
-            else if(de.valueType=== 'BOOLEAN'){
-                val = val === 'true' || val === true ? true : val === 'false' || val === false ? false : '';
+            else{
+                if( de.valueType === 'NUMBER' ){
+                    val = parseFloat( val );
+                }
+                else if(de.valueType === 'INTEGER' ||
+                        de.valueType === 'INTEGER_POSITIVE' ||
+                        de.valueType === 'INTEGER_NEGATIVE' ||
+                        de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ){
+                    val = parseInt( val );
+                }
+                else if(de.valueType=== 'TRUE_ONLY'){
+                    val= val === 'true' ? true: '';
+                }
+                else if(de.valueType=== 'BOOLEAN'){
+                    val = val === 'true' || val === true ? true : val === 'false' || val === false ? false : '';
+                }
             }
             
             return val;
