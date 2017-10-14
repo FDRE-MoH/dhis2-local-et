@@ -755,21 +755,6 @@ var d2Directives = angular.module('d2Directives', [])
     return{
         restrict: 'A',
         link: function (scope, element, attrs) {
-            
-            var setFieldFocus = function( field ){
-                
-                if( field ){                    
-                    field.focus();                    
-                }
-                else{                    
-                    console.log('Invalid field to focus:  ', field);                    
-                }
-            };
-            
-            var handleEvent = function( event ){
-                event.preventDefault(); 
-                event.stopPropagation();
-            };
                 
             element.bind("keydown keypress", function (event) {                
                 
@@ -781,7 +766,8 @@ var d2Directives = angular.module('d2Directives', [])
                 
                 if ( ( key === 9 && event.shiftKey ) || key === 38 || key === 37 ) {//get previous input field
                                         
-                    handleEvent( event );                   
+                	event.preventDefault(); 
+                    event.stopPropagation();
                     
                     field = $( 'input[name="foo"][tabindex="' + ( --currentTabIndex ) + '"]' );
                     
@@ -794,11 +780,14 @@ var d2Directives = angular.module('d2Directives', [])
                         }
                     }
                     
-                    setFieldFocus( field );
+                    if( field ){                    
+                        field.focus();
+                    }
                 }                
-                if( ( key === 9 && !event.shiftKey ) || key === 13 || key === 39 || key === 40 ){//get next input field
+                else if( ( key === 9 && !event.shiftKey ) || key === 13 || key === 39 || key === 40 ){//get next input field
                     
-                    handleEvent( event );
+                	event.preventDefault(); 
+                    event.stopPropagation();
                     
                     field = $( 'input[name="foo"][tabindex="' + ( ++currentTabIndex ) + '"]' );
                     
@@ -811,7 +800,9 @@ var d2Directives = angular.module('d2Directives', [])
                         }
                     }
                     
-                    setFieldFocus( field );                    
+                    if( field ){                    
+                        field.focus();
+                    }                   
                 }
             });
         }

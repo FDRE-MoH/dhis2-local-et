@@ -16,12 +16,12 @@ routineDataEntry.controller('dataEntryController',
                 DataSetFactory,
                 PeriodService,
                 MetaDataFactory,
+                DataElementGroupFactory,
                 DataEntryUtils,
                 DataValueService,
                 CompletenessService,
                 ModalService,
-                DialogService,
-                CustomFormService) {
+                DialogService) {
     $scope.periodOffset = 0;
     $scope.maxOptionSize = 30;
     $scope.saveStatus = {};    
@@ -51,7 +51,7 @@ routineDataEntry.controller('dataEntryController',
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
         $scope.model.periods = [];
-        $scope.model.dataSets = [];
+        $scope.model.dataSets = [];        
         $scope.model.validationResults = [];
         $scope.model.failedValidationRules = [];
         $scope.model.selectedDataSet = null;
@@ -77,8 +77,7 @@ routineDataEntry.controller('dataEntryController',
                     angular.forEach(opts, function(op){
                         $scope.model.optionSets[op.id] = op;
                     });
-
-                    console.log('optionSets:  ', $scope.model.optionSets);
+                    
                     MetaDataFactory.getAll('categoryCombos').then(function(ccs){
                         angular.forEach(ccs, function(cc){
                             $scope.model.categoryCombos[cc.id] = cc;
@@ -86,8 +85,17 @@ routineDataEntry.controller('dataEntryController',
 
                         MetaDataFactory.getAll('validationRules').then(function(vrs){
                             $scope.model.validationRules = vrs;
-                            
-                            $scope.loadDataSets($scope.selectedOrgUnit);
+                            $scope.dataElementGroups = {};
+                            $scope.groupsByMember = {};
+                            DataElementGroupFactory.getControllinGroups().then(function( degs ){
+                                angular.forEach(degs, function(deg){
+                                    $scope.dataElementGroups[deg.id] = deg;
+                                    angular.forEach(deg.dataElements, function(de){
+                                        $scope.groupsByMember[de] = deg.id;
+                                    });
+                                });
+                                $scope.loadDataSets($scope.selectedOrgUnit); 
+                            });                            
                         });
                     }); 
                 });
@@ -132,7 +140,6 @@ routineDataEntry.controller('dataEntryController',
         if( angular.isObject($scope.model.selectedDataSet) && $scope.model.selectedDataSet.id){
             $scope.loadDataSetDetails();
         }
-        $scope.getControllerDataElementGroups();
     });
     
     $scope.$watch('model.selectedPeriod', function(){
@@ -143,65 +150,11 @@ routineDataEntry.controller('dataEntryController',
         $scope.loadDataEntryForm();        
     });    
     
-    function reinitializeGroupDetails() {
-        for (var i = 0; i < $scope.dataElementGroups.length; i++) {
-            if ($scope.dataElementGroups[i].data_controller_group) {
-                $scope.dataElementGroups[i].isDisabled = true;
-            }
-        }
-    }
-    
-    $scope.getControllerDataElementGroups = function () {
-        $scope.dataElementGroups = [];
-        MetaDataFactory.getAll('dataElementGroups').then(function (tempDataElementGroups) {
-            angular.forEach(tempDataElementGroups, function (dataElementGroup) {
-                if (dataElementGroup.data_controller_group && dataElementGroup.data_controller_group) {
-                    //this dataElementGroup is a controller group
-                    //initially it should be disabled
-                    dataElementGroup.isDisabled = true;
-                    for (var i = 0; i < dataElementGroup.dataElements.length; i++) {
-                        if ($scope.model.dataElements) {
-                            var newId = dataElementGroup.dataElements[i].id;
-                            var newDataElement = $scope.model.dataElements[newId];
-                            if (newDataElement && newDataElement.controlling_data_element) {
-                                angular.forEach(dataElementGroup.dataElements, function (dataElement) {
-                                    dataElementGroup.dataElements[dataElement.id] = dataElement;
-                                });
-                                //thhis will make the dataElementGroups to be addresed by thier controller dataElementId
-                                $scope.dataElementGroups[newId]=dataElementGroup;
-                                
-                                //push is done again so that we can perform a noramal for loop.
-                                $scope.dataElementGroups.push(dataElementGroup);
-                            }
-                        }
-                    }
-                }
-            });
+    function reinitializeGroupDetails() {        
+        angular.forEach($scope.dataElementGroups, function(deg){
+            deg.isDisabled = true;
         });
-    };
-    
-    $scope.checkForGrayField = function (section,dataElement, categoryOptionCombo) {
-        //checking if dataElement is in special group because the section and category option combo might not be passed
-        if (dataElement.controlling_data_element) {
-            return false;
-        }
-        for (var i = 0; i < $scope.dataElementGroups.length; i++) {
-            if ($scope.dataElementGroups[i].dataElements[dataElement.id]) {
-                return $scope.dataElementGroups[i].isDisabled;
-            }
-        }
-        if(section=== null || categoryOptionCombo=== null || section.greyedFields === null){
-            return false;
-        }
-        //TODO make the greyed fields to be addressable like dataValues i.e greyedFields[dataElement][catcombo]
-        for(var i = 0 ;i<section.greyedFields.length;i++){
-            var greyedField=section.greyedFields[i];
-            if(greyedField.dataElement.id=== dataElement.id && greyedField.categoryOptionCombo.id === categoryOptionCombo.id){
-                return true;
-            }
-        }
-        return false;
-    };
+    }
     
     $scope.performAutoZero = function(section){
         var dataValueSet = {
@@ -214,7 +167,7 @@ routineDataEntry.controller('dataEntryController',
 
         angular.forEach(section.dataElements, function (dataElement) {
             dataElement = $scope.model.dataElements[dataElement.id];
-            if (dataElement && (dataElement.valueType === 'NUMBER' || dataElement.valueType === "INTEGER" || dataElement.valueType === "INTEGER_ZERO_OR_POSITIVE") && !$scope.checkForGrayField(null,dataElement,null)) {
+            if (dataElement && (dataElement.valueType === 'NUMBER' || dataElement.valueType === "INTEGER" || dataElement.valueType === "INTEGER_ZERO_OR_POSITIVE")) {
                 angular.forEach($scope.model.categoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function (categoryOptionCombo) {
                     //check if the data value of the data element has a catagoroptiondownloaded
                     if (!$scope.dataValues[dataElement.id]) {
@@ -307,6 +260,7 @@ routineDataEntry.controller('dataEntryController',
                 angular.forEach($scope.model.categoryCombos[de.categoryCombo.id].categoryOptionCombos, function(oco){
                     $scope.tabOrder[de.id][oco.id] = idx++;
                 });
+                
             });
             
             if( $scope.model.selectedDataSet.sections.length > 0 ){
@@ -327,9 +281,6 @@ routineDataEntry.controller('dataEntryController',
                     });
                 });
             }
-            
-            $scope.customDataEntryForm = CustomFormService.getForDataSet($scope.model.selectedDataSet, $scope.model.dataElements);
-            $scope.displayCustomForm = $scope.customDataEntryForm ? true : false;
         }
     };
     
@@ -382,11 +333,14 @@ routineDataEntry.controller('dataEntryController',
                             }
                             else{                                
                                 $scope.dataValues[dv.dataElement][dv.categoryOptionCombo] = dv;
-                            }
+                            }                            
                             //check if the dataElement is controlling dataElement and set the dataElementGroup
-                            if($scope.model.dataElements[dv.dataElement].controlling_data_element && $scope.model.dataElements[dv.dataElement].controlling_data_element === true ){
-                                $scope.dataElementGroups[dv.dataElement].isDisabled = !dv.value;
-                            }
+                            if($scope.model.dataElements[dv.dataElement].controlling_data_element && 
+                                    $scope.model.dataElements[dv.dataElement].controlling_data_element === true &&
+                                    $scope.groupsByMember[dv.dataElement] &&
+                                    $scope.dataElementGroups[$scope.groupsByMember[dv.dataElement]]){
+                                $scope.dataElementGroups[$scope.groupsByMember[dv.dataElement]].isDisabled = !dv.value;
+                            }                            
                         });
                         response.dataValues = orderByFilter(response.dataValues, '-created').reverse();                    
                         $scope.model.basicAuditInfo.created = $filter('date')(response.dataValues[0].created, 'dd MMM yyyy');
@@ -491,100 +445,119 @@ routineDataEntry.controller('dataEntryController',
         if( $scope.model.selectedAttributeCategoryCombo && !$scope.model.selectedAttributeCategoryCombo.isDefault ){            
             dataValue.cc = $scope.model.selectedAttributeCategoryCombo.id;
             dataValue.cp = DataEntryUtils.getOptionIds($scope.model.selectedOptions);
-        }        
-        
-         if($scope.model.dataElements[deId].controlling_data_element && $scope.model.dataElements[deId].controlling_data_element===true){
-            //this means that the dataElement is a controlling datElement
-            if($scope.dataValues[deId][ocId].value){
-                //value changed from true to false, open all bloced fields
-                $scope.dataElementGroups[deId].isDisabled=false;
-                
-                //because the value inside the dataValue doesn't work when the value is true
-                dataValue.value=true;
-
-                //automatically jump to end of the else and save the data value accordingly.
-            } else{
-                //value changed from false to true. i.e show modal message and if user accepts save all changes.
-                var modalOptions={
-                    closeButtonText: 'no',
-                    actionButtonText: 'yes',
-                    headerText: 'auto_zer_warning',
-                    bodyText: 'are_you_sure_to_discard_all_saved_data_in_group'
-                };
-                ModalService.showModal({},modalOptions).then(function (){
-                    //this means user clicked yes.
-                    //save value of the controlling data element, discard all the values stored under the datElementGroup.
-                    $scope.dataElementGroups[deId].isDisabled=true;
-                    var dataValueSet={
-                        dataSet: $scope.model.selectedDataSet.id,
-                        period:$scope.model.selectedPeriod.id,
-                        orgUnit: $scope.selectedOrgUnit.id,
-                        dataValues: []
-                    };
-                    //add value of controller dataelement itself. the value is null since it is true only and doesn't accept false.
-                    dataValueSet.dataValues.push({dataElement:deId,categoryOptionCombo: ocId,attributeOptionCombo: $scope.model.selectedAttributeOptionCombos,value: ""});
-                    for(var i=0;i<$scope.dataElementGroups[deId].dataElements.length;i++){
-                        var childDataElement=$scope.dataElementGroups[deId].dataElements[i];
-                        childDataElement=$scope.model.dataElements[childDataElement.id];
-                        if(!(childDataElement && childDataElement.id!==deId)){
-                            continue;
-                        }
-                        //only delete if a data is sttored with that dataValue otherwise ignore the dataelement
-                        if($scope.dataValues[childDataElement.id]){
-                            angular.forEach($scope.model.categoryCombos[childDataElement.categoryCombo.id].categoryOptionCombos,function(categoryOptionCombo){
-                                //check if there is a value for that specific catoptcombo
-                                if($scope.dataValues[childDataElement.id][categoryOptionCombo.id]){
-                                    $scope.dataValues[childDataElement.id][categoryOptionCombo.id]=null;
-                                    dataValueSet.dataValues.push({dataElement: childDataElement.id, categoryOptionCombo: categoryOptionCombo.id, attributeOptionCombo: $scope.model.selectedAttributeOptionCombos,value: ""});
-                                }
-                            });
-                        }
-                    }
-                    
-                    DataValueService.saveDataValueSet(dataValueSet).then(function(response){
-                                copyDataValues();
-                                //show a success dialog.
-                                console.log("successfully saved ",response);
-                                var dialogOptions={
-                                    headerText:'success',
-                                    bodyText: 'child_data_element_groups_deleted_successfully'
-                                };
-                                DialogService.showDialog({},dialogOptions);
-                    },function (response){
-                        //show error dialog if problem occurs
-                        console.log("error when deleting contents of data element groups",response);
-                        var dialogOptions={
-                            headerText:'error',
-                            bodyText: 'error_deleting_dataValues_of_data_element_groups'
-                        };
-                        DialogService.showDialog({},dialogOptions);
-                    });
-                    return;//return so that it won't continue to save the dataValue Object created above.
-                },function (){
-                    //this means that the user clicked NO so no changes will be saved.
-                    $scope.dataValues[deId][ocId].value=true;
-                    return;//return so that it won't continue to save the dataValue object created above.
-                });
-                return;//return so that it won't continue to save the dataValue object created above.
-            }
         }
-         
-        //this means it is not controller dataElelement or the controller data element is set to true so continue saving the data.
         
-        DataValueService.saveDataValue( dataValue ).then(function(response){
-           $scope.saveStatus[deId + '-' + ocId].saved = true;
-           $scope.saveStatus[deId + '-' + ocId].pending = false;
-           $scope.saveStatus[deId + '-' + ocId].error = false;
-           copyDataValues();
-           
-           $scope.dataValues[deId] = DataEntryUtils.getDataElementTotal( $scope.dataValues, deId);
-           var vres = DataEntryUtils.getValidationResult($scope.model.dataElements[deId], $scope.dataValues, $scope.model.failedValidationRules);
-           $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;
-           
-        }, function(){
+        var processDataValue = function(){
+            copyDataValues();
+            $scope.dataValues[deId] = DataEntryUtils.getDataElementTotal( $scope.dataValues, deId);
+            var vres = DataEntryUtils.getValidationResult($scope.model.dataElements[deId], $scope.dataValues, $scope.model.failedValidationRules);
+            $scope.model.failedValidationRules = vres.failed ? vres.failed : $scope.model.failedValidationRules;
+        };
+        
+        var saveSuccessStatus = function(){
+            $scope.saveStatus[deId + '-' + ocId].saved = true;
+            $scope.saveStatus[deId + '-' + ocId].pending = false;
+            $scope.saveStatus[deId + '-' + ocId].error = false;            
+        };
+        
+        var saveFailureStatus = function(){
             $scope.saveStatus[deId + '-' + ocId].saved = false;
             $scope.saveStatus[deId + '-' + ocId].pending = false;
             $scope.saveStatus[deId + '-' + ocId].error = true;
+        };
+
+        if( $scope.model.dataElements[deId].controlling_data_element && 
+                $scope.groupsByMember[deId] && 
+                $scope.dataElementGroups[$scope.groupsByMember[deId]] &&
+                $scope.dataElementGroups[$scope.groupsByMember[deId]].dataElements ){            
+            //this means that the dataElement is a controlling dataElement
+            var dataValueSet={
+                dataSet: $scope.model.selectedDataSet.id,
+                period:$scope.model.selectedPeriod.id,
+                orgUnit: $scope.selectedOrgUnit.id,
+                attributeOptionCombo: $scope.model.selectedAttributeOptionCombo,
+                dataValues: []
+            };
+            
+            if( $scope.model.selectedAttributeCategoryCombo && !$scope.model.selectedAttributeCategoryCombo.isDefault ){            
+                dataValueSet.cc = $scope.model.selectedAttributeCategoryCombo.id;
+                dataValueSet.cp = DataEntryUtils.getOptionIds($scope.model.selectedOptions);
+            }
+            
+            
+            if( dataValue.value && dataValue.value !== '' ){
+                //value set to true, open all blocked fields
+                $scope.dataElementGroups[$scope.groupsByMember[deId]].isDisabled=false;
+            } else{
+                //value set to false or empty. 
+                //show modal message. 
+                //if user accepts clear values, block fields and save all changes.
+                var _dataValues = angular.copy( $scope.dataValues );
+                var count = 0;                
+                angular.forEach($scope.dataElementGroups[$scope.groupsByMember[deId]].dataElements, function(_deId){                    
+                    if( _dataValues[_deId] && _deId !== deId ){
+                        angular.forEach(_dataValues[_deId], function(val, key) {
+                            if( key === 'total' ){
+                                _dataValues[_deId].total = 0;
+                            }
+                            else{
+                                val.value = "";
+                                _dataValues[_deId][key] = val;
+                                dataValueSet.dataValues.push({dataElement: _deId, categoryOptionCombo: key, value: ""});
+                                count++;
+                            }
+                        });
+                    }
+                });
+                
+                dataValueSet.dataValues.push({dataElement: deId, categoryOptionCombo: ocId, value: dataValue.value});
+                
+                if( count > 0 ){
+                    var modalOptions={
+                        closeButtonText: 'no',
+                        actionButtonText: 'yes',
+                        headerText: 'auto_zero_warning',
+                        bodyText: 'are_you_sure_to_discard_all_saved_data_in_group'
+                    };
+                    ModalService.showModal({},modalOptions).then(function (){
+                        //this means user clicked yes.
+                        //save value of the controlling data element, discard all the values stored under the datElementGroup.                        
+                        $scope.dataElementGroups[$scope.groupsByMember[deId]].isDisabled=true;
+                        DataValueService.saveDataValueSet(dataValueSet).then(function(response){
+                            $scope.dataValues = Object.assign($scope.dataValues, _dataValues);
+                            var dialogOptions={
+                                headerText:'success',
+                                bodyText: 'child_data_element_groups_deleted_successfully'
+                            };
+                            DialogService.showDialog({},dialogOptions);
+                            saveSuccessStatus();
+                            processDataValue();
+                        },function (){                            
+                            var dialogOptions={
+                                headerText:'error',
+                                bodyText: 'error_deleting_dataValues_of_data_element_groups'
+                            };
+                            DialogService.showDialog({},dialogOptions);                            
+                            saveFailureStatus();
+                        });
+                        return;//return so that it won't continue to save the dataValue Object created above.
+                    },function (){
+                        //this means that the user clicked NO so no changes will be saved.
+                        $scope.dataValues[deId][ocId].value=true;
+                        return;//return so that it won't continue to save the dataValue object created above.
+                    });
+                    return;//return so that it won't continue to save the dataValue object created above.
+                }
+            }                
+        }
+        
+        //this means it is not controller dataElelement or the controller data element is set to true so continue saving the data.
+        
+        DataValueService.saveDataValue( dataValue ).then(function(response){
+           saveSuccessStatus();
+           processDataValue();           
+        }, function(){
+            saveFailureStatus();
         });
     };
     

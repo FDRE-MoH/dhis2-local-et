@@ -80,7 +80,7 @@
                                             <span ng-if="de.optionSetValue">
                                                 <ui-select theme="select2" 
                                                            ng-model="dataValues[de.id][oco.id].value" 
-                                                           ng-disabled="checkForGrayField(section,de,oco)" 
+                                                           ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element" 
                                                            name="foo" 
                                                            on-select="saveDataValue(de.id, oco.id)" 
                                                            on-remove="saveDataValue(de.id, oco.id)" 
@@ -102,7 +102,7 @@
                                                         <textarea rows="5" 
                                                                   name="foo"                                                          
                                                                   ng-model="dataValues[de.id][oco.id].value" 
-                                                                  ng-disabled="checkForGrayField(section,de,oco)"
+                                                                  ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                   d2-tab-index
                                                                   tabindex={{tabOrder[de.id][oco.id]}}
                                                                   class="form-control" 
@@ -114,7 +114,7 @@
                                                         <input type="text" 
                                                                name="foo"
                                                                ng-model="dataValues[de.id][oco.id].value" 
-                                                               ng-disabled="checkForGrayField(section,de,oco)"
+                                                               ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
@@ -127,7 +127,7 @@
                                                                d2-number-validator
                                                                number-type={{de.valueType}}
                                                                ng-model="dataValues[de.id][oco.id].value" 
-                                                               ng-disabled="checkForGrayField(section,de,oco)"
+                                                               ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
@@ -141,7 +141,7 @@
                                                                d2-number-validator
                                                                number-type={{de.valueType}}
                                                                ng-model="dataValues[de.id][oco.id].value" 
-                                                               ng-disabled="checkForGrayField(section,de,oco)"
+                                                               ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
@@ -155,7 +155,7 @@
                                                                d2-number-validator
                                                                number-type={{de.valueType}}
                                                                ng-model="dataValues[de.id][oco.id].value" 
-                                                               ng-disabled="checkForGrayField(section,de,oco)"
+                                                               ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
@@ -169,7 +169,7 @@
                                                                d2-number-validator
                                                                number-type={{de.valueType}}
                                                                ng-model="dataValues[de.id][oco.id].value" 
-                                                               ng-disabled="checkForGrayField(section,de,oco)"
+                                                               ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
@@ -183,7 +183,7 @@
                                                                d2-number-validator
                                                                number-type={{de.valueType}}
                                                                ng-model="dataValues[de.id][oco.id].value" 
-                                                               ng-disabled="checkForGrayField(section,de,oco)"
+                                                               ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
@@ -195,7 +195,7 @@
                                                         <input type="checkbox"   
                                                                name="foo"
                                                                ng-model="dataValues[de.id][oco.id].value" 
-                                                               ng-disabled="checkForGrayField(section,de,oco)"
+                                                               ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
@@ -205,7 +205,7 @@
                                                     <span ng-switch-when="BOOLEAN">                                                    
                                                         <ui-select theme="select2" 
                                                                    ng-model="dataValues[de.id][oco.id].value" 
-                                                                   ng-disabled="checkForGrayField(section,de,oco)" 
+                                                                   ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element" 
                                                                    name="foo"                                                                  
                                                                    on-select="saveDataValue(de.id, oco.id)" 
                                                                    on-remove="saveDataValue(de.id, oco.id)" 
@@ -302,7 +302,7 @@
                             {{oco.displayName}}
                         </div>
                         <div ng-if="ocos.length === 1">
-                            {{de.displayFormName}} - {{de.optionSet.id}}
+                            {{de.displayFormName}}
                         </div>
                     </td>
                     <td>                        
@@ -310,7 +310,7 @@
                             <span ng-if="de.optionSetValue">
                                 <ui-select theme="select2" 
                                            ng-model="dataValues[de.id][oco.id].value" 
-                                           ng-disabled="checkForGrayField(null,de,oco)" 
+                                           ng-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element" 
                                            name="foo" 
                                            on-select="saveDataValue(de.id, oco.id)" 
                                            on-remove="saveDataValue(de.id, oco.id)" 
@@ -332,7 +332,7 @@
                                         <textarea rows="5" 
                                                   name="foo"                                                          
                                                   ng-model="dataValues[de.id][oco.id].value" 
-                                                  d2-disabled="checkForGrayField(null,de,oco)"
+                                                  d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                   d2-tab-index
                                                   tabindex={{tabOrder[de.id][oco.id]}}
                                                   class="form-control" 
@@ -344,7 +344,7 @@
                                         <input type="text" 
                                                name="foo"
                                                ng-model="dataValues[de.id][oco.id].value" 
-                                               d2-disabled="checkForGrayField(null,de,oco)"
+                                               d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
@@ -357,7 +357,7 @@
                                                d2-number-validator
                                                number-type={{de.valueType}}
                                                ng-model="dataValues[de.id][oco.id].value" 
-                                               d2-disabled="checkForGrayField(null,de,oco)"
+                                               d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
@@ -371,7 +371,7 @@
                                                d2-number-validator
                                                number-type={{de.valueType}}
                                                ng-model="dataValues[de.id][oco.id].value" 
-                                               d2-disabled="checkForGrayField(null,de,oco)"
+                                               d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
@@ -385,7 +385,7 @@
                                                d2-number-validator
                                                number-type={{de.valueType}}
                                                ng-model="dataValues[de.id][oco.id].value" 
-                                               d2-disabled="checkForGrayField(null,de,oco)"
+                                               d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
@@ -399,7 +399,7 @@
                                                d2-number-validator
                                                number-type={{de.valueType}}
                                                ng-model="dataValues[de.id][oco.id].value" 
-                                               d2-disabled="checkForGrayField(null,de,oco)"
+                                               d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
@@ -413,7 +413,7 @@
                                                d2-number-validator
                                                number-type={{de.valueType}}
                                                ng-model="dataValues[de.id][oco.id].value" 
-                                               d2-disabled="checkForGrayField(null,de,oco)"
+                                               d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
@@ -425,7 +425,7 @@
                                         <input type="checkbox"   
                                                name="foo"
                                                ng-model="dataValues[de.id][oco.id].value" 
-                                               d2-disabled="checkForGrayField(null,de,oco)"
+                                               d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
@@ -435,7 +435,7 @@
                                     <span ng-switch-when="BOOLEAN">                                                    
                                         <ui-select theme="select2" 
                                                    ng-model="dataValues[de.id][oco.id].value" 
-                                                   ng-disabled="checkForGrayField(section,de,oco)" 
+                                                   ng-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element" 
                                                    name="foo"                                                                
                                                    on-select="saveDataValue(de.id, oco.id)" 
                                                    on-remove="saveDataValue(de.id, oco.id)" 

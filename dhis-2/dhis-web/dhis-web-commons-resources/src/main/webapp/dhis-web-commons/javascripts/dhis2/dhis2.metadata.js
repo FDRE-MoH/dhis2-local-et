@@ -289,9 +289,23 @@ dhis2.metadata.getMetaObjects = function( store, objs, url, filter, storage, db,
                                     ind=dhis2.metadata.expressionMatcher(ind,'numerator','params',dhis2.metadata.expressionRegex,dhis2.metadata.operatorRegex);
                                     ind=dhis2.metadata.expressionMatcher(ind,'denominator','params',dhis2.metadata.expressionRegex,dhis2.metadata.operatorRegex);
                                 });
-                            }                
+                            }
+                            if( sec.greyedFields ){
+                                var greyedFields = [];
+                                greyedFields = $.map(sec.greyedFields, function(gf){return gf.dimensionItem;});
+                                sec.greyedFields = greyedFields;
+                            }
                         });
-                    }                    
+                    }
+                    
+                    var dataElements = [];
+                    _.each(obj.dataSetElements, function(dse){
+                        if( dse.dataElement ){
+                            dataElements.push( dhis2.metadata.processMetaDataAttribute( dse.dataElement ) );
+                        }                            
+                    });
+                    obj.dataElements = dataElements;
+                    delete obj.dataSetElements;                    
                 }
                 else if( store === 'validationRules' ){
                     obj.params = [];
@@ -359,11 +373,13 @@ dhis2.metadata.getMetaObject = function( id, store, url, filter, storage, db )
     return def.promise();
 };
 
-dhis2.metadata.processObject = function(obj, prop){    
-    var oo = {};
-    _.each(_.values( obj[prop]), function(o){
-        oo[o.id] = o.name;
-    });
-    obj[prop] = oo;
+dhis2.metadata.processObject = function(obj, prop){
+	if( obj[prop] ){
+		var oo = {};
+	    _.each(_.values( obj[prop]), function(o){
+	        oo[o.id] = o.name;
+	    });
+	    obj[prop] = oo;
+	}    
     return obj;
 };

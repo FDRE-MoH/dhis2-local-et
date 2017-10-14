@@ -45,7 +45,6 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                     var dataSets = [];
                     angular.forEach(dss, function(ds){                            
                         if(ds.organisationUnits.hasOwnProperty( ou.id ) && DataEntryUtils.userHasValidRole(ds,'dataSets', userRoles)){
-                            ds = DataEntryUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -94,7 +93,7 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                     var dataSets = [];
                     angular.forEach(dss, function(ds){                            
                         if(ds.organisationUnits.hasOwnProperty( ou.id ) && DataEntryUtils.userHasValidRole(ds,'dataSets', userRoles) && ds[propertyName] && ds[propertyName]===propertyValue){
-                            ds = DataEntryUtils.processDataSet( ds );
+                            //ds = DataEntryUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -128,6 +127,35 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                     
                     $rootScope.$apply(function(){
                         def.resolve({dataSets: dataSets, selectedDataSet: selectedDataSet});
+                    });                      
+                });
+            });            
+            return def.promise;
+        }
+    };
+})
+
+/* Factory to fetch data element groups */
+.factory('DataElementGroupFactory', function($q, $rootScope, StorageService) { 
+  
+    return {
+        getControllinGroups: function(){            
+            var def = $q.defer();            
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getAll('dataElementGroups').done(function(dgs){
+                    var degs = [];
+                    angular.forEach(dgs, function(dg){                            
+                        if(dg.data_controller_group){
+                            dg.isDisabled = true;
+                            var des = [];
+                            des = $.map(dg.dataElements, function(de){return de.id;});
+                            dg.dataElements = des;
+                            degs.push(dg);
+                        }
+                    });
+                    
+                    $rootScope.$apply(function(){
+                        def.resolve( degs );
                     });                      
                 });
             });            
@@ -210,8 +238,8 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                     //deleting...                    
                     var url = '?de='+dv.dataElement + '&ou='+dvs.orgUnit + '&pe='+dvs.period + '&co='+dv.categoryOptionCombo;
                     
-                    if( dv.cc && dv.cp ){
-                        url += '&cc='+cc + '&cp='+cp;
+                    if( dvs.cc && dvs.cp ){
+                        url += '&cc='+dvs.cc + '&cp='+dvs.cp;
                     }                    
                     promises.push( $http.delete('../api/dataValues.json' + url) );
                 }
