@@ -965,10 +965,11 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                 }
             }
             else{
-                if( de.valueType === 'NUMBER' ){
+                if( de.valueType === 'NUMBER' && dhis2.validation.isNumber(val) ){
                     val = parseFloat( val );
                 }
-                else if(de.valueType === 'INTEGER' ||
+                else if( dhis2.validation.isNumber(val) &&
+			de.valueType === 'INTEGER' ||
                         de.valueType === 'INTEGER_POSITIVE' ||
                         de.valueType === 'INTEGER_NEGATIVE' ||
                         de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ){
