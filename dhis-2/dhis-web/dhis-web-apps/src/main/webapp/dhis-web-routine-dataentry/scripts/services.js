@@ -229,36 +229,13 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
             });
             return promise;
         },
-        saveDataValueSet: function(dvs){
-            var def = $q.defer();            
-            var promises = [], toBeSaved = [];
-            
-            angular.forEach(dvs.dataValues, function(dv){                
-                if( dv.value === "" || dv.value === null ){
-                    //deleting...                    
-                    var url = '?de='+dv.dataElement + '&ou='+dvs.orgUnit + '&pe='+dvs.period + '&co='+dv.categoryOptionCombo;
-                    
-                    if( dvs.cc && dvs.cp ){
-                        url += '&cc='+dvs.cc + '&cp='+dvs.cp;
-                    }                    
-                    promises.push( $http.delete('../api/dataValues.json' + url) );
-                }
-                else{
-                    //saving...
-                    toBeSaved.push( dv );
-                }                
-            });
-            
-            if( toBeSaved.length > 0 ){
-                dvs.dataValues = toBeSaved;
-                promises.push( $http.post('../api/dataValueSets.json', dvs) );
-            }
-            
-            $q.all(promises).then(function(){                
-                def.resolve();
-            });
-            
-            return def.promise;
+        saveDataValueSet: function( dvs ){
+            var promise = $http.post('../api/dataValueSets.json', dvs ).then(function(response){               
+                return response.data;
+            }, function(response){
+                DataEntryUtils.errorNotifier(response);
+            });            
+            return promise;
         },
         getDataValueSet: function( params ){            
             var promise = $http.get('../api/dataValueSets.json?' + params ).then(function(response){               

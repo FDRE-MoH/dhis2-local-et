@@ -502,14 +502,14 @@ routineDataEntry.controller('dataEntryController',
                             else{
                                 val.value = "";
                                 _dataValues[_deId][key] = val;
-                                dataValueSet.dataValues.push({dataElement: _deId, categoryOptionCombo: key, value: ""});
+                                dataValueSet.dataValues.push({dataElement: _deId, categoryOptionCombo: key, value: "", deleted: true});
                                 count++;
                             }
                         });
                     }
                 });
                 
-                dataValueSet.dataValues.push({dataElement: deId, categoryOptionCombo: ocId, value: dataValue.value});
+                dataValueSet.dataValues.push({dataElement: deId, categoryOptionCombo: ocId, value: dataValue.value, deleted: true});
                 
                 if( count > 0 ){
                     var modalOptions={
