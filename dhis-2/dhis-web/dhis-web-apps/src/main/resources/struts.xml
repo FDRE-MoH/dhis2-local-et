@@ -15,7 +15,16 @@
     <package name="dhis-web-routine-dataentry" extends="dhis-web-commons" namespace="/dhis-web-routine-dataentry">
 		<action name="index" class="org.hisp.dhis.commons.action.NoAction">
 		    <result name="success" type="redirect">index.html</result>
-		</action>        
+		</action>
+		<action name="cacheManifest" class="org.hisp.dhis.appcache.CacheManifestAction">
+            <param name="appPath">dhis-web-routine-dataentry</param>
+            <param name="i18nPath">i18n</param>
+            <param name="appCache">routine-dataentry.appcache</param>
+            <result type="stream">
+                <param name="contentType">text/cache-manifest</param>
+                <param name="inputName">inputStream</param>
+            </result>
+        </action>
 	</package>	
     
     <package name="dhis-web-plan-setting" extends="dhis-web-commons" namespace="/dhis-web-plan-setting">
