@@ -132,6 +132,7 @@ views/left-bar-icons.html
 views/left-bar-menu.html
 views/left-bar.html
 views/modal.html
+views/modal-offline.html
 
 ../dhis-web-commons/fonts/LiberationSans-Regular-webfont.eot
 ../dhis-web-commons/fonts/LiberationSans-Regular-webfont.woff

@@ -10,10 +10,89 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
     var store = new dhis2.storage.Store({
         name: "dhis2rd",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules','dataElementGroups']
+        objectStores: ['dataValues', 'dataSets', 'optionSets', 'categoryCombos', 'indicatorTypes', 'validationRules','dataElementGroups']
     });
     return{
         currentStore: store
+    };
+})
+
+/* service for handling offline data */
+.factory('OfflineDataValueService', function($http, $q, $rootScope, $translate, StorageService, ModalService, NotificationService){
+    return {        
+        hasLocalData: function() {
+            var def = $q.defer();
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getKeys('dataValues').done(function(events){
+                    $rootScope.$apply(function(){
+                        def.resolve( events.length > 0 );
+                    });                    
+                });
+            });            
+            return def.promise;
+        },
+        getLocalData: function(){
+            var def = $q.defer();            
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getAll('dataValues').done(function(dataValues){
+                    $rootScope.$apply(function(){
+                        def.resolve({dataValues: dataValues});
+                    });                    
+                });
+            });            
+            return def.promise;
+        },
+        uploadLocalData: function(){            
+            var def = $q.defer();
+            this.getLocalData().then(function(localData){                
+                var dataValueSet = {dataValues: []};
+                angular.forEach(localData.dataValues, function(dv){
+                    delete dv.id;
+                    dataValueSet.dataValues.push(dv);
+                });
+                         
+                $http.post('../api/dataValueSets.json', dataValueSet ).then(function(response){
+                    dhis2.routineDataEntry.store.removeAll( 'dataValues' );
+                    NotificationService.displayDelayedHeaderMessage( $translate.instant('upload_success') );
+                    log( 'Successfully uploaded local data values' );
+                    def.resolve();
+                }, function( error ){
+                    var serverLog = '';
+                    if( error && error.data && error.data.response && error.data.response.importSummaries ){
+                        angular.forEach(error.data.response.importSummaries, function(is){
+                            if( is.description ){
+                                serverLog += is.description + ';  ';
+                            }
+                        });
+                    }
+                    
+                    var modalOptions = {
+                        closeButtonText: 'keep_offline_data',
+                        actionButtonText: 'delete_offline_data',
+                        headerText: 'error',
+                        bodyText: $translate.instant('data_upload_to_server_failed:') + '  ' + serverLog
+                    };
+                    
+                    var modalDefaults = {
+                        backdrop: true,
+                        keyboard: true,
+                        modalFade: true,
+                        templateUrl: 'views/modal-offline.html'
+                    };
+                        
+                        
+                    ModalService.showModal(modalDefaults, modalOptions).then(function(result){
+                        dhis2.routineDataEntry.store.removeAll( 'dataValues' );
+                        NotificationService.displayDelayedHeaderMessage( $translate.instant('offline_data_deleted') );
+                        def.resolve();
+                    }, function(){
+                        NotificationService.displayDelayedHeaderMessage( $translate.instant('upload_failed_try_again') );
+                        def.resolve();
+                    });
+                });
+            });
+            return def.promise;
+        }
     };
 })
 
@@ -205,7 +284,7 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
     };        
 })
 
-.service('DataValueService', function($http, DataEntryUtils,$q) {   
+.service('DataValueService', function($q, $rootScope, $http, DataEntryUtils, StorageService) {   
     
     return {        
         saveDataValue: function( dv ){
@@ -220,6 +299,18 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
             }            
             var promise = $http.post('../api/dataValues.json' + url).then(function(response){
                 return response.data;
+            }, function(){                
+                var dataValue = {
+                    id: dv.de + '-' + dv.co + '-' + dv.ao + '-' + dv.pe + '-' + dv.ou,
+                    dataElement: dv.de,
+                    categoryOptionCombo: dv.co,
+                    attributeOptionCombo: dv.ao,
+                    period: dv.pe,
+                    orgUnit: dv.ou,
+                    value: dv.value
+                };
+                    
+                dhis2.routineDataEntry.store.set( 'dataValues', dataValue );
             });
             return promise;
         },
@@ -240,8 +331,24 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
         getDataValueSet: function( params ){            
             var promise = $http.get('../api/dataValueSets.json?' + params ).then(function(response){               
                 return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
+            }, function(){
+                var def = $q.defer();
+                StorageService.currentStore.open().done(function(){
+                    StorageService.currentStore.getAll('dataValues').done(function(dvs){
+                        var result = {events: [], pager: {pageSize: '', page: 1, toolBarDisplay: 5, pageCount: 1}};
+                        console.log(' dvs:  ', dvs);
+                        /*angular.forEach(evs, function(ev){                            
+                            if(ev.programStage === programStage && ev.orgUnit === orgUnit){
+                                ev.event = ev.id;
+                                result.events.push(ev);
+                            }
+                        });*/ 
+                        $rootScope.$apply(function(){
+                            def.resolve( result );
+                        });                    
+                    });
+                });            
+                return def.promise;
             });            
             return promise;
         }

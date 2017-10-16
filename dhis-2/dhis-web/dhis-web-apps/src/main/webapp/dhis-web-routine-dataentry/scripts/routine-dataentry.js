@@ -7,9 +7,12 @@ dhis2.util.namespace('dhis2.rd');
 dhis2.routineDataEntry.emptyOrganisationUnits = false;
 
 var i18n_no_orgunits = 'No organisation unit attached to current user, no data entry possible';
-var i18n_offline_notification = 'You are offline';
+var i18n_offline_notification = 'You are offline, data will be stored locally';
 var i18n_online_notification = 'You are online';
 var i18n_ajax_login_failed = 'Login failed, check your username and password and try again';
+var i18n_need_to_sync_notification = 'There is data stored locally, please upload to server';
+var i18n_sync_now = 'Upload';
+var i18n_uploading_data_notification = 'Uploading locally stored data to the server';
 
 var optionSetsInPromise = [];
 var attributesInPromise = [];
@@ -28,7 +31,7 @@ if( dhis2.routineDataEntry.memoryOnly ) {
 dhis2.routineDataEntry.store = new dhis2.storage.Store({
     name: 'dhis2rd',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules','dataElementGroups']
+    objectStores: ['dataValues', 'dataSets', 'optionSets', 'categoryCombos', 'indicatorTypes', 'validationRules','dataElementGroups']
 });
 
 (function($) {
@@ -62,6 +65,27 @@ $(document).bind('dhis2.online', function(event, loggedIn)
 {
     if (loggedIn)
     {
+        var OfflineDataValueService = angular.element('body').injector().get('OfflineDataValueService');
+        
+        OfflineDataValueService.hasLocalData().then(function(localData){
+            if(localData){
+                var message = i18n_need_to_sync_notification + ' <button id="sync_button" type="button">' + i18n_sync_now + '</button>';
+
+                setHeaderMessage(message);
+
+                $('#sync_button').bind('click', uploadLocalData);
+            }
+            else{
+                if (dhis2.routineDataEntry.emptyOrganisationUnits) {
+                    setHeaderMessage(i18n_no_orgunits);
+                }
+                else {
+                    setHeaderDelayMessage(i18n_online_notification);
+                }
+            }
+        });
+        
+        
         if (dhis2.routineDataEntry.emptyOrganisationUnits) {
             setHeaderMessage(i18n_no_orgunits);
         }
@@ -129,8 +153,7 @@ function downloadMetaData()
     var promise = def.promise();
 
     promise = promise.then( dhis2.routineDataEntry.store.open );
-    promise = promise.then( getUserRoles );
-    promise = promise.then( getOrgUnitLevels );
+    promise = promise.then( getUserRoles );    
     promise = promise.then( getSystemSetting );
     promise = promise.then( getCalendarSetting );
     
@@ -182,16 +205,6 @@ function getUserRoles(){
        return; 
     }    
     return dhis2.metadata.getMetaObject(null, 'USER_ROLES', '../api/me.json', 'fields=id,displayName,userCredentials[userRoles[id,authorities,dataSets]]', 'sessionStorage', dhis2.routineDataEntry.store);
-}
-
-function getOrgUnitLevels()
-{
-    dhis2.routineDataEntry.store.getKeys( 'ouLevels').done(function(res){
-        if(res.length > 0){
-            return;
-        }        
-        return dhis2.metadata.getMetaObjects('ouLevels', 'organisationUnitLevels', '../api/organisationUnitLevels.json', 'fields=id,displayName,level&paging=false', 'idb', dhis2.routineDataEntry.store);
-    });
 }
 
 function getSystemSetting(){   
@@ -278,4 +291,13 @@ function filterMissingDataElementGroups( objs ){
 
 function getDataElementGroups( ids ){    
     return dhis2.metadata.getBatches( ids, batchSize, 'dataElementGroups', 'dataElementGroups', '../api/dataElementGroups.json', 'paging=false&fields=id,displayName,code,dataElements,attributeValues[value,attribute[id,name,valueType,code]] ','idb', dhis2.routineDataEntry.store, dhis2.metadata.processObject);
+}
+
+function uploadLocalData() {
+    var OfflineDataValueService = angular.element('body').injector().get('OfflineDataValueService');
+    setHeaderWaitMessage(i18n_uploading_data_notification);
+     
+    OfflineDataValueService.uploadLocalData().then(function(){        
+        selection.responseReceived(); //notify angular
+    });
 }

@@ -1317,4 +1317,41 @@ var d2Services = angular.module('d2Services', ['ngResource'])
         
         return d2Periods;
     };
+})
+
+.service('NotificationService', function (DialogService, $timeout) {
+    this.showNotifcationDialog = function(errorMsgheader, errorMsgBody, errorResponse){
+        var dialogOptions = {
+            headerText: errorMsgheader,
+            bodyText: errorMsgBody
+        };
+        var summaries = null;
+        if (errorResponse && errorResponse.data) {
+            if(errorResponse.data.message && (errorResponse.data.status === 'ERROR' || errorResponse.data.status === 'WARNING')) {
+                dialogOptions.bodyText += "<br/>"+errorResponse.data.message+"<br/>";
+            }
+            if( errorResponse.data.response && errorResponse.data.response.importSummaries && errorResponse.data.response.importSummaries.length > 0 ){
+                summaries = JSON.stringify(errorResponse.data.response.importSummaries);
+            }
+        }
+        DialogService.showDialog({}, dialogOptions, summaries);
+    };
+
+    this.showNotifcationWithOptions = function(dialogDefaults, dialogOptions){
+        DialogService.showDialog(dialogDefaults, dialogOptions);
+    };
+    
+    this.displayDelayedHeaderMessage = function( message ){
+        setHeaderDelayMessage( message );
+    };
+    
+    this.displayHeaderMessage = function( message ){
+        $timeout(function(){
+            setHeaderMessage( message );
+        }, 1000);
+    };
+    
+    this.removeHeaderMessage = function(){
+        hideHeaderMessage();
+    };
 });
