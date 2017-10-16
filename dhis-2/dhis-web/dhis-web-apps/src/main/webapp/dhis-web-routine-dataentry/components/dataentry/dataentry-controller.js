@@ -46,7 +46,6 @@ routineDataEntry.controller('dataEntryController',
                     attributeCategoryUrl: null,
                     showCustomForm: false,
                     valueExists: false};
-    $scope.model.booleanValues = [{displayName: $translate.instant('yes'), value: true},{displayName: $translate.instant('no'), value: false}];
     
     //watch for selection of org unit from tree
     $scope.$watch('selectedOrgUnit', function() {
@@ -70,7 +69,7 @@ routineDataEntry.controller('dataEntryController',
             SessionStorageService.set('SELECTED_OU', $scope.selectedOrgUnit); 
             var systemSetting = storage.get('SYSTEM_SETTING');
             $scope.model.allowMultiOrgUnitEntry = systemSetting && systemSetting.multiOrganisationUnitForms ? systemSetting.multiOrganisationUnitForms : false;
-            
+            $scope.model.booleanValues = [{displayName: $translate.instant('yes'), value: true},{displayName: $translate.instant('no'), value: false}];
             if(!$scope.model.optionSets){
                 $scope.model.optionSets = [];                
                 MetaDataFactory.getAll('optionSets').then(function(opts){

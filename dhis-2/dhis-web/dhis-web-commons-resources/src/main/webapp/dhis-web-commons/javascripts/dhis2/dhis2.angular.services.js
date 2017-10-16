@@ -965,22 +965,24 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                 }
             }
             else{
-                if( de.valueType === 'NUMBER' && dhis2.validation.isNumber(val) ){
-                    val = parseFloat( val );
-                }
-                else if( dhis2.validation.isNumber(val) &&
-			de.valueType === 'INTEGER' ||
-                        de.valueType === 'INTEGER_POSITIVE' ||
-                        de.valueType === 'INTEGER_NEGATIVE' ||
-                        de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ){
-                    val = parseInt( val );
-                }
-                else if(de.valueType=== 'TRUE_ONLY'){
-                    val= val === 'true' ? true: '';
-                }
-                else if(de.valueType=== 'BOOLEAN'){
-                    val = val === 'true' || val === true ? true : val === 'false' || val === false ? false : '';
-                }
+                if( val ){
+                    if( de.valueType === 'NUMBER' && dhis2.validation.isNumber(val) ){
+                        val = parseFloat( val );
+                    }
+                    else if( dhis2.validation.isNumber(val) &&
+                            de.valueType === 'INTEGER' ||
+                            de.valueType === 'INTEGER_POSITIVE' ||
+                            de.valueType === 'INTEGER_NEGATIVE' ||
+                            de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ){
+                        val = parseInt( val );
+                    }
+                    else if(de.valueType=== 'TRUE_ONLY'){
+                        val = val === 'true' ? true: '';
+                    }
+                    else if(de.valueType=== 'BOOLEAN'){
+                        val = val === 'true' || val === true ? true : val === 'false' || val === false ? false : '';
+                    }
+                }                
             }
             
             return val;
