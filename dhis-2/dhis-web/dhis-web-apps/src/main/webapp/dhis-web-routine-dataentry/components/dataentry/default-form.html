@@ -72,7 +72,7 @@
                                                            ng-model="dataValues[de.id][oco.id].value" 
                                                            ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element" 
                                                            d2-tab-index 
-                                                           tabindex="tabOrder[de.id][oco.id]"
+                                                           tabindex={{tabOrder[de.id][oco.id]}}
                                                            name="foo" 
                                                            on-select="saveDataValue(de.id, oco.id)" 
                                                            on-remove="saveDataValue(de.id, oco.id)" 
@@ -96,7 +96,7 @@
                                                                   ng-model="dataValues[de.id][oco.id].value" 
                                                                   ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                   d2-tab-index
-                                                                  tabindex="tabOrder[de.id][oco.id]"
+                                                                  tabindex={{tabOrder[de.id][oco.id]}}
                                                                   class="form-control" 
                                                                   ng-class="getInputNotifcationClass(de.id, oco.id)"                                                           
                                                                   d2-blur="saveDataValue(de.id, oco.id)">
@@ -108,7 +108,7 @@
                                                                ng-model="dataValues[de.id][oco.id].value" 
                                                                ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
-                                                               tabindex="tabOrder[de.id][oco.id]"
+                                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                                d2-blur="saveDataValue(de.id, oco.id)">
@@ -121,7 +121,7 @@
                                                                ng-model="dataValues[de.id][oco.id].value" 
                                                                ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
-                                                               tabindex="tabOrder[de.id][oco.id]"
+                                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -135,7 +135,7 @@
                                                                ng-model="dataValues[de.id][oco.id].value" 
                                                                ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
-                                                               tabindex="tabOrder[de.id][oco.id]"
+                                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)"  
                                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -149,7 +149,7 @@
                                                                ng-model="dataValues[de.id][oco.id].value" 
                                                                ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
-                                                               tabindex="tabOrder[de.id][oco.id]"
+                                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -163,7 +163,7 @@
                                                                ng-model="dataValues[de.id][oco.id].value" 
                                                                ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
-                                                               tabindex="tabOrder[de.id][oco.id]"
+                                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -177,7 +177,7 @@
                                                                ng-model="dataValues[de.id][oco.id].value" 
                                                                ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
-                                                               tabindex="tabOrder[de.id][oco.id]"
+                                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -189,7 +189,7 @@
                                                                ng-model="dataValues[de.id][oco.id].value" 
                                                                ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
                                                                d2-tab-index
-                                                               tabindex="tabOrder[de.id][oco.id]"
+                                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                                d2-blur="saveDataValue(de.id, oco.id)">
@@ -199,7 +199,7 @@
                                                                    ng-model="dataValues[de.id][oco.id].value" 
                                                                    ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element" 
                                                                    d2-tab-index
-                                                                   tabindex="tabOrder[de.id][oco.id]"
+                                                                   tabindex={{tabOrder[de.id][oco.id]}}
                                                                    name="foo"                                                                  
                                                                    on-select="saveDataValue(de.id, oco.id)" 
                                                                    on-remove="saveDataValue(de.id, oco.id)" 
@@ -297,7 +297,7 @@
                                            ng-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element" 
                                            name="foo" 
                                            d2-tab-index
-                                           tabindex="tabOrder[de.id][oco.id]"
+                                           tabindex={{tabOrder[de.id][oco.id]}}
                                            on-select="saveDataValue(de.id, oco.id)" 
                                            on-remove="saveDataValue(de.id, oco.id)" 
                                            style="width:100%;">
@@ -320,7 +320,7 @@
                                                   ng-model="dataValues[de.id][oco.id].value" 
                                                   d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                   d2-tab-index
-                                                  tabindex="tabOrder[de.id][oco.id]"
+                                                  tabindex={{tabOrder[de.id][oco.id]}}
                                                   class="form-control" 
                                                   ng-class="getInputNotifcationClass(de.id, oco.id)"                                                           
                                                   d2-blur="saveDataValue(de.id, oco.id)">
@@ -332,7 +332,7 @@
                                                ng-model="dataValues[de.id][oco.id].value" 
                                                d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
-                                               tabindex="tabOrder[de.id][oco.id]"
+                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                d2-blur="saveDataValue(de.id, oco.id)">
@@ -345,7 +345,7 @@
                                                ng-model="dataValues[de.id][oco.id].value" 
                                                d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
-                                               tabindex="tabOrder[de.id][oco.id]"
+                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -359,7 +359,7 @@
                                                ng-model="dataValues[de.id][oco.id].value" 
                                                d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
-                                               tabindex="tabOrder[de.id][oco.id]"
+                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)"  
                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -373,7 +373,7 @@
                                                ng-model="dataValues[de.id][oco.id].value" 
                                                d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
-                                               tabindex="tabOrder[de.id][oco.id]"
+                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -387,7 +387,7 @@
                                                ng-model="dataValues[de.id][oco.id].value" 
                                                d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
-                                               tabindex="tabOrder[de.id][oco.id]"
+                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -401,7 +401,7 @@
                                                ng-model="dataValues[de.id][oco.id].value" 
                                                d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
-                                               tabindex="tabOrder[de.id][oco.id]"
+                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
@@ -413,7 +413,7 @@
                                                ng-model="dataValues[de.id][oco.id].value" 
                                                d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
                                                d2-tab-index
-                                               tabindex="tabOrder[de.id][oco.id]"
+                                               tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)"                                                                   
                                                d2-blur="saveDataValue(de.id, oco.id)">
@@ -424,7 +424,7 @@
                                                    ng-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element" 
                                                    name="foo"   
                                                    d2-tab-index
-                                                   tabindex="tabOrder[de.id][oco.id]"
+                                                   tabindex={{tabOrder[de.id][oco.id]}}
                                                    on-select="saveDataValue(de.id, oco.id)" 
                                                    on-remove="saveDataValue(de.id, oco.id)" 
                                                    style="width:100%;">
