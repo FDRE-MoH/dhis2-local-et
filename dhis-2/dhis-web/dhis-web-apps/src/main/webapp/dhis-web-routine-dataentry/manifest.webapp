@@ -1,7 +1,7 @@
 {
     "version": "0.1",
-    "name": "Performance Contract",
-    "description": "Performance Contract App",
+    "name": "Routine Data Entry",
+    "description": "Routine Data Entry App",
     "launch_path": "index.html",
     "icons": {
         "16": "/img/icons/mortar-16.png",

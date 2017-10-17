@@ -7,18 +7,16 @@ dhis2.util.namespace('dhis2.rd');
 dhis2.planSetting.emptyOrganisationUnits = false;
 
 var i18n_no_orgunits = 'No organisation unit attached to current user, no data entry possible';
-var i18n_offline_notification = 'You are offline';
+var i18n_offline_notification = 'You are offline, data will be stored locally';
 var i18n_online_notification = 'You are online';
 var i18n_ajax_login_failed = 'Login failed, check your username and password and try again';
+var i18n_need_to_sync_notification = 'There is data stored locally, please upload to server';
+var i18n_sync_now = 'Upload';
+var i18n_uploading_data_notification = 'Uploading locally stored data to the server';
 
 var optionSetsInPromise = [];
 var attributesInPromise = [];
 var batchSize = 50;
-
-dhis2.planSetting.monthNames = {
-                                        ethiopian: ['Meskerem', 'Tikemet', 'Hidar', 'Tahesas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase'], 
-                                        gregorian: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-                                    };
 
 dhis2.planSetting.store = null;
 dhis2.rd.metaDataCached = dhis2.planSetting.metaDataCached || false;
@@ -33,7 +31,7 @@ if( dhis2.planSetting.memoryOnly ) {
 dhis2.planSetting.store = new dhis2.storage.Store({
     name: 'dhis2rd',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules','dataElementGroups']
+    objectStores: ['dataValues', 'dataSets', 'optionSets', 'categoryCombos', 'indicatorTypes', 'validationRules','dataElementGroups']
 });
 
 (function($) {
@@ -67,6 +65,27 @@ $(document).bind('dhis2.online', function(event, loggedIn)
 {
     if (loggedIn)
     {
+        var OfflineDataValueService = angular.element('body').injector().get('OfflineDataValueService');
+        
+        OfflineDataValueService.hasLocalData().then(function(localData){
+            if(localData){
+                var message = i18n_need_to_sync_notification + ' <button id="sync_button" type="button">' + i18n_sync_now + '</button>';
+
+                setHeaderMessage(message);
+
+                $('#sync_button').bind('click', uploadLocalData);
+            }
+            else{
+                if (dhis2.planSetting.emptyOrganisationUnits) {
+                    setHeaderMessage(i18n_no_orgunits);
+                }
+                else {
+                    setHeaderDelayMessage(i18n_online_notification);
+                }
+            }
+        });
+        
+        
         if (dhis2.planSetting.emptyOrganisationUnits) {
             setHeaderMessage(i18n_no_orgunits);
         }
@@ -134,8 +153,7 @@ function downloadMetaData()
     var promise = def.promise();
 
     promise = promise.then( dhis2.planSetting.store.open );
-    promise = promise.then( getUserRoles );
-    promise = promise.then( getOrgUnitLevels );
+    promise = promise.then( getUserRoles );    
     promise = promise.then( getSystemSetting );
     promise = promise.then( getCalendarSetting );
     
@@ -189,16 +207,6 @@ function getUserRoles(){
     return dhis2.metadata.getMetaObject(null, 'USER_ROLES', '../api/me.json', 'fields=id,displayName,userCredentials[userRoles[id,authorities,dataSets]]', 'sessionStorage', dhis2.planSetting.store);
 }
 
-function getOrgUnitLevels()
-{
-    dhis2.planSetting.store.getKeys( 'ouLevels').done(function(res){
-        if(res.length > 0){
-            return;
-        }        
-        return dhis2.metadata.getMetaObjects('ouLevels', 'organisationUnitLevels', '../api/organisationUnitLevels.json', 'fields=id,displayName,level&paging=false', 'idb', dhis2.planSetting.store);
-    });
-}
-
 function getSystemSetting(){   
     if(localStorage['SYSTEM_SETTING']){
        return; 
@@ -233,8 +241,8 @@ function filterMissingDataSets( objs ){
     return dhis2.metadata.filterMissingObjIds('dataSets', dhis2.planSetting.store, objs);
 }
 
-function getDataSets( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'dataSets', 'dataSets', '../api/dataSets.json', 'paging=false&fields=id,periodType,openFuturePeriods,displayName,version,categoryCombo[id],attributeValues[value,attribute[id,name,valueType,code]],organisationUnits[id,name],sections[id,displayName,sortOrder,code,dataElements,greyedFields[dataElement,categoryOptionCombo],indicators[displayName,indicatorType,numerator,denominator,attributeValues[value,attribute[id,name,valueType,code]]]],dataSetElements[id,dataElement[id,code,displayFormName,description,attributeValues[value,attribute[id,name,valueType,code]],description,formName,valueType,optionSetValue,optionSet[id],categoryCombo[id]]]', 'idb', dhis2.planSetting.store, dhis2.metadata.processObject);    
+function getDataSets( ids ){
+    return dhis2.metadata.getBatches( ids, batchSize, 'dataSets', 'dataSets', '../api/dataSets.json', 'paging=false&fields=id,periodType,openFuturePeriods,displayName,version,categoryCombo[id],attributeValues[value,attribute[id,name,valueType,code]],organisationUnits[id,name],sections[id,displayName,sortOrder,code,dataElements,greyedFields[dimensionItem],indicators[displayName,indicatorType,numerator,denominator,attributeValues[value,attribute[id,name,valueType,code]]]],dataSetElements[id,dataElement[id,code,displayFormName,description,optionSetValue,optionSet[id],attributeValues[value,attribute[id,name,valueType,code]],description,formName,valueType,optionSetValue,optionSet[id],categoryCombo[id]]]', 'idb', dhis2.planSetting.store, dhis2.metadata.processObject);
 }
 
 function getMetaOptionSets(){
@@ -246,7 +254,7 @@ function filterMissingOptionSets( objs ){
 }
 
 function getOptionSets( ids ){    
-    return dhis2.metadata.getBatches( ids, batchSize, 'optionSets', 'optionSets', '../api/optionSets.json', 'paging=false&fields=id,name,displayName,version,valueType,attributeValues[value,attribute[id,name,valueType,code]],options[id,name,displayName,code]', 'idb', dhis2.planSetting.store, dhis2.metadata.processObject);
+    return dhis2.metadata.getBatches( ids, batchSize, 'optionSets', 'optionSets', '../api/optionSets.json', 'paging=false&fields=id,displayName,version,valueType,attributeValues[value,attribute[id,name,valueType,code]],options[id,displayName,code]', 'idb', dhis2.planSetting.store, dhis2.metadata.processObject);
 }
 
 function getMetaIndicatorTypes(){
@@ -283,4 +291,13 @@ function filterMissingDataElementGroups( objs ){
 
 function getDataElementGroups( ids ){    
     return dhis2.metadata.getBatches( ids, batchSize, 'dataElementGroups', 'dataElementGroups', '../api/dataElementGroups.json', 'paging=false&fields=id,displayName,code,dataElements,attributeValues[value,attribute[id,name,valueType,code]] ','idb', dhis2.planSetting.store, dhis2.metadata.processObject);
+}
+
+function uploadLocalData() {
+    var OfflineDataValueService = angular.element('body').injector().get('OfflineDataValueService');
+    setHeaderWaitMessage(i18n_uploading_data_notification);
+     
+    OfflineDataValueService.uploadLocalData().then(function(){        
+        selection.responseReceived(); //notify angular
+    });
 }

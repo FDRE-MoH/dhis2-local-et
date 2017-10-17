@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html ng-app='planSetting'>
+<html manifest="cacheManifest.action" ng-app='planSetting'>
     <head>
-        <title>Plan Setting</title>
+        <title>Plan Setting Data Entry</title>
 
         <meta name="description" content="DHIS 2">
         <meta name="keywords" content="DHIS 2">        
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
+        
         <script type="text/javascript" src="../dhis-web-commons/javascripts/jQuery/jquery.min.js"></script>
         <script type="text/javascript" src="../dhis-web-commons/javascripts/jQuery/ui/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="../dhis-web-commons/javascripts/jQuery/jquery.plugin.min.js"></script>
-
+        <script type="text/javascript" src="../dhis-web-commons/javascripts/jQuery/jquery.plugin.min.js"></script>        
+        
         <!-- Menu dependencies -->
         <link type="text/css" rel="stylesheet" href="../dhis-web-commons/css/light_blue/light_blue.css"/>
         <script type="text/javascript" src="../dhis-web-core-resource/react-15/react-15.min.js"></script>
@@ -35,7 +35,7 @@
                 }
             });
         </script>
-        <!-- // End menu -->            
+        <!-- // End menu -->        
         
         <script type="text/javascript" src="../dhis-web-commons/javascripts/jQuery/calendars/jquery.calendars.min.js"></script>
         <script type="text/javascript" src="../dhis-web-commons/javascripts/jQuery/calendars/jquery.calendars.picker.min.js"></script>
@@ -51,7 +51,7 @@
         <link type="text/css" rel="stylesheet" href="../dhis-web-commons/javascripts/jQuery/ui/css/redmond/jquery-ui.css">
         <link type="text/css" rel="stylesheet" href="../dhis-web-commons/javascripts/jQuery/calendars/css/ui-redmond.calendars.picker.css">
         
-        <script type="text/javascript" src="../dhis-web-commons/select2/select2.min.js"></script>
+        <script type="text/javascript" src="../dhis-web-commons/select2/select2.min.js"></script>        
 
         <script type="text/javascript" src="../dhis-web-commons/bootstrap/js/bootstrap.min.js"></script>     
         <link type="text/css" rel="stylesheet"  href="../dhis-web-commons/bootstrap/css/bootstrap.min.css">
@@ -107,8 +107,9 @@
         <script type="text/javascript" src="scripts/controllers.js"></script>
         <script type="text/javascript" src="components/dataentry/dataentry-controller.js"></script>
         <script type="text/javascript" src="components/dataentry/dataentry-history-controller.js"></script>
+        
 
-        <link type="text/css" rel="stylesheet" href="../dhis-web-commons/font-awesome/css/font-awesome.min.css"/>
+        <link type="text/css" rel="stylesheet" href="../dhis-web-commons/font-awesome/css/font-awesome.min.css"/>        
         <link type="text/css" rel="stylesheet" href="styles/style.css">
         <link type="text/css" rel="stylesheet" media="screen" href="../dhis-web-commons/css/widgets.css"/>
         <link type="text/css" rel="stylesheet" media="screen" href="../dhis-web-commons/css/menu.css">
@@ -121,7 +122,7 @@
         <script type="text/javascript" src="../main.js"></script>
 
     </head>
-    <body>
+    <body>        
         <div id="header"></div>
         <div id="headerMessage"></div>
         <div ng-view></div>

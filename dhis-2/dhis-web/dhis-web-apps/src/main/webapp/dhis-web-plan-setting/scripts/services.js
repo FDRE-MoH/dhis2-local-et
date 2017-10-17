@@ -10,61 +10,88 @@ var planSettingServices = angular.module('planSettingServices', ['ngResource'])
     var store = new dhis2.storage.Store({
         name: "dhis2rd",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'optionSets', 'categoryCombos', 'programs', 'ouLevels', 'indicatorTypes', 'validationRules','dataElementGroups']
+        objectStores: ['dataValues', 'dataSets', 'optionSets', 'categoryCombos', 'indicatorTypes', 'validationRules','dataElementGroups']
     });
     return{
         currentStore: store
     };
 })
 
-/* Factory to fetch optionSets */
-.factory('OptionSetService', function($q, $rootScope, StorageService) { 
-    return {
-        getAll: function(){
-            
+/* service for handling offline data */
+.factory('OfflineDataValueService', function($http, $q, $rootScope, $translate, StorageService, ModalService, NotificationService){
+    return {        
+        hasLocalData: function() {
             var def = $q.defer();
-            
             StorageService.currentStore.open().done(function(){
-                StorageService.currentStore.getAll('optionSets').done(function(optionSets){
+                StorageService.currentStore.getKeys('dataValues').done(function(events){
                     $rootScope.$apply(function(){
-                        def.resolve(optionSets);
+                        def.resolve( events.length > 0 );
                     });                    
                 });
             });            
-            
-            return def.promise;            
-        },
-        get: function(uid){            
-            var def = $q.defer();
-            
-            StorageService.currentStore.open().done(function(){
-                StorageService.currentStore.get('optionSets', uid).done(function(optionSet){                    
-                    $rootScope.$apply(function(){
-                        def.resolve(optionSet);
-                    });
-                });
-            });                        
             return def.promise;
         },
-        getCode: function(options, key){
-            if(options){
-                for(var i=0; i<options.length; i++){
-                    if( key === options[i].displayName){
-                        return options[i].code;
+        getLocalData: function(){
+            var def = $q.defer();            
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getAll('dataValues').done(function(dataValues){
+                    $rootScope.$apply(function(){
+                        def.resolve({dataValues: dataValues});
+                    });                    
+                });
+            });            
+            return def.promise;
+        },
+        uploadLocalData: function(){            
+            var def = $q.defer();
+            this.getLocalData().then(function(localData){                
+                var dataValueSet = {dataValues: []};
+                angular.forEach(localData.dataValues, function(dv){
+                    delete dv.id;
+                    dataValueSet.dataValues.push(dv);
+                });
+                         
+                $http.post('../api/dataValueSets.json', dataValueSet ).then(function(response){
+                    dhis2.planSetting.store.removeAll( 'dataValues' );
+                    NotificationService.displayDelayedHeaderMessage( $translate.instant('upload_success') );
+                    log( 'Successfully uploaded local data values' );
+                    def.resolve();
+                }, function( error ){
+                    var serverLog = '';
+                    if( error && error.data && error.data.response && error.data.response.importSummaries ){
+                        angular.forEach(error.data.response.importSummaries, function(is){
+                            if( is.description ){
+                                serverLog += is.description + ';  ';
+                            }
+                        });
                     }
-                }
-            }            
-            return key;
-        },        
-        getName: function(options, key){
-            if(options){
-                for(var i=0; i<options.length; i++){                    
-                    if( key === options[i].code){
-                        return options[i].displayName;
-                    }
-                }
-            }            
-            return key;
+                    
+                    var modalOptions = {
+                        closeButtonText: 'keep_offline_data',
+                        actionButtonText: 'delete_offline_data',
+                        headerText: 'error',
+                        bodyText: $translate.instant('data_upload_to_server_failed:') + '  ' + serverLog
+                    };
+                    
+                    var modalDefaults = {
+                        backdrop: true,
+                        keyboard: true,
+                        modalFade: true,
+                        templateUrl: 'views/modal-offline.html'
+                    };
+                        
+                        
+                    ModalService.showModal(modalDefaults, modalOptions).then(function(result){
+                        dhis2.planSetting.store.removeAll( 'dataValues' );
+                        NotificationService.displayDelayedHeaderMessage( $translate.instant('offline_data_deleted') );
+                        def.resolve();
+                    }, function(){
+                        NotificationService.displayDelayedHeaderMessage( $translate.instant('upload_failed_try_again') );
+                        def.resolve();
+                    });
+                });
+            });
+            return def.promise;
         }
     };
 })
@@ -97,7 +124,6 @@ var planSettingServices = angular.module('planSettingServices', ['ngResource'])
                     var dataSets = [];
                     angular.forEach(dss, function(ds){                            
                         if(ds.organisationUnits.hasOwnProperty( ou.id ) && DataEntryUtils.userHasValidRole(ds,'dataSets', userRoles)){
-                            ds = DataEntryUtils.processDataSet( ds );
                             dataSets.push(ds);
                         }
                     });
@@ -145,8 +171,7 @@ var planSettingServices = angular.module('planSettingServices', ['ngResource'])
                 StorageService.currentStore.getAll('dataSets').done(function(dss){
                     var dataSets = [];
                     angular.forEach(dss, function(ds){                            
-                        if(ds.organisationUnits.hasOwnProperty( ou.id ) && DataEntryUtils.userHasValidRole(ds,'dataSets', userRoles) && ds[propertyName] && ds[propertyName]===propertyValue){
-                            ds = DataEntryUtils.processDataSet( ds );
+                        if(ds.organisationUnits.hasOwnProperty( ou.id ) && DataEntryUtils.userHasValidRole(ds,'dataSets', userRoles) && ds[propertyName] && ds[propertyName]===propertyValue){                            
                             dataSets.push(ds);
                         }
                     });
@@ -180,6 +205,35 @@ var planSettingServices = angular.module('planSettingServices', ['ngResource'])
                     
                     $rootScope.$apply(function(){
                         def.resolve({dataSets: dataSets, selectedDataSet: selectedDataSet});
+                    });                      
+                });
+            });            
+            return def.promise;
+        }
+    };
+})
+
+/* Factory to fetch data element groups */
+.factory('DataElementGroupFactory', function($q, $rootScope, StorageService) { 
+  
+    return {
+        getControllinGroups: function(){            
+            var def = $q.defer();            
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getAll('dataElementGroups').done(function(dgs){
+                    var degs = [];
+                    angular.forEach(dgs, function(dg){                            
+                        if(dg.data_controller_group){
+                            dg.isDisabled = true;
+                            var des = [];
+                            des = $.map(dg.dataElements, function(de){return de.id;});
+                            dg.dataElements = des;
+                            degs.push(dg);
+                        }
+                    });
+                    
+                    $rootScope.$apply(function(){
+                        def.resolve( degs );
                     });                      
                 });
             });            
@@ -229,7 +283,7 @@ var planSettingServices = angular.module('planSettingServices', ['ngResource'])
     };        
 })
 
-.service('DataValueService', function($http, DataEntryUtils,$q) {   
+.service('DataValueService', function($q, $rootScope, $http, DataEntryUtils, StorageService) {   
     
     return {        
         saveDataValue: function( dv ){
@@ -244,6 +298,19 @@ var planSettingServices = angular.module('planSettingServices', ['ngResource'])
             }            
             var promise = $http.post('../api/dataValues.json' + url).then(function(response){
                 return response.data;
+            }, function(){                
+                var dataValue = {
+                    id: dv.de + '-' + dv.co + '-' + dv.ao + '-' + dv.pe + '-' + dv.ou,
+                    dataElement: dv.de,
+                    categoryOptionCombo: dv.co,
+                    attributeOptionCombo: dv.ao,
+                    period: dv.pe,
+                    orgUnit: dv.ou,
+                    value: dv.value,
+                    deleted: dv.value === '' ? true : false
+                };
+                    
+                dhis2.planSetting.store.set( 'dataValues', dataValue );
             });
             return promise;
         },
@@ -253,42 +320,28 @@ var planSettingServices = angular.module('planSettingServices', ['ngResource'])
             });
             return promise;
         },
-        saveDataValueSet: function(dvs){
-            var def = $q.defer();            
-            var promises = [], toBeSaved = [];
-            
-            angular.forEach(dvs.dataValues, function(dv){                
-                if( dv.value === "" || dv.value === null ){
-                    //deleting...                    
-                    var url = '?de='+dv.dataElement + '&ou='+dvs.orgUnit + '&pe='+dvs.period + '&co='+dv.categoryOptionCombo;
-                    
-                    if( dv.cc && dv.cp ){
-                        url += '&cc='+cc + '&cp='+cp;
-                    }                    
-                    promises.push( $http.delete('../api/dataValues.json' + url) );
-                }
-                else{
-                    //saving...
-                    toBeSaved.push( dv );
-                }                
-            });
-            
-            if( toBeSaved.length > 0 ){
-                dvs.dataValues = toBeSaved;
-                promises.push( $http.post('../api/dataValueSets.json', dvs) );
-            }
-            
-            $q.all(promises).then(function(){                
-                def.resolve();
-            });
-            
-            return def.promise;
+        saveDataValueSet: function( dvs ){
+            var promise = $http.post('../api/dataValueSets.json', dvs ).then(function(response){               
+                return response.data;
+            }, function(response){
+                DataEntryUtils.errorNotifier(response);
+            });            
+            return promise;
         },
         getDataValueSet: function( params ){            
             var promise = $http.get('../api/dataValueSets.json?' + params ).then(function(response){               
                 return response.data;
-            }, function(response){
-                DataEntryUtils.errorNotifier(response);
+            }, function(){
+                var def = $q.defer();
+                StorageService.currentStore.open().done(function(){
+                    StorageService.currentStore.getAll('dataValues').done(function(dvs){
+                        var res = {dataValues: dvs || []};
+                        $rootScope.$apply(function(){
+                            def.resolve( res );
+                        });
+                    });
+                });
+                return def.promise;
             });            
             return promise;
         }

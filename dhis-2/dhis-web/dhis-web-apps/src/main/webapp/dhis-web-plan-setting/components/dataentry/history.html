@@ -30,7 +30,7 @@
                                 <thead>
                                     <tr>
                                         <th ng-repeat="col in auditColumns">
-                                            {{col.name}}
+                                            {{col.displayName}}
                                         </th>
                                     </tr>
                                 </thead>
@@ -38,7 +38,8 @@
                                     <tr ng-repeat="dataValueAudit in dataValueAudits">
                                         <td ng-repeat="col in auditColumns">
                                             <span ng-if="col.id === 'created'">
-                                                {{dataValueAudit[col.id]| date:'dd MMM yyyy HH:mm'}}
+                                                <!--{{dataValueAudit[col.id]| date:'dd MMM yyyy HH:mm'}}-->
+                                                {{dataValueAudit[col.id] | toCalendarDate}}
                                             </span>
                                             <span ng-if="col.id !== 'created'">
                                                 {{dataValueAudit[col.id]}}
@@ -51,7 +52,6 @@
                                 {{'no_audit_trail_exists'|translate}}
                             </div>
                         </div>
-                        
                     </div>
                 </tab> 
             </tabset>
