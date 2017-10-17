@@ -307,7 +307,8 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                     attributeOptionCombo: dv.ao,
                     period: dv.pe,
                     orgUnit: dv.ou,
-                    value: dv.value
+                    value: dv.value,
+                    deleted: dv.value === '' ? true : false
                 };
                     
                 dhis2.routineDataEntry.store.set( 'dataValues', dataValue );
@@ -335,19 +336,12 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                 var def = $q.defer();
                 StorageService.currentStore.open().done(function(){
                     StorageService.currentStore.getAll('dataValues').done(function(dvs){
-                        var result = {events: [], pager: {pageSize: '', page: 1, toolBarDisplay: 5, pageCount: 1}};
-                        console.log(' dvs:  ', dvs);
-                        /*angular.forEach(evs, function(ev){                            
-                            if(ev.programStage === programStage && ev.orgUnit === orgUnit){
-                                ev.event = ev.id;
-                                result.events.push(ev);
-                            }
-                        });*/ 
+                        var res = {dataValues: dvs || []};
                         $rootScope.$apply(function(){
-                            def.resolve( result );
-                        });                    
+                            def.resolve( res );
+                        });
                     });
-                });            
+                });
                 return def.promise;
             });            
             return promise;

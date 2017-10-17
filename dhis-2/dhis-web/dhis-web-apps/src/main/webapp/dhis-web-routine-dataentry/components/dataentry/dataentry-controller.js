@@ -317,7 +317,7 @@ routineDataEntry.controller('dataEntryController',
             $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: DataEntryUtils.getOptionIds($scope.model.selectedOptions)};
                         
             //fetch data values...
-            DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){
+            DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){                
                 if( response && response.dataValues && response.dataValues.length > 0 ){
                     response.dataValues = $filter('filter')(response.dataValues, {attributeOptionCombo: $scope.model.selectedAttributeOptionCombo});
                     if( response.dataValues.length > 0 ){
@@ -510,7 +510,7 @@ routineDataEntry.controller('dataEntryController',
                     }
                 });
                 
-                dataValueSet.dataValues.push({dataElement: deId, categoryOptionCombo: ocId, value: dataValue.value, deleted: true});
+                dataValueSet.dataValues.push({dataElement: deId, categoryOptionCombo: ocId, value: dataValue.value, deleted: dataValue.value === '' ? true : false});
                 
                 if( count > 0 ){
                     var modalOptions={
