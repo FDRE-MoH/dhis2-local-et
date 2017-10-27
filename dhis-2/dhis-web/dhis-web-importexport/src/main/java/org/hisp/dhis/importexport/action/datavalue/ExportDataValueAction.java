@@ -33,6 +33,8 @@ import com.opensymphony.xwork2.Action;
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.ServletActionContext;
 import org.hisp.dhis.common.IdentifiableObjectUtils;
+import org.hisp.dhis.calendar.CalendarService;
+import org.hisp.dhis.calendar.DateTimeUnit;
 import org.hisp.dhis.common.IdSchemes;
 import org.hisp.dhis.datavalue.DataExportParams;
 import org.hisp.dhis.dxf2.datavalueset.DataValueSetService;
@@ -48,7 +50,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.hisp.dhis.system.util.CodecUtils.filenameEncode;
-import static org.hisp.dhis.system.util.DateUtils.getMediumDate;
 import static org.hisp.dhis.util.ContextUtils.*;
 
 /**
@@ -74,6 +75,9 @@ public class ExportDataValueAction
 
     @Autowired
     private DataValueSetService dataValueSetService;
+    
+    @Autowired
+    private CalendarService calendarService;
 
     // -------------------------------------------------------------------------
     // Input
@@ -154,9 +158,19 @@ public class ExportDataValueAction
 
         HttpServletResponse response = ServletActionContext.getResponse();
         OutputStream out = response.getOutputStream();
+        
+        //Here need to convert to server date which is yyyy-MM-dd and iso calendar.
+        String[] start = startDate.split("-");
+        String[] end = endDate.split( "-" );
+        
+        DateTimeUnit fdt = new DateTimeUnit(Integer.parseInt( start[0] ), Integer.parseInt( start[1] ), Integer.parseInt( start[2] ) );
+        DateTimeUnit tdt = new DateTimeUnit(Integer.parseInt( end[0] ), Integer.parseInt( end[1] ), Integer.parseInt( end[2] ) );
+                
+        DateTimeUnit from = calendarService.getSystemCalendar().toIso( fdt );
+        DateTimeUnit to = calendarService.getSystemCalendar().toIso( tdt );
 
         DataExportParams params = dataValueSetService.getFromUrl( selectedDataSets, null, null,
-            getMediumDate( startDate ), getMediumDate( endDate ), orgUnits, true, null, null, false, null, null, null, idSchemes );
+            from.toJdkDate(), to.toJdkDate(), orgUnits, true, null, null, false, null, null, null, idSchemes );
         
         boolean isCompression = compression == null || COMPRESSION_ZIP.equals( compression );
 
