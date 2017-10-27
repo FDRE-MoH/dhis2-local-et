@@ -18,8 +18,8 @@
       }
     });
     
-    dhis2.period.picker.createInstance('#startDate');
-    dhis2.period.picker.createInstance('#endDate');
+    //dhis2.period.picker.createInstance('#startDate');
+    //dhis2.period.picker.createInstance('#endDate');
     
   });
 

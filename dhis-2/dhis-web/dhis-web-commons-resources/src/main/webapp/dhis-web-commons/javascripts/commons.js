@@ -949,9 +949,10 @@ function removeItem( itemId, itemName, confirmation, action, success )
  */
 function datePicker( id, hideDel )
 {
-	$("#" + id).datepicker(
+	$("#" + id).calendarsPicker(
 	{
-		dateFormat: dateFormat,
+		dateFormat: dhis2.period.format,
+		calendar: dhis2.period.calendar,
 		changeMonth: true,
 		changeYear: true,
 		monthNamesShort: monthNames,
@@ -972,9 +973,10 @@ function datePicker( id, hideDel )
 
 function datePicker( id, today, hideDel )
 {
-	$("#" + id).datepicker(
+	$("#" + id).calendarsPicker(
 	{
-		dateFormat: dateFormat,
+		dateFormat: dhis2.period.format,
+		calendar: dhis2.period.calendar,
 		changeMonth: true,
 		changeYear: true,
 		monthNamesShort: monthNames,
@@ -999,9 +1001,10 @@ function datePicker( id, today, hideDel )
 
 function datePickerjQuery( jQueryString, hideDel )
 {
-	jQuery( jQueryString ).datepicker(
+	jQuery( jQueryString ).calendarsPicker(
 	{
-		dateFormat: dateFormat,
+		dateFormat: dhis2.period.format,
+		calendar: dhis2.period.calendar,
 		changeMonth: true,
 		changeYear: true,
 		monthNamesShort: monthNames,
@@ -1022,9 +1025,10 @@ function datePickerjQuery( jQueryString, hideDel )
  */
 function datePickerValid( id, today, hideDel )
 {
-	jQuery("#" + id).datepicker(
+	jQuery("#" + id).calendarsPicker(
 	{
-		dateFormat: dateFormat,
+		dateFormat: dhis2.period.format,
+		calendar: dhis2.period.calendar,
 		changeMonth: true,
 		changeYear: true,
 		monthNamesShort: monthNames,
@@ -1052,9 +1056,10 @@ function datePickerValid( id, today, hideDel )
 
 function datePickerFuture( id, today, hideDel )
 {
-	jQuery("#" + id).datepicker(
+	jQuery("#" + id).calendarsPicker(
 	{
-		dateFormat: dateFormat,
+		dateFormat: dhis2.period.format,
+		calendar: dhis2.period.calendar,
 		changeMonth: true,
 		changeYear: true,
 		monthNamesShort: monthNames,
@@ -1088,17 +1093,18 @@ function datePickerFuture( id, today, hideDel )
  */
 function datePickerInRange ( startdate, enddate, setCurrentStartDate, setCurrentEndDate, hideDel )
 {
-	if( setCurrentStartDate == undefined ) setCurrentStartDate = true;
+	/*if( setCurrentStartDate == undefined ) setCurrentStartDate = true;
 	if( setCurrentEndDate == undefined ) setCurrentEndDate = true;
 	
 	s = jQuery("#" + startdate );
 	e = jQuery("#" + enddate );
 	if( setCurrentStartDate && s.val()=='') s.val( getCurrentDate() );
-	if( setCurrentEndDate && e.val()=='' ) e.val( getCurrentDate() );
+	if( setCurrentEndDate && e.val()=='' ) e.val( getCurrentDate() );*/
 
-	var dates = $('#'+startdate+', #' + enddate).datepicker(
+	var dates = $('#'+startdate+', #' + enddate).calendarsPicker(
 	{
-		dateFormat: dateFormat,
+		dateFormat: dhis2.period.format,
+		calendar: dhis2.period.calendar,
 		defaultDate: "+1w",
 		changeMonth: true,
 		changeYear: true,
@@ -1109,13 +1115,21 @@ function datePickerInRange ( startdate, enddate, setCurrentStartDate, setCurrent
 		createButton: false,
 		constrainInput: true,
         yearRange: '-100:+100',
-		onSelect: function(selectedDate)
+        onSelect: function(dates) { 
+    	    if (this.id == startdate ) { 
+    	    	$('#' + enddate).calendarsPicker('option', 'minDate', dates[0] || null); 
+    	    } 
+    	    else { 
+    	    	$('#' + startdate).calendarsPicker('option', 'maxDate', dates[0] || null); 
+    	    } 
+    	}
+		/*onSelect: function(selectedDate)
 		{
 			var option = this.id == startdate ? "minDate" : "maxDate";
 			var instance = $(this).data("datepicker");
 			var date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
 			dates.not(this).datepicker("option", option, date);
-		}
+		}*/
 	});
 
 	jQuery( "#" + startdate ).attr("readonly", true );
@@ -1129,17 +1143,18 @@ function datePickerInRange ( startdate, enddate, setCurrentStartDate, setCurrent
 
 function datePickerInRangeValid( startdate, enddate, setCurrentStartDate, setCurrentEndDate, hideDel )
 {
-	if( setCurrentStartDate == undefined ) setCurrentStartDate = true;
+	/*if( setCurrentStartDate == undefined ) setCurrentStartDate = true;
 	if( setCurrentEndDate == undefined ) setCurrentEndDate = true;
 	
 	s = jQuery("#" + startdate );
 	e = jQuery("#" + enddate );
 	if( setCurrentStartDate && s.val()=='') s.val( getCurrentDate() );
-	if( setCurrentEndDate && e.val()=='' ) e.val( getCurrentDate() );
+	if( setCurrentEndDate && e.val()=='' ) e.val( getCurrentDate() );*/
 
-	var dates = $('#'+startdate+', #' + enddate).datepicker(
+	var dates = $('#'+startdate+', #' + enddate).calendarsPicker(
 	{
-		dateFormat: dateFormat,
+		dateFormat: dhis2.period.format,
+		calendar: dhis2.period.calendar,
 		defaultDate: "+1w",
 		changeMonth: true,
 		changeYear: true,
@@ -1150,14 +1165,22 @@ function datePickerInRangeValid( startdate, enddate, setCurrentStartDate, setCur
 		showAnim: '',
 		createButton: false,
 		constrainInput: true,
-        yearRange: '-100:+100',
-		onSelect: function(selectedDate)
+        yearRange: '-100:+100',        
+        onSelect: function(dates) { 
+    	    if (this.id == startdate ) { 
+    	    	$('#' + enddate).calendarsPicker('option', 'minDate', dates[0] || null); 
+    	    } 
+    	    else { 
+    	    	$('#' + startdate).calendarsPicker('option', 'maxDate', dates[0] || null); 
+    	    } 
+    	}
+		/*onSelect: function(selectedDate)
 		{
 			var option = this.id == startdate ? "minDate" : "maxDate";
 			var instance = $(this).data("datepicker");
 			var date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
 			dates.not(this).datepicker("option", option, date);
-		}
+		}*/
 	});
 
 	jQuery( "#" + startdate ).attr("readonly", true );
@@ -1189,7 +1212,8 @@ function addRemoveDateButton( id, hideDel )
 
 function getCurrentDate()
 {	
-	return jQuery.datepicker.formatDate( dateFormat , new Date() ) ;
+	//return jQuery.datepicker.formatDate( dateFormat , new Date() ) ;
+	return dhis2.period.calendar.formatDate( dhis2.period.format, dhis2.period.calendar.today() )
 }
 
 /**
