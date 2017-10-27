@@ -19,7 +19,7 @@ var attributesInPromise = [];
 var batchSize = 50;
 
 dhis2.planSetting.store = null;
-dhis2.rd.metaDataCached = dhis2.planSetting.metaDataCached || false;
+dhis2.rd.metaDataCached = dhis2.rd.metaDataCached || false;
 dhis2.planSetting.memoryOnly = $('html').hasClass('ie7') || $('html').hasClass('ie8');
 var adapters = [];    
 if( dhis2.planSetting.memoryOnly ) {
