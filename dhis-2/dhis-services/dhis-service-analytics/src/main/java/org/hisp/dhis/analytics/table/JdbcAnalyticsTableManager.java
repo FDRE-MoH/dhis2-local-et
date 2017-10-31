@@ -174,11 +174,11 @@ public class JdbcAnalyticsTableManager
         final String numericClause = skipDataTypeValidation ? "" : ( "and dv.value " + statementBuilder.getRegexpMatch() + " '" + MathUtils.NUMERIC_LENIENT_REGEXP + "' " );
 
         String intNonLastClause =
-            "(de.aggregationtype !='" + AggregationType.LAST_SUM_ORG_UNIT + "' and dv.value != '0' or de.aggregationtype in ('" + AggregationType.AVERAGE + ',' + AggregationType.AVERAGE_SUM_ORG_UNIT + "') or de.zeroissignificant = true ) " +
+            "de.aggregationtype != '" + AggregationType.LAST_SUM_ORG_UNIT + "' and ( dv.value != '0' or de.aggregationtype in ('" + AggregationType.AVERAGE + ',' + AggregationType.AVERAGE_SUM_ORG_UNIT + "') or de.zeroissignificant = true ) " +
             numericClause;
 
         String intLastClause =
-            "(de.aggregationtype ='" + AggregationType.LAST_SUM_ORG_UNIT + "' and dv.value != '0' or de.zeroissignificant = true ) " +
+            "de.aggregationtype = '" + AggregationType.LAST_SUM_ORG_UNIT + "' and ( dv.value != '0' or de.zeroissignificant = true ) " +
             numericClause;
         
         populateTable( table, "cast(dv.value as " + dbl + ")", "null", ValueType.NUMERIC_TYPES, intNonLastClause, approvalClause );
@@ -359,8 +359,8 @@ public class JdbcAnalyticsTableManager
         if ( whereClause != null )
         {
             sql += "and " + whereClause;
-        }
-
+        }        
+        
         populateAndLog( sql, tableName + ", " + valueTypes );
     }
 

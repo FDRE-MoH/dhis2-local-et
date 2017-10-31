@@ -311,12 +311,25 @@ public abstract class AbstractJdbcTableManager
 
         Collections.sort( dataYears );
         
+        int len = dataYears.size();
+        int f = dataYears.get( 0 );
+        int l = dataYears.get( len - 1 );        
+        dataYears.add( f - 1);
+        dataYears.add( l + 1);
+        Collections.sort( dataYears );
+        
         String baseName = getAnalyticsTableType().getTableName();
+        
+        Set<Period> periods = new HashSet<Period>();
         
         for ( Integer year : dataYears )
         {
-            Period period = PartitionUtils.getPeriod( calendar, year );
-            
+            Period period = PartitionUtils.getPeriod( calendar, year );            
+            periods.add( period );
+        }
+        
+        for ( Period period : periods )
+        {	
             AnalyticsTable table = new AnalyticsTable( baseName, getDimensionColumns( null ), period );
             
             tables.add( table );
