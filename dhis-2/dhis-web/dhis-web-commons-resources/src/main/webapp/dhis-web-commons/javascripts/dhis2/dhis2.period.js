@@ -167,11 +167,9 @@ dhis2.period.DatePicker.prototype.createRangedInstance = function(fromEl, toEl, 
   mergedOptions.onSelect = function(dates) {
     if ( this.id === $fromEl.attr( 'id' ) ) {
       $toEl.calendarsPicker( "option", "minDate", dates[0] || null );
-      formatEthiopianDate($fromEl.calendarsPicker("getDate"),fromEl);
     }
     else if ( this.id === $toEl.attr( 'id' ) ) {
       $fromEl.calendarsPicker( "option", "maxDate", dates[0] || null );
-      formatEthiopianDate($toEl.calendarsPicker("getDate"),toEl);
     }
   };
 
