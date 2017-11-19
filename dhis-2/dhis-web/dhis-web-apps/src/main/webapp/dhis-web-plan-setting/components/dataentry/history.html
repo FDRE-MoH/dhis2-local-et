@@ -15,6 +15,7 @@
                             {{'comment'| translate}}
                             <textarea ng-class="getCommentNotifcationClass()" rows="5" ng-model="dataValue.comment"></textarea>
                             <button type="button" 
+                                    ng-disabled="!dataValue.value"
                                     class="btn btn-default small-vertical-spacing" 
                                     ng-click="saveComment()">
                                 {{'save' | translate}}
