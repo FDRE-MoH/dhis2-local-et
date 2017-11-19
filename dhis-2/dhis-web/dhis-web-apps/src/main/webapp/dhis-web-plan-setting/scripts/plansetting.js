@@ -234,7 +234,7 @@ function getCategoryCombos( ids ){
 }
 
 function getMetaDataSets(){
-    return dhis2.metadata.getMetaObjectIds('dataSets', '../api/dataSets.json', 'paging=false&fields=id,version');
+    return dhis2.metadata.getMetaObjectIds('dataSets', '../api/dataSets/assigned.json', 'paging=false&fields=id,version');
 }
 
 function filterMissingDataSets( objs ){
@@ -242,7 +242,7 @@ function filterMissingDataSets( objs ){
 }
 
 function getDataSets( ids ){
-    return dhis2.metadata.getBatches( ids, batchSize, 'dataSets', 'dataSets', '../api/dataSets.json', 'paging=false&fields=id,periodType,openFuturePeriods,displayName,version,categoryCombo[id],attributeValues[value,attribute[id,name,valueType,code]],organisationUnits[id,name],sections[id,displayName,sortOrder,code,dataElements,greyedFields[dimensionItem],indicators[displayName,indicatorType,numerator,denominator,attributeValues[value,attribute[id,name,valueType,code]]]],dataSetElements[id,dataElement[id,code,displayFormName,description,optionSetValue,optionSet[id],attributeValues[value,attribute[id,name,valueType,code]],description,formName,valueType,optionSetValue,optionSet[id],categoryCombo[id]]]', 'idb', dhis2.planSetting.store, dhis2.metadata.processObject);
+    return dhis2.metadata.getBatches( ids, batchSize, 'dataSets', 'dataSets', '../api/dataSets.json', 'paging=false&fields=id,periodType,openFuturePeriods,displayName,version,categoryCombo[id],attributeValues[value,attribute[id,name,valueType,code]],organisationUnits[id],sections[id,displayName,sortOrder,code,dataElements,greyedFields[dimensionItem],indicators[displayName,indicatorType,numerator,denominator,attributeValues[value,attribute[id,name,valueType,code]]]],dataSetElements[id,dataElement[id,code,displayFormName,description,optionSetValue,optionSet[id],attributeValues[value,attribute[id,name,valueType,code]],description,formName,valueType,optionSetValue,optionSet[id],categoryCombo[id]]]', 'idb', dhis2.planSetting.store, dhis2.metadata.processObject);
 }
 
 function getMetaOptionSets(){

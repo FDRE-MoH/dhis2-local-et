@@ -61,6 +61,8 @@ import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.query.Query;
 import org.hisp.dhis.render.DefaultRenderService;
 import org.hisp.dhis.schema.descriptors.DataSetSchemaDescriptor;
+import org.hisp.dhis.user.User;
+import org.hisp.dhis.webapi.controller.exception.NotAuthenticatedException;
 import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
 import org.hisp.dhis.common.DhisApiVersion;
 import org.hisp.dhis.webapi.utils.FormUtils;
@@ -437,6 +439,38 @@ public class DataSetController
         }
 
         return exportService.getMetadataWithDependenciesAsNode( dataSet );
+    }
+   
+    @RequestMapping( value = "/assigned", method = RequestMethod.GET )
+    public @ResponseBody RootNode getAssignedDataSets( HttpServletRequest request,
+        TranslateParams translateParams, HttpServletResponse response ) throws IOException, NotAuthenticatedException
+    {
+    	setUserContext( translateParams );
+    	
+    	User currentUser = currentUserService.getCurrentUser();
+
+        if ( currentUser == null )
+        {
+            throw new NotAuthenticatedException();
+        }
+        
+        List<DataSet> dataSets;
+        
+        if ( currentUser.getUserCredentials().getAllAuthorities().contains( "ALL" ) )
+        {
+        	dataSets = Lists.newArrayList( dataSetService.getAllDataSets() );
+    	}
+        else
+        {
+        	dataSets = Lists.newArrayList( currentUser.getUserCredentials().getAllDataSets() );
+        }        
+
+        List<String> fields = Lists.newArrayList( contextService.getParameterValues( "fields" ) );
+
+        RootNode rootNode = NodeUtils.createMetadata();
+        rootNode.addChild( fieldFilterService.filter( DataSet.class, dataSets, fields ) );
+
+        return rootNode;
     }
 
     /**

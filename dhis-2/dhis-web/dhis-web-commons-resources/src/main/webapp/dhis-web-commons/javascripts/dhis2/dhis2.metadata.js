@@ -377,7 +377,7 @@ dhis2.metadata.processObject = function(obj, prop){
 	if( obj[prop] ){
 		var oo = {};
 	    _.each(_.values( obj[prop]), function(o){
-	        oo[o.id] = o.name;
+	        oo[o.id] = o.id;
 	    });
 	    obj[prop] = oo;
 	}    
