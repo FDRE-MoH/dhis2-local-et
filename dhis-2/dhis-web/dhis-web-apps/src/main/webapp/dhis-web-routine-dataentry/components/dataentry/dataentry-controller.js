@@ -205,9 +205,28 @@ routineDataEntry.controller('dataEntryController',
             DataValueService.saveDataValueSet(dataValueSet).then(function (response) {
                 copyDataValues();
                 console.log("successfully saved", response);
-
+                
+                //change the input fields color to Green for feedback.
+                angular.forEach(dataValueSet.dataValues,function(dataValue){
+                    if(!$scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo]){
+                        $scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo]={};
+                    }
+                    $scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo].saved=true;
+                    $scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo].pending=false;
+                    $scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo].error=false;
+                    
+                });
             }, function () {
-                console.log("error when saving");
+                //turn the input fields to red as a feedback for the users if error occurs    
+                angular.forEach(dataValueSet.dataValues,function(dataValue){
+                    if(!$scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo]){
+                        console.log('true')
+                        $scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo]={};
+                    }
+                    $scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo].saved=false;
+                    $scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo].pending=false;
+                    $scope.saveStatus[dataValue.dataElement+'-'+dataValue.categoryOptionCombo].error=true; 
+                });
             });
         });
         //performing the save
