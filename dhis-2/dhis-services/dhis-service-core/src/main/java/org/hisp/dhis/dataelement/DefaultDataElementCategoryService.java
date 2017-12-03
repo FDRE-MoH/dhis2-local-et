@@ -733,13 +733,13 @@ public class DefaultDataElementCategoryService
     	List<DataElementCategoryOptionCombo> generatedOptionCombos = categoryCombo.generateOptionCombosList();
         Set<DataElementCategoryOptionCombo> persistedOptionCombos = Sets.newHashSet( categoryCombo.getOptionCombos() );
         
-        log.info( "Checking for category option combo name consistency ..." );
+        log.info( "Checking for option combo name consistency:  " + categoryCombo.getName() );
         
         for ( DataElementCategoryOptionCombo optionCombo : generatedOptionCombos )
         {
             if ( persistedOptionCombos.contains( optionCombo ) )
             {
-            	Iterator<DataElementCategoryOptionCombo> iterator = generatedOptionCombos.iterator();
+            	Iterator<DataElementCategoryOptionCombo> iterator = persistedOptionCombos.iterator();
 
                 while ( iterator.hasNext() )
                 {
@@ -747,13 +747,13 @@ public class DefaultDataElementCategoryService
 
                     if ( oco.equals( optionCombo ) )
                     {
-                        if( !oco.getName().equalsIgnoreCase( optionCombo.getName() ) )
+                        if( !oco.getName().equals( optionCombo.getName() ) )
                         {
                         	String oldName = oco.getName();
                         	oco.setName( optionCombo.getName() );
                         	updateDataElementCategoryOptionCombo( oco );
                         	
-                        	log.info( "Update category option combo name from: " + oldName + " to : " + optionCombo.getName() );
+                        	log.info( "Updated option combo name from (" + oldName + ") to (" + optionCombo.getName() + ")");
                         }
 
                         break;
