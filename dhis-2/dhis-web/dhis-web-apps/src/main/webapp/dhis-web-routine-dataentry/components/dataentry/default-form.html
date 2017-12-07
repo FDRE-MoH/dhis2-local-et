@@ -265,6 +265,15 @@
             </thead>
             <tbody ng-repeat="de in model.selectedDataSet.dataElements"
                    ng-init="ocos = model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
+                <tr ng-if="de.displayTitle">
+                    <td class="ind-style">
+                        SerialNumberShouldBeDisplayed
+                    </td>
+                    <td class="ind-style" ng-bind="de.displayTitle">
+                    </td>
+                    <td class="ind-style" ></td>
+
+                </tr>
                 <tr ng-repeat="ind in model.selectedDataSet.indicators" ng-if="ind.params.indexOf(de.id) === 0 || ind.params[0].lastIndexOf(de.id, 0) === 0"><!-- last index added for indicators that are defined with option combos-->
                     <td class="ind-style" ng-bind="ind.DE_Sr_No">                        
                     </td>
