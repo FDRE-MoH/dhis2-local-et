@@ -316,6 +316,7 @@ public abstract class AbstractJdbcTableManager
         int l = dataYears.get( len - 1 );        
         dataYears.add( f - 1);
         dataYears.add( l + 1);
+        
         Collections.sort( dataYears );
         
         String baseName = getAnalyticsTableType().getTableName();
