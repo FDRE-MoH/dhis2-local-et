@@ -36,6 +36,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
+import org.hisp.dhis.calendar.Calendar;
+import org.hisp.dhis.calendar.CalendarService;
 import org.hisp.dhis.common.CodeGenerator;
 import org.hisp.dhis.common.DimensionalObject;
 import org.hisp.dhis.common.Grid;
@@ -194,6 +196,9 @@ public abstract class AbstractEventService
 
     @Autowired
     protected FileResourceService fileResourceService;
+    
+    @Autowired 
+    protected CalendarService calendarService;
 
     protected static final int FLUSH_FREQUENCY = 50;
 
@@ -786,6 +791,8 @@ public abstract class AbstractEventService
 
     private ImportSummary updateEvent( Event event, User user, boolean singleValue, ImportOptions importOptions )
     {
+    	Calendar calendar = calendarService.getSystemCalendar();
+    	
         if ( importOptions == null )
         {
             importOptions = new ImportOptions();
@@ -812,7 +819,7 @@ public abstract class AbstractEventService
 
         if ( event.getEventDate() != null )
         {
-            executionDate = DateUtils.parseDate( event.getEventDate() );
+            executionDate = DateUtils.getIsoDate( calendar, event.getEventDate() );
             programStageInstance.setExecutionDate( executionDate );
         }
 
@@ -820,7 +827,7 @@ public abstract class AbstractEventService
 
         if ( event.getDueDate() != null )
         {
-            dueDate = DateUtils.parseDate( event.getDueDate() );
+            dueDate = DateUtils.getIsoDate( calendar, event.getDueDate() );
         }
 
         String storedBy = getStoredBy( event, null, user );
@@ -971,6 +978,8 @@ public abstract class AbstractEventService
     @Override
     public void updateEventForEventDate( Event event )
     {
+    	Calendar calendar = calendarService.getSystemCalendar();
+    	
         ProgramStageInstance programStageInstance = programStageInstanceService
             .getProgramStageInstance( event.getEvent() );
 
@@ -983,7 +992,7 @@ public abstract class AbstractEventService
 
         if ( event.getEventDate() != null )
         {
-            executionDate = DateUtils.parseDate( event.getEventDate() );
+            executionDate = DateUtils.getIsoDate( calendar, event.getEventDate() );
         }
 
         if ( event.getStatus() == EventStatus.COMPLETED )
@@ -1083,6 +1092,8 @@ public abstract class AbstractEventService
 
     private Event convertProgramStageInstance( ProgramStageInstance programStageInstance )
     {
+    	Calendar calendar = calendarService.getSystemCalendar();
+    	
         if ( programStageInstance == null )
         {
             return null;
@@ -1101,8 +1112,8 @@ public abstract class AbstractEventService
         event.setEnrollmentStatus(
             EnrollmentStatus.fromProgramStatus( programStageInstance.getProgramInstance().getStatus() ) );
         event.setStatus( programStageInstance.getStatus() );
-        event.setEventDate( DateUtils.getIso8601NoTz( programStageInstance.getExecutionDate() ) );
-        event.setDueDate( DateUtils.getIso8601NoTz( programStageInstance.getDueDate() ) );
+        event.setEventDate( DateUtils.getCalendarDate( calendar, programStageInstance.getExecutionDate() ) );
+        event.setDueDate( DateUtils.getCalendarDate( calendar, programStageInstance.getDueDate() ) );
         event.setStoredBy( programStageInstance.getStoredBy() );
         event.setCompletedBy( programStageInstance.getCompletedBy() );
         event.setCompletedDate( DateUtils.getIso8601NoTz( programStageInstance.getCompletedDate() ) );
@@ -1244,6 +1255,8 @@ public abstract class AbstractEventService
         ProgramStageInstance programStageInstance, OrganisationUnit organisationUnit, Event event, User user,
         ImportOptions importOptions )
     {
+    	Calendar calendar = calendarService.getSystemCalendar();
+    	
         Assert.notNull( program, "Program cannot be null" );
         Assert.notNull( programInstance, "Program instance cannot be null" );
         Assert.notNull( programStage, "Program stage cannot be null" );
@@ -1262,14 +1275,14 @@ public abstract class AbstractEventService
 
         if ( event.getEventDate() != null )
         {
-            executionDate = DateUtils.parseDate( event.getEventDate() );
+            executionDate = DateUtils.getIsoDate( calendar, event.getEventDate() );
         }
 
         Date dueDate = new Date();
 
         if ( event.getDueDate() != null )
         {
-            dueDate = DateUtils.parseDate( event.getDueDate() );
+            dueDate = DateUtils.getIsoDate( calendar, event.getDueDate() );
         }
 
         String storedBy = getStoredBy( event, importSummary, user );

@@ -29,6 +29,8 @@ package org.hisp.dhis.system.util;
  */
 
 import com.google.common.collect.ImmutableMap;
+import com.ibm.icu.text.SimpleDateFormat;
+
 import org.hisp.dhis.calendar.DateTimeUnit;
 import org.hisp.dhis.i18n.I18nFormat;
 import org.hisp.dhis.indicator.Indicator;
@@ -46,6 +48,7 @@ import org.joda.time.format.PeriodFormatterBuilder;
 import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -68,6 +71,8 @@ public class DateUtils
     private static DateTimeFormatter ISO8601 = DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss.SSSZ" );
 
     private static DateTimeFormatter ISO8601_NO_TZ = DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss.SSS" );
+    
+    private static DateTimeFormatter ISO8601_SIMPLE = DateTimeFormat.forPattern( "yyyy-MM-dd" );
 
     private static final DateTimeParser[] SUPPORTED_DATE_FORMAT_PARSERS = {
         DateTimeFormat.forPattern( "yyyy-MM-dd'T'HH:mm:ss.SSSZ" ).getParser(),
@@ -729,5 +734,65 @@ public class DateUtils
     public static java.sql.Date asSqlDate( Date date )
     {
         return new java.sql.Date( date.getTime() );
+    }
+    
+    /**
+     * Converts ISO 8601 date to Calendar date formatted as yyyy-MM-dd
+     */
+    public static String getCalendarDate( org.hisp.dhis.calendar.Calendar calendar, Date date )
+    {	    	
+    	if( date == null || calendar == null )
+    	{
+    		return null;
+    	}
+    	
+    	DateTimeUnit dateTimeUnit = calendar.fromIso( date );    	
+    	
+    	SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd" );
+    	
+    	String dateInString = dateTimeUnit.getYear() + "-" + dateTimeUnit.getMonth() + "-" + dateTimeUnit.getDay();
+    	
+    	Date parsedDate = null;
+    	
+    	try 
+    	{
+    		parsedDate = formatter.parse( dateInString );    		
+    	} 
+    	catch (ParseException e) 
+    	{
+    		throw new IllegalArgumentException("Invalid DateTimeUnit:  " + dateTimeUnit );
+    	}    	
+    	
+		return parsedDate != null ? ISO8601_SIMPLE.print( new DateTime( parsedDate ) ) : null;    	
+    }
+    
+    /**
+     * Converts Calendar date to ISO 8601 date formatted as yyyy-MM-dd 
+     */
+    public static Date getIsoDate( org.hisp.dhis.calendar.Calendar calendar, String date )
+    {	    	
+    	if( date == null || calendar == null )
+    	{
+    		return null;
+    	}
+    	
+    	DateTimeUnit dateTimeUnit = calendar.toIso( date );    	
+    	
+    	SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd" );
+    	
+    	String dateInString = dateTimeUnit.getYear() + "-" + dateTimeUnit.getMonth() + "-" + dateTimeUnit.getDay();
+    	
+    	Date parsedDate = null;
+    	
+    	try 
+    	{
+    		parsedDate = formatter.parse( dateInString );    		
+    	} 
+    	catch (ParseException e) 
+    	{
+    		throw new IllegalArgumentException("Invalid DateTimeUnit:  " + dateTimeUnit );
+    	}    	
+    	
+		return parsedDate;    	
     }
 }
