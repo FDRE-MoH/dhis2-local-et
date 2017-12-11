@@ -33,6 +33,8 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hisp.dhis.calendar.Calendar;
+import org.hisp.dhis.calendar.CalendarService;
 import org.hisp.dhis.common.IdSchemes;
 import org.hisp.dhis.common.QueryFilter;
 import org.hisp.dhis.common.QueryItem;
@@ -95,6 +97,9 @@ public class JdbcEventStore
 
     @Autowired
     private StatementBuilder statementBuilder;
+    
+    @Autowired
+    private CalendarService calendarService;
 
     @Resource( name = "readOnlyJdbcTemplate" )
     private JdbcTemplate jdbcTemplate;
@@ -108,6 +113,8 @@ public class JdbcEventStore
     @Override
     public List<Event> getEvents( EventSearchParams params, List<OrganisationUnit> organisationUnits )
     {
+    	Calendar calendar = calendarService.getSystemCalendar();
+    	
         List<Event> events = new ArrayList<>();
 
         String sql = buildSql( params, organisationUnits );
@@ -167,8 +174,8 @@ public class JdbcEventStore
 
                 event.setStoredBy( rowSet.getString( "psi_storedby" ) );
                 event.setOrgUnitName( rowSet.getString( "ou_name" ) );
-                event.setDueDate( DateUtils.getIso8601NoTz( rowSet.getDate( "psi_duedate" ) ) );
-                event.setEventDate( DateUtils.getIso8601NoTz( rowSet.getDate( "psi_executiondate" ) ) );
+                event.setDueDate( DateUtils.getCalendarDate( calendar, rowSet.getDate( "psi_duedate" ) ) );
+                event.setEventDate( DateUtils.getCalendarDate( calendar, rowSet.getDate( "psi_executiondate" ) ) );
                 event.setCreated( DateUtils.getIso8601NoTz( rowSet.getDate( "psi_created" ) ) );
                 event.setLastUpdated( DateUtils.getIso8601NoTz( rowSet.getDate( "psi_lastupdated" ) ) );
 
@@ -250,6 +257,8 @@ public class JdbcEventStore
     @Override
     public List<Map<String, String>> getEventsGrid( EventSearchParams params, List<OrganisationUnit> organisationUnits )
     {
+    	Calendar calendar = calendarService.getSystemCalendar();
+    	
         SqlHelper hlp = new SqlHelper();
 
         // ---------------------------------------------------------------------
@@ -310,12 +319,26 @@ public class JdbcEventStore
 
             for ( String col : STATIC_EVENT_COLUMNS )
             {
-                map.put( col, rowSet.getString( col ) );
+            	if( col.equalsIgnoreCase( EVENT_DUE_DATE_ID ) || col.equalsIgnoreCase( EVENT_EXECUTION_DATE_ID ) )
+            	{
+            		map.put( col, DateUtils.getCalendarDate(calendar, rowSet.getDate( col ) ) );
+            	}
+            	else 
+            	{
+            		map.put( col, rowSet.getString( col ) );
+            	}                
             }
 
             for ( QueryItem item : params.getDataElements() )
             {
-                map.put( item.getItemId(), rowSet.getString( item.getItemId() ) );
+            	if( item.getValueType() == ValueType.DATE )
+            	{
+            		map.put( item.getItemId(), DateUtils.getCalendarDate(calendar, rowSet.getDate( item.getItemId() ) ) );
+            	}
+            	else
+            	{
+            		map.put( item.getItemId(), rowSet.getString( item.getItemId() ) );
+            	}
             }
 
             list.add( map );

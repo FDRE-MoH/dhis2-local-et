@@ -1276,13 +1276,15 @@ var d2Services = angular.module('d2Services', ['ngResource'])
 })
 
 /* Fetch periods */
-.service('PeriodService', function(CalendarService){
+.service('PeriodService', function(CalendarService, DateUtils){
     
     this.getPeriods = function( opts ){
         var availablePeriods = [];
         if(!opts.periodType){
             return availablePeriods;
         }
+        
+        opts.futurePeriods = 1;
         
         var calendarSetting = CalendarService.getSetting();
         
@@ -1296,9 +1298,11 @@ var d2Services = angular.module('d2Services', ['ngResource'])
         
         var d2Periods = dhis2.period.generator.generateReversedPeriods( opts.periodType, opts.periodOffset );
         
-        d2Periods = dhis2.period.generator.filterOpenPeriods( opts.periodType, d2Periods, opts.futurePeriods, null, null );        
+        d2Periods = dhis2.period.generator.filterOpenPeriods( opts.periodType, d2Periods, opts.futurePeriods, null, null );
         
-        angular.forEach(d2Periods, function(p){
+        var today = moment(DateUtils.getToday(),'YYYY-MM-DD');
+        
+        /*angular.forEach(d2Periods, function(p){
             p.id = p.iso;
             var st = p.endDate.split('-');
             st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
@@ -1313,8 +1317,26 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                 st[1] = '0' + st[1];
             }
             p.startDate = st.join('-');
-        });  
+        });*/
         
+        d2Periods = d2Periods.filter(function(p) {
+            p.id = p.iso;
+            var st = p.endDate.split('-');
+            st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+            if( st[1] < 10 ){
+                st[1] = '0' + st[1];
+            }
+            p.endDate = st.join('-');
+            
+            st = p.startDate.split('-');
+            st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+            if( st[1] < 10 ){
+                st[1] = '0' + st[1];
+            }
+            p.startDate = st.join('-');
+            
+            return today.diff(p.endDate, 'days') >= 9;
+        });
         return d2Periods;
     };
 })
