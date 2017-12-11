@@ -64,17 +64,17 @@
                                     </td>
                                 </tr>
                                 <tr class="de-style" ng-repeat="oco in ocos">
-                                    <td>
+                                    <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">
                                         <!-- serial number location-->
                                         {{(de.DE_Sr_No && ocos.length >= 1) ? (de.DE_Sr_No + ".") : ''}} {{ocos.length <=1? ' ' : $index+1 }}
                                     </td>
-                                    <td>
+                                    <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">
                                         <div class="oco-left-padding" ng-if="ocos.length > 1" ng-bind="oco.displayName">
                                         </div>
                                         <div ng-if="ocos.length === 1" ng-bind="de.displayFormName">                                            
                                         </div>
                                     </td>
-                                    <td>                                        
+                                    <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">                                        
                                         <ng-form name="innerForm">                                            
                                             <span ng-if="de.optionSetValue">
                                                 <ui-select theme="select2" 
@@ -311,17 +311,18 @@
                     </td>
                 </tr>
                 <tr class="de-style" ng-repeat="oco in ocos">
-                    <td>
+                    
+                    <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">
                         <!-- serial number location-->
                         {{(de.DE_Sr_No && ocos.length >= 1) ? (de.DE_Sr_No + ".") : ''}} {{ocos.length <=1? ' ' : $index+1 }}
                     </td>
-                    <td>
+                    <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">
                         <div class="oco-left-padding" ng-if="ocos.length > 1" ng-bind="oco.displayName">                            
                         </div>
                         <div ng-if="ocos.length === 1" ng-bind="de.displayFormName">
                         </div>
                     </td>
-                    <td>                        
+                    <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">                        
                         <ng-form name="innerForm">
                             <span ng-if="de.optionSetValue">
                                 <ui-select theme="select2" 
