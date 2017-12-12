@@ -87,7 +87,6 @@ routineDataEntry.controller('dataEntryController',
                             $scope.controllingDataElementGroups = {};
                             $scope.groupsByMember = {};
                             DataElementGroupFactory.getControllingDataElementGroups().then(function( degs ){
-                                console.log('Melaeke : All data element groups are assumed to be ',degs);
                                 angular.forEach(degs, function(deg){
                                     $scope.controllingDataElementGroups[deg.id] = deg;
                                     angular.forEach(deg.dataElements, function(de){
@@ -308,6 +307,11 @@ routineDataEntry.controller('dataEntryController',
                         else{
                             console.log('dataSet:  ', $scope.model.selectedDataSet.displayName, ', section:  ', section.displayName, ', dataElement:  ', de.id);
                         }
+                    });
+                    angular.forEach(section.indicators,function(indicator){
+                       angular.forEach(indicator.attributeValues,function(attribute){
+                           indicator[attribute.attribute.code]= attribute.value==="true"?true:false;
+                       }); 
                     });
                 });
             }

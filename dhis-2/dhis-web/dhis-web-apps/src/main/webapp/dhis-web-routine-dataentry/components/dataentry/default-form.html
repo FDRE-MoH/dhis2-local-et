@@ -47,7 +47,9 @@
                                     <td class="ind-style" ng-bind="ind.displayName">                                        
                                     </td>
                                     <td class="ind-style">
-                                        {{getIndicatorValue(ind)}}
+                                        <div ng-if="ind.displayable">
+                                            {{getIndicatorValue(ind)}}
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr class="de-total-style" ng-if="ocos.length > 1">
