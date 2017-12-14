@@ -293,7 +293,9 @@ routineDataEntry.controller('dataEntryController',
                            if(dataElementGroup.dataElements[de.id]){
                                if(!dataElementGroup.previouslyTaken ){
                                    dataElementGroup.previouslyTaken=true;
-                                   $scope.model.dataElements[de.id].displayTitle=dataElementGroup.displayName;
+                                   $scope.model.dataElements[de.id].displayTitle={};
+                                   $scope.model.dataElements[de.id].displayTitle.displayName=dataElementGroup.displayName;
+                                   $scope.model.dataElements[de.id].displayTitle.serialNumber=dataElementGroup.serial_number;
                                }
                            } 
                         });
@@ -310,7 +312,13 @@ routineDataEntry.controller('dataEntryController',
                     });
                     angular.forEach(section.indicators,function(indicator){
                        angular.forEach(indicator.attributeValues,function(attribute){
-                           indicator[attribute.attribute.code]= attribute.value==="true"?true:false;
+                           var val=attribute.value;
+                           if(val==="true"){
+                               val=true;
+                           }else if(val==="false"){
+                               val=false;
+                           }
+                           indicator[attribute.attribute.code]= val;
                        }); 
                     });
                 });
@@ -467,11 +475,22 @@ routineDataEntry.controller('dataEntryController',
         //form is valid        
         $scope.saveStatus[ deId + '-' + ocId] = {saved: false, pending: true, error: false};
         
+        var getValue=function(deId,ocId){
+            if($scope.dataValues[deId][ocId] && ($scope.dataValues[deId][ocId].value || $scope.dataValues[deId][ocId].value===0 || $scope.dataValues[deId][ocId].value===false)){
+                //above condition is included to allow saving of the value zero and false,
+                //since the condition automatically assumes both zero and false as a false condition, it was jumping them.
+                return $scope.dataValues[deId][ocId].value;
+            }
+            else{
+                return '';
+            }
+        }
+        
         var dataValue = {ou: $scope.selectedOrgUnit.id,
                     pe: $scope.model.selectedPeriod.id,
                     de: deId,
                     co: ocId,
-                    value: $scope.dataValues[deId][ocId] && $scope.dataValues[deId][ocId].value || $scope.dataValues[deId][ocId].value === false ? $scope.dataValues[deId][ocId].value : '',
+                    value: getValue(deId,ocId),
                     ao: $scope.model.selectedAttributeOptionCombo
                 };
                 
