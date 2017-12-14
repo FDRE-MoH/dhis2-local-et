@@ -36,6 +36,12 @@ d2Directives.directive('d2NumberValidator', function() {
                         return value === 'null' || !value ? !isRequired : dhis2.validation.isInt(value);
                     };
                 }
+                else if(numberType === 'PERCENTAGE'){
+                    ngModel.$validators.percent = function(value) {
+                    	value = value === 0 ? value.toString(): value;
+                        return value === 'null' || !value ? !isRequired : dhis2.validation.isPercentage(value);
+                    };
+                }
             }
 
             var numberType = attrs.numberType;
