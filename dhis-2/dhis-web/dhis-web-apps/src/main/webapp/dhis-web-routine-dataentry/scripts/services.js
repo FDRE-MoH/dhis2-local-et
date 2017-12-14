@@ -218,7 +218,7 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
 .factory('DataElementGroupFactory', function($q, $rootScope, StorageService) { 
   
     return {
-        getControllinGroups: function(){            
+        getControllingDataElementGroups: function(){            
             var def = $q.defer();            
             StorageService.currentStore.open().done(function(){
                 StorageService.currentStore.getAll('dataElementGroups').done(function(dgs){
@@ -229,6 +229,29 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                             var des = [];
                             des = $.map(dg.dataElements, function(de){return de.id;});
                             dg.dataElements = des;
+                            degs.push(dg);
+                        }
+                    });
+                    
+                    $rootScope.$apply(function(){
+                        def.resolve( degs );
+                    });                      
+                });
+            });            
+            return def.promise;
+        },
+        getNonControllingDataElementGroups : function(){            
+            var def = $q.defer();            
+            StorageService.currentStore.open().done(function(){
+                StorageService.currentStore.getAll('dataElementGroups').done(function(dgs){
+                    var degs = [];
+                    angular.forEach(dgs, function(dg){                            
+                        if(dg.data_controller_group){
+                            return; //jump if the data element group is a controlling data element group
+                        }
+                        else {
+                            var des=[];
+                            des=$.map(dg.dataElements,function(de){dg.dataElements[de.id]=de});
                             degs.push(dg);
                         }
                     });

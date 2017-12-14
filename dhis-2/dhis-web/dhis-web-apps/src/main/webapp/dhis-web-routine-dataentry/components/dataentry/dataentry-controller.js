@@ -84,17 +84,20 @@ routineDataEntry.controller('dataEntryController',
 
                         MetaDataFactory.getAll('validationRules').then(function(vrs){
                             $scope.model.validationRules = vrs;
-                            $scope.dataElementGroups = {};
+                            $scope.controllingDataElementGroups = {};
                             $scope.groupsByMember = {};
-                            DataElementGroupFactory.getControllinGroups().then(function( degs ){
+                            DataElementGroupFactory.getControllingDataElementGroups().then(function( degs ){
                                 angular.forEach(degs, function(deg){
-                                    $scope.dataElementGroups[deg.id] = deg;
+                                    $scope.controllingDataElementGroups[deg.id] = deg;
                                     angular.forEach(deg.dataElements, function(de){
                                         $scope.groupsByMember[de] = deg.id;
                                     });
                                 });
                                 $scope.loadDataSets($scope.selectedOrgUnit); 
-                            });                            
+                            });
+                            DataElementGroupFactory.getNonControllingDataElementGroups().then(function (degs) {
+                                $scope.dataElementGroups = degs;
+                            });
                         });
                     }); 
                 });
@@ -145,12 +148,12 @@ routineDataEntry.controller('dataEntryController',
         $scope.dataValues = {};
         $scope.dataValuesCopy = {};
         $scope.model.valueExists = false;
-        reinitializeGroupDetails();        
+        reinitializeControllingDataElementGroupDetails();        
         $scope.loadDataEntryForm();        
     });    
     
-    function reinitializeGroupDetails() {        
-        angular.forEach($scope.dataElementGroups, function(deg){
+    function reinitializeControllingDataElementGroupDetails() {        
+        angular.forEach($scope.controllingDataElementGroups, function(deg){
             deg.isDisabled = true;
         });
     }
@@ -286,6 +289,16 @@ routineDataEntry.controller('dataEntryController',
                 idx = 0;
                 angular.forEach($scope.model.selectedDataSet.sections, function(section){                    
                     angular.forEach(section.dataElements, function(de){
+                        angular.forEach($scope.dataElementGroups,function(dataElementGroup){
+                           if(dataElementGroup.dataElements[de.id]){
+                               if(!dataElementGroup.previouslyTaken ){
+                                   dataElementGroup.previouslyTaken=true;
+                                   $scope.model.dataElements[de.id].displayTitle={};
+                                   $scope.model.dataElements[de.id].displayTitle.displayName=dataElementGroup.displayName;
+                                   $scope.model.dataElements[de.id].displayTitle.serialNumber=dataElementGroup.serial_number;
+                               }
+                           } 
+                        });
                         $scope.tabOrder[de.id] = {};
                         var dataElement = $scope.model.dataElements[de.id];
                         if( dataElement && dataElement.categoryCombo ){
@@ -296,6 +309,17 @@ routineDataEntry.controller('dataEntryController',
                         else{
                             console.log('dataSet:  ', $scope.model.selectedDataSet.displayName, ', section:  ', section.displayName, ', dataElement:  ', de.id);
                         }
+                    });
+                    angular.forEach(section.indicators,function(indicator){
+                       angular.forEach(indicator.attributeValues,function(attribute){
+                           var val=attribute.value;
+                           if(val==="true"){
+                               val=true;
+                           }else if(val==="false"){
+                               val=false;
+                           }
+                           indicator[attribute.attribute.code]= val;
+                       }); 
                     });
                 });
             }
@@ -356,8 +380,8 @@ routineDataEntry.controller('dataEntryController',
                             if($scope.model.dataElements[dv.dataElement].controlling_data_element && 
                                     $scope.model.dataElements[dv.dataElement].controlling_data_element === true &&
                                     $scope.groupsByMember[dv.dataElement] &&
-                                    $scope.dataElementGroups[$scope.groupsByMember[dv.dataElement]]){
-                                $scope.dataElementGroups[$scope.groupsByMember[dv.dataElement]].isDisabled = !dv.value;
+                                    $scope.controllingDataElementGroups[$scope.groupsByMember[dv.dataElement]]){
+                                $scope.controllingDataElementGroups[$scope.groupsByMember[dv.dataElement]].isDisabled = !dv.value;
                             }                            
                         });
                         response.dataValues = orderByFilter(response.dataValues, '-created').reverse();                    
@@ -451,11 +475,22 @@ routineDataEntry.controller('dataEntryController',
         //form is valid        
         $scope.saveStatus[ deId + '-' + ocId] = {saved: false, pending: true, error: false};
         
+        var getValue=function(deId,ocId){
+            if($scope.dataValues[deId][ocId] && ($scope.dataValues[deId][ocId].value || $scope.dataValues[deId][ocId].value===0 || $scope.dataValues[deId][ocId].value===false)){
+                //above condition is included to allow saving of the value zero and false,
+                //since the condition automatically assumes both zero and false as a false condition, it was jumping them.
+                return $scope.dataValues[deId][ocId].value;
+            }
+            else{
+                return '';
+            }
+        }
+        
         var dataValue = {ou: $scope.selectedOrgUnit.id,
                     pe: $scope.model.selectedPeriod.id,
                     de: deId,
                     co: ocId,
-                    value: $scope.dataValues[deId][ocId] && $scope.dataValues[deId][ocId].value || $scope.dataValues[deId][ocId].value === false ? $scope.dataValues[deId][ocId].value : '',
+                    value: getValue(deId,ocId),
                     ao: $scope.model.selectedAttributeOptionCombo
                 };
                 
@@ -487,8 +522,8 @@ routineDataEntry.controller('dataEntryController',
 
         if( $scope.model.dataElements[deId].controlling_data_element && 
                 $scope.groupsByMember[deId] && 
-                $scope.dataElementGroups[$scope.groupsByMember[deId]] &&
-                $scope.dataElementGroups[$scope.groupsByMember[deId]].dataElements ){            
+                $scope.controllingDataElementGroups[$scope.groupsByMember[deId]] &&
+                $scope.controllingDataElementGroups[$scope.groupsByMember[deId]].dataElements ){            
             //this means that the dataElement is a controlling dataElement
             var dataValueSet={
                 dataSet: $scope.model.selectedDataSet.id,
@@ -506,14 +541,14 @@ routineDataEntry.controller('dataEntryController',
             
             if( dataValue.value && dataValue.value !== '' ){
                 //value set to true, open all blocked fields
-                $scope.dataElementGroups[$scope.groupsByMember[deId]].isDisabled=false;
+                $scope.controllingDataElementGroups[$scope.groupsByMember[deId]].isDisabled=false;
             } else{
                 //value set to false or empty. 
                 //show modal message. 
                 //if user accepts clear values, block fields and save all changes.
                 var _dataValues = angular.copy( $scope.dataValues );
                 var count = 0;                
-                angular.forEach($scope.dataElementGroups[$scope.groupsByMember[deId]].dataElements, function(_deId){                    
+                angular.forEach($scope.controllingDataElementGroups[$scope.groupsByMember[deId]].dataElements, function(_deId){                    
                     if( _dataValues[_deId] && _deId !== deId ){
                         angular.forEach(_dataValues[_deId], function(val, key) {
                             if( key === 'total' ){
@@ -541,7 +576,7 @@ routineDataEntry.controller('dataEntryController',
                     ModalService.showModal({},modalOptions).then(function (){
                         //this means user clicked yes.
                         //save value of the controlling data element, discard all the values stored under the datElementGroup.                        
-                        $scope.dataElementGroups[$scope.groupsByMember[deId]].isDisabled=true;
+                        $scope.controllingDataElementGroups[$scope.groupsByMember[deId]].isDisabled=true;
                         DataValueService.saveDataValueSet(dataValueSet).then(function(response){
                             $scope.dataValues = Object.assign($scope.dataValues, _dataValues);
                             var dialogOptions={
