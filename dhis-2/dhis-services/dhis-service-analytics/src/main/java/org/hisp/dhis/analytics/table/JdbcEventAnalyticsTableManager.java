@@ -84,13 +84,16 @@ public class JdbcEventAnalyticsTableManager
         {
             List<Integer> dataYears = getDataYears( program, earliest );
             
-            Collections.sort( dataYears );
-            
             int len = dataYears.size();
-            int f = dataYears.get( 0 );
-            int l = dataYears.get( len - 1 );        
-            dataYears.add( f - 1);
-            dataYears.add( l + 1);
+            
+            if( len > 0 )
+            {
+            	Collections.sort( dataYears );
+            	int f = dataYears.get( 0 );
+                int l = dataYears.get( len - 1 );        
+                dataYears.add( f - 1);
+                dataYears.add( l + 1);            	
+            }            
 
             Collections.sort( dataYears );
             

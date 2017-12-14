@@ -331,14 +331,7 @@ public class JdbcEventStore
 
             for ( QueryItem item : params.getDataElements() )
             {
-            	if( item.getValueType() == ValueType.DATE )
-            	{
-            		map.put( item.getItemId(), DateUtils.getCalendarDate(calendar, rowSet.getDate( item.getItemId() ) ) );
-            	}
-            	else
-            	{
-            		map.put( item.getItemId(), rowSet.getString( item.getItemId() ) );
-            	}
+            	map.put( item.getItemId(), rowSet.getString( item.getItemId() ) );
             }
 
             list.add( map );
