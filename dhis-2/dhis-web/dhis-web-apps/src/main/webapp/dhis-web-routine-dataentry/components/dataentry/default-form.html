@@ -33,16 +33,15 @@
                                    ng-init="de = model.dataElements[dataElement.id];
                                        ocos = model.categoryCombos[de.categoryCombo.id].categoryOptionCombos">
                                 <tr ng-if="de.displayTitle">
-                                    <td class="ind-style">
-                                        SerialNumberShouldBeDisplayed
+                                    <td class="ind-style" ng-bind="de.displayTitle.serialNumber">
                                     </td>
-                                    <td class="ind-style" ng-bind="de.displayTitle">
+                                    <td class="ind-style" ng-bind="de.displayTitle.displayName">
                                     </td>
                                     <td class="ind-style" ></td>
                                     
                                 </tr>
                                 <tr ng-repeat="ind in section.indicators" ng-if="ind.params.indexOf(de.id) === 0 || ind.params[0].lastIndexOf(de.id, 0) === 0"><!-- last index added for indicators that are defined with option combos-->
-                                    <td class="ind-style" ng-bind="ind.DE_Sr_No">                                        
+                                    <td class="ind-style" ng-bind="ind.serial_number">                                        
                                     </td>
                                     <td class="ind-style" ng-bind="ind.displayName">                                        
                                     </td>
@@ -53,7 +52,7 @@
                                     </td>
                                 </tr>
                                 <tr class="de-total-style" ng-if="ocos.length > 1">
-                                    <td>
+                                    <td ng-bind="de.serial_number">
                                     </td>
                                     <td>
                                         <div ng-bind="de.displayFormName">
@@ -68,7 +67,7 @@
                                 <tr class="de-style" ng-repeat="oco in ocos">
                                     <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">
                                         <!-- serial number location-->
-                                        {{(de.DE_Sr_No && ocos.length >= 1) ? (de.DE_Sr_No + ".") : ''}} {{ocos.length <=1? ' ' : $index+1 }}
+                                        {{(de.serial_number && ocos.length >= 1) ? (de.serial_number + ".") : ''}} {{ocos.length <=1? ' ' : $index+1 }}
                                     </td>
                                     <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">
                                         <div class="oco-left-padding" ng-if="ocos.length > 1" ng-bind="oco.displayName">
@@ -291,7 +290,7 @@
 
                 </tr>
                 <tr ng-repeat="ind in model.selectedDataSet.indicators" ng-if="ind.params.indexOf(de.id) === 0 || ind.params[0].lastIndexOf(de.id, 0) === 0"><!-- last index added for indicators that are defined with option combos-->
-                    <td class="ind-style" ng-bind="ind.DE_Sr_No">                        
+                    <td class="ind-style" ng-bind="ind.serial_number">                        
                     </td>
                     <td class="ind-style" ng-bind="ind.displayName">
                     </td>
@@ -316,7 +315,7 @@
                     
                     <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">
                         <!-- serial number location-->
-                        {{(de.DE_Sr_No && ocos.length >= 1) ? (de.DE_Sr_No + ".") : ''}} {{ocos.length <=1? ' ' : $index+1 }}
+                        {{(de.serial_number && ocos.length >= 1) ? (de.serial_number + ".") : ''}} {{ocos.length <=1? ' ' : $index+1 }}
                     </td>
                     <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">
                         <div class="oco-left-padding" ng-if="ocos.length > 1" ng-bind="oco.displayName">                            
