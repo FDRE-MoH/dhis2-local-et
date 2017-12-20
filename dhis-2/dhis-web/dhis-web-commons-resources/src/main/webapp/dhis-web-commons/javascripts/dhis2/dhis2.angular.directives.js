@@ -765,6 +765,7 @@ var d2Directives = angular.module('d2Directives', [])
                 var field = null;                               
                 
                 if ( ( key === 9 && event.shiftKey ) || key === 38 || key === 37 ) {//get previous input field
+                    console.log('event handled');
                                         
                 	event.preventDefault(); 
                     event.stopPropagation();
@@ -782,6 +783,10 @@ var d2Directives = angular.module('d2Directives', [])
                     
                     if( field ){                    
                         field.focus();
+                        var tempType=field[0].type;//need to change type temporarly to text because HTML5 doesn't allow setSelectionRange on number and some other inputs.
+                        field[0].type="text";
+                        field[0].setSelectionRange(0,field[0].value.length);
+                        field[0].type=tempType;
                     }
                 }                
                 else if( ( key === 9 && !event.shiftKey ) || key === 13 || key === 39 || key === 40 ){//get next input field
@@ -802,6 +807,10 @@ var d2Directives = angular.module('d2Directives', [])
                     
                     if( field ){                    
                         field.focus();
+                        var tempType=field[0].type;//need to change type temporarly to text because HTML5 doesn't allow setSelectionRange on number and some other inputs.
+                        field[0].type="text";
+                        field[0].setSelectionRange(0,field[0].value.length);
+                        field[0].type=tempType;
                     }                   
                 }
             });
