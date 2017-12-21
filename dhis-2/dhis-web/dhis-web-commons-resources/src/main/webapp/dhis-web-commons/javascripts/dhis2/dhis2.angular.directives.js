@@ -1,4 +1,4 @@
-/* global moment, angular, directive, dhis2, selection */
++/* global moment, angular, directive, dhis2, selection */
 
 'use strict';
 
@@ -783,10 +783,12 @@ var d2Directives = angular.module('d2Directives', [])
                     
                     if( field ){                    
                         field.focus();
-                        var tempType=field[0].type;//need to change type temporarly to text because HTML5 doesn't allow setSelectionRange on number and some other inputs.
-                        field[0].type="text";
-                        field[0].setSelectionRange(0,field[0].value.length);
-                        field[0].type=tempType;
+                        if(field[0]){ //added to support drop downs and other select html tags. 
+                            var tempType=field[0].type;//need to change type temporarly to text because HTML5 doesn't allow setSelectionRange on number and some other inputs.
+                            field[0].type="text";
+                            field[0].setSelectionRange(0,field[0].value.length);
+                            field[0].type=tempType;
+                        }
                     }
                 }                
                 else if( ( key === 9 && !event.shiftKey ) || key === 13 || key === 39 || key === 40 ){//get next input field
@@ -807,10 +809,12 @@ var d2Directives = angular.module('d2Directives', [])
                     
                     if( field ){                    
                         field.focus();
-                        var tempType=field[0].type;//need to change type temporarly to text because HTML5 doesn't allow setSelectionRange on number and some other inputs.
-                        field[0].type="text";
-                        field[0].setSelectionRange(0,field[0].value.length);
-                        field[0].type=tempType;
+                        if(field[0]){
+                            var tempType=field[0].type;//need to change type temporarly to text because HTML5 doesn't allow setSelectionRange on number and some other inputs.
+                            field[0].type="text";
+                            field[0].setSelectionRange(0,field[0].value.length);
+                            field[0].type=tempType;
+                        }
                     }                   
                 }
             });
