@@ -158,6 +158,27 @@ routineDataEntry.controller('dataEntryController',
         });
     }
     
+    $scope.checkDisabled = function (section,de,oco){
+        if($scope.model && $scope.model.dataSetCompletness && $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo]){//if dataset is complete return true (disabled) without checking anything.
+            return true;
+        }
+        else if(de.controlling_data_element){//if data element is a controlling data element return false (is not disabled)
+                                        //it is only disabled when the dataSet is marked complete.
+            return false;
+        }
+        
+        else if(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1){//if the category option combo is greyed out return true;
+            return true;
+        }
+        else if($scope.controllingDataElementGroups[$scope.groupsByMember[de.id]] && $scope.controllingDataElementGroups[$scope.groupsByMember[de.id]].isDisabled){
+            //return if controlling data element value is disabled.
+            return true;
+        }
+        //if the above conditions are not fullfilled return false;
+        return false;
+        //return (section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || $scope.controllingDataElementGroups[$scope.groupsByMember[de.id]].isDisabled) && !de.controlling_data_element || $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo];
+    }
+    
     $scope.performAutoZero = function(section){
         var dataValueSet = {
             dataSet: $scope.model.selectedDataSet.id,
@@ -171,6 +192,9 @@ routineDataEntry.controller('dataEntryController',
             dataElement = $scope.model.dataElements[dataElement.id];
             if (dataElement && (dataElement.valueType === 'NUMBER' || dataElement.valueType === "INTEGER" || dataElement.valueType === "INTEGER_ZERO_OR_POSITIVE")) {
                 angular.forEach($scope.model.categoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function (categoryOptionCombo) {
+                    if($scope.checkDisabled(section,dataElement,categoryOptionCombo)){
+                        return;
+                    }
                     //check if the data value of the data element has a catagoroptiondownloaded
                     if (!$scope.dataValues[dataElement.id]) {
                         $scope.dataValues[dataElement.id] = {};
