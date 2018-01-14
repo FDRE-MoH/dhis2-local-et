@@ -1335,7 +1335,7 @@ var d2Services = angular.module('d2Services', ['ngResource'])
             }
             p.startDate = st.join('-');
             
-            return today.diff(p.endDate, 'days') >= 9;
+            return today.diff(p.endDate, 'days') >= -9;
         });
         return d2Periods;
     };
