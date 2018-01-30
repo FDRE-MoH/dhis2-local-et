@@ -29,7 +29,6 @@ package org.hisp.dhis.resourcetable.table;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +46,7 @@ import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.period.QuarterlyPeriodType;
 import org.hisp.dhis.period.SixMonthlyAprilPeriodType;
+import org.hisp.dhis.period.SixMonthlyNovemberPeriodType;
 import org.hisp.dhis.period.SixMonthlyPeriodType;
 import org.hisp.dhis.period.WeeklyPeriodType;
 import org.hisp.dhis.resourcetable.ResourceTable;
@@ -62,10 +62,11 @@ public class LastPeriodResourceTable
     extends ResourceTable<Period>
 {
     
-    private static final Map<String, Integer> PERIOD_INDEX = ImmutableMap.<String, Integer> builder()
-        .put( DailyPeriodType.NAME, 6 ).put( WeeklyPeriodType.NAME, 5 ).put( MonthlyPeriodType.NAME, 4 )
-        .put( BiMonthlyPeriodType.NAME, 5 ).put( QuarterlyPeriodType.NAME, 5 )
-        .put( SixMonthlyPeriodType.NAME, 5 ).put( SixMonthlyAprilPeriodType.NAME, 10 ).build();
+	private static final Map<String, Integer> PERIOD_INDEX = ImmutableMap.<String, Integer> builder()
+	        .put( DailyPeriodType.NAME, 6 ).put( WeeklyPeriodType.NAME, 5 ).put( MonthlyPeriodType.NAME, 4 )
+	        .put( BiMonthlyPeriodType.NAME, 4 ).put( QuarterlyPeriodType.NAME, 5 )
+	        .put( SixMonthlyPeriodType.NAME, 5 ).put( SixMonthlyAprilPeriodType.NAME, 10 )
+	        .put( SixMonthlyNovemberPeriodType.NAME, 8 ).build();
     
     
     public LastPeriodResourceTable( List<Period> objects, String columnQuote )
@@ -223,7 +224,9 @@ public class LastPeriodResourceTable
                             
                             if( isoDate.length() > len )
                             {
-                                int idx = Integer.parseInt(  isoDate.substring( len, isoDate.length() ) );
+                            	String _isoDate = rowType.getName().equals( BiMonthlyPeriodType.NAME ) ? isoDate.substring(0,  isoDate.length() - 1 ) : isoDate;
+                            	
+                                int idx = Integer.parseInt(  _isoDate.substring( len, _isoDate.length() ) );
                                 
                                 if ( idx % periodType.getPeriodSpan( rowType ) == 0 )
                                 {
