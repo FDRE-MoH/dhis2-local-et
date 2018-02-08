@@ -35,7 +35,7 @@
 		<option value="NEW_AND_UPDATES">$i18n.getString( "new_and_updates" )</option>
 		<option value="NEW">$i18n.getString( "new_only" )</option>
 		<option value="UPDATES">$i18n.getString( "updates_only" )</option>
-		<option value="DELETE">$i18n.getString( "delete" )</option>
+		<!--<option value="DELETE">$i18n.getString( "delete" )</option>-->
     </select></td>
 </tr>
 <tr>

@@ -115,7 +115,7 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
             return def.promise;            
         },
         getByOu: function(ou, selectedDataSet){
-            var roles = SessionStorageService.get('USER_ROLES');
+            var roles = SessionStorageService.get('USER_PROFILE');
             var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
             var def = $q.defer();
             
@@ -163,7 +163,7 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
             return def.promise;
         },
         getByOuAndProperty: function(ou, selectedDataSet,propertyName,propertyValue){
-            var roles = SessionStorageService.get('USER_ROLES');
+            var roles = SessionStorageService.get('USER_PROFILE');
             var userRoles = roles && roles.userCredentials && roles.userCredentials.userRoles ? roles.userCredentials.userRoles : [];
             var def = $q.defer();
             

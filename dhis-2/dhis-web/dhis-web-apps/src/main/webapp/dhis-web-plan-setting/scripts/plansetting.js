@@ -155,7 +155,6 @@ function downloadMetaData()
     promise = promise.then( dhis2.planSetting.store.open );
     promise = promise.then( getUserRoles );    
     promise = promise.then( getSystemSetting );
-    promise = promise.then( getCalendarSetting );
     
     //fetch category combos
     promise = promise.then( getMetaCategoryCombos );
@@ -200,25 +199,18 @@ function downloadMetaData()
     def.resolve();    
 }
 function getUserRoles(){
-    var SessionStorageService = angular.element('body').injector().get('SessionStorageService');    
-    if( SessionStorageService.get('USER_ROLES') ){
+    /*var SessionStorageService = angular.element('body').injector().get('SessionStorageService');    
+    if( SessionStorageService.get('USER_PROFILE') ){
        return; 
-    }    
-    return dhis2.metadata.getMetaObject(null, 'USER_ROLES', '../api/me.json', 'fields=id,displayName,userCredentials[userRoles[id,authorities,dataSets]]', 'sessionStorage', dhis2.planSetting.store);
+    }*/    
+    return dhis2.metadata.getMetaObject(null, 'USER_PROFILE', '../api/me.json', 'fields=id,displayName,userCredentials[username,userRoles[id,dataSets,programs,authorities]],organisationUnits[id,displayName,level,code,path,children[id,displayName,level,children[id]]],dataViewOrganisationUnits[id,displayName,level,path,code,children[id,displayName,level,children[id]]],teiSearchOrganisationUnits[id,displayName,level,path,code,children[id,displayName,level,children[id]]]', 'sessionStorage', dhis2.planSetting.store);
 }
 
 function getSystemSetting(){   
     if(localStorage['SYSTEM_SETTING']){
        return; 
     }    
-    return dhis2.metadata.getMetaObject(null, 'SYSTEM_SETTING', '../api/systemSettings', '', 'localStorage', dhis2.planSetting.store);
-}
-
-function getCalendarSetting(){   
-    if(localStorage['CALENDAR_SETTING']){
-       return; 
-    }    
-    return dhis2.metadata.getMetaObject(null, 'CALENDAR_SETTING', '../api/systemSettings', 'key=keyCalendar&key=keyDateFormat', 'localStorage', dhis2.planSetting.store);
+    return dhis2.metadata.getMetaObject(null, 'SYSTEM_SETTING', '../api/systemSettings', 'key=keyGoogleMapsApiKey&key=keyMapzenSearchApiKey&key=keyCalendar&key=keyDateFormat&key=multiOrganisationUnitForms', 'localStorage', dhis2.planSetting.store);
 }
 
 function getMetaCategoryCombos(){
