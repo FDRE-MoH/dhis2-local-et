@@ -1160,7 +1160,10 @@ public class DataQueryParams
      */
     protected void addDimension( DimensionalObject dimension )
     {
-        dimensions.add( dimension );
+    	if( dimension != null && dimension.getDimensionType() != null )
+    	{
+    		dimensions.add( dimension );
+    	}
         
         Collections.sort( dimensions, ( o1, o2 ) -> o1.getDimensionType().getOrder() - o2.getDimensionType().getOrder() );
     }
