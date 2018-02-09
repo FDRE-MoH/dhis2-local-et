@@ -13,6 +13,7 @@
                         </div>
                         <div class="col-sm-6">
                             {{'comment'| translate}}
+                            <img ng-src="{{dataValue.followUp === true && '../images/marked.png' || '../images/unmarked.png' }}" ng-if="dataValue.value" ng-click="saveFollowUp();"/>
                             <textarea ng-class="getCommentNotifcationClass()" rows="5" ng-model="dataValue.comment"></textarea>
                             <button type="button" 
                                     ng-disabled="!dataValue.value"

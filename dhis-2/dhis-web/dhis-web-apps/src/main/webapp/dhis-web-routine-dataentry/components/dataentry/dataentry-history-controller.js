@@ -15,6 +15,7 @@ routineDataEntry.controller('DataEntryHistoryController',
                 period,
                 dataElement,
                 orgUnitId,
+                followUp,
                 attributeCategoryCombo,
                 attributeCategoryOptions,
                 attributeOptionCombo,
@@ -31,7 +32,7 @@ routineDataEntry.controller('DataEntryHistoryController',
     $scope.historyUrl += '&cp=' + attributeOptionCombo;
     
     var dataValueAudit = {de: dataElement.id, pe: period.id, ou: orgUnitId, co: optionCombo.id, cc: attributeOptionCombo};
-    $scope.dataValue = {de: dataElement.id, pe: period.id, ou: orgUnitId, co: optionCombo.id, cc: attributeCategoryCombo.id, cp: attributeCategoryOptions, value: value, comment: comment};
+    $scope.dataValue = {de: dataElement.id, pe: period.id, ou: orgUnitId, co: optionCombo.id, cc: attributeCategoryCombo.id, cp: attributeCategoryOptions, value: value, comment: comment, followUp: followUp};
     
     $scope.auditColumns = [{id: 'created', displayName: $translate.instant('created')},
                            {id: 'modifiedBy', displayName: $translate.instant('modified_by')},
@@ -66,7 +67,28 @@ routineDataEntry.controller('DataEntryHistoryController',
         return 'form-control';
     };
     
-    $scope.close = function(status) {        
+    $scope.close = function(status) {  
+        if(!status){
+            status=[];
+        }
+        status.dataValue=$scope.dataValue;//to send back data entered to thte main Data entry window.
         $modalInstance.close( status );
+    };
+    
+    $scope.saveFollowUp = function(){
+        if($scope.dataValue.followUp){
+            //if follow up is already true ignore it because follow up can't be changed back to false.
+            return ;
+        }else{ // if followUp is false or undefined
+            $scope.dataValue.followUp=true;
+        }
+        $scope.followUpSaveStarted = true;
+        $scope.followUpSaved = false;
+        DataValueService.saveDataValue( $scope.dataValue ).then(function(response){
+           $scope.followUpSaved = true;
+        }, function(){
+            $scope.followUpSaved = false;
+        });
+        
     };
 });

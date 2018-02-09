@@ -662,7 +662,7 @@ routineDataEntry.controller('dataEntryController',
         return style;
     };
         
-    $scope.getAuditInfo = function(de, oco, value, comment){        
+    $scope.getAuditInfo = function(de, oco, value, comment, followUp){ 
         var modalInstance = $modal.open({
             templateUrl: 'components/dataentry/history.html',
             controller: 'DataEntryHistoryController',
@@ -697,11 +697,30 @@ routineDataEntry.controller('dataEntryController',
                 },
                 optionCombo: function(){
                     return oco;
+                },
+                followUp: function(){
+                    return followUp;
                 }
             }
         });
         
-        modalInstance.result.then(function () {
+        modalInstance.result.then(function (status) {
+            var dataValue=status.dataValue;
+            
+            /**
+             * changing followup and comment is necessary here because if the 
+             * history window is reopened after editing the followup and the 
+             * comment we need to refresh the page inorder to see the change.
+             * But in this case when reopening the window, the appropriate data 
+             * will be replied back to it.
+             */
+            
+            if(dataValue.followUp){ 
+                $scope.dataValues[dataValue.de][dataValue.co].followUp=true;
+            }
+            if(dataValue.comment){
+                $scope.dataValues[dataValue.de][dataValue.co].comment=dataValue.comment;
+            }
         }); 
     };
     

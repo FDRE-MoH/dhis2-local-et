@@ -134,7 +134,7 @@
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                                d2-blur="saveDataValue(de.id, oco.id)">
                                                     </span>
                                                     <span ng-switch-when="INTEGER">
@@ -148,7 +148,7 @@
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)"  
-                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                                d2-blur="saveDataValue(de.id, oco.id)">
                                                     </span>
                                                     <span ng-switch-when="INTEGER_POSITIVE">
@@ -162,7 +162,7 @@
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                                d2-blur="saveDataValue(de.id, oco.id)">
                                                     </span>
                                                     <span ng-switch-when="INTEGER_NEGATIVE">
@@ -176,7 +176,7 @@
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                                d2-blur="saveDataValue(de.id, oco.id)">
                                                     </span>
                                                     <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
@@ -190,7 +190,7 @@
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                                d2-blur="saveDataValue(de.id, oco.id)">
                                                     </span>
                                                     <span ng-switch-when="TRUE_ONLY">
@@ -215,7 +215,7 @@
                                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                                class="form-control" 
                                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                                d2-blur="saveDataValue(de.id, oco.id)">
                                                     </span>
                                                     <span ng-switch-when="BOOLEAN">                                                    
@@ -382,7 +382,7 @@
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                d2-blur="saveDataValue(de.id, oco.id)">
                                     </span>
                                     <span ng-switch-when="INTEGER">
@@ -396,7 +396,7 @@
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)"  
-                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                d2-blur="saveDataValue(de.id, oco.id)">
                                     </span>
                                     <span ng-switch-when="INTEGER_POSITIVE">
@@ -410,7 +410,7 @@
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                d2-blur="saveDataValue(de.id, oco.id)">
                                     </span>
                                     <span ng-switch-when="INTEGER_NEGATIVE">
@@ -424,7 +424,7 @@
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                d2-blur="saveDataValue(de.id, oco.id)">
                                     </span>
                                     <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
@@ -438,7 +438,7 @@
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                d2-blur="saveDataValue(de.id, oco.id)">
                                     </span>
                                     <span ng-switch-when="TRUE_ONLY">
@@ -463,7 +463,7 @@
                                                tabindex={{tabOrder[de.id][oco.id]}}
                                                class="form-control" 
                                                ng-class="getInputNotifcationClass(de.id, oco.id)" 
-                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment,dataValues[de.id][oco.id].followUp)"
                                                d2-blur="saveDataValue(de.id, oco.id)">
                                     </span>
                                     <span ng-switch-when="BOOLEAN">                                                    
