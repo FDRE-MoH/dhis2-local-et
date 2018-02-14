@@ -1280,7 +1280,7 @@ var d2Services = angular.module('d2Services', ['ngResource'])
     
     this.getPeriods = function( opts ){
         var availablePeriods = [];
-        if(!opts.periodType || !opts.futurePeriods || !opts.dataSetType){
+        if(!opts.periodType){
             return availablePeriods;
         }
         
