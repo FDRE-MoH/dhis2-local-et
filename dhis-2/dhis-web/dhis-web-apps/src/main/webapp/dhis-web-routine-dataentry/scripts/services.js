@@ -319,7 +319,10 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
             }            
             if( dv.comment ){
                 url += '&comment=' + dv.comment; 
-            }            
+            }
+            if(dv.followUp || dv.followUp === false){
+                url+='&followUp=' + dv.followUp;
+            }
             var promise = $http.post('../api/dataValues.json' + url).then(function(response){
                 return response.data;
             }, function(){                
@@ -333,6 +336,12 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                     value: dv.value,
                     deleted: dv.value === '' ? true : false
                 };
+                if(dv.comment){//save comment offline
+                    dataValue.comment=dv.comment;
+                }
+                if(dv.followUp || dv.followUp === false){//save followup offline
+                    dataValue.followUp=dv.followUp;
+                }
                     
                 dhis2.routineDataEntry.store.set( 'dataValues', dataValue );
             });

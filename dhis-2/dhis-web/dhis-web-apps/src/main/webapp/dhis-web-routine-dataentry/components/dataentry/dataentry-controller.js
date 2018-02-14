@@ -84,6 +84,11 @@ routineDataEntry.controller('dataEntryController',
 
                         MetaDataFactory.getAll('validationRules').then(function(vrs){
                             $scope.model.validationRules = vrs;
+                            
+                            angular.forEach(vrs,function(vr){//added to reference Validation rules by their id. validationRules[id].
+                                $scope.model.validationRules[vr.id]=vr;
+                            });
+                            
                             $scope.controllingDataElementGroups = {};
                             $scope.groupsByMember = {};
                             DataElementGroupFactory.getControllingDataElementGroups().then(function( degs ){
@@ -662,7 +667,7 @@ routineDataEntry.controller('dataEntryController',
         return style;
     };
         
-    $scope.getAuditInfo = function(de, oco, value, comment){        
+    $scope.getAuditInfo = function(de, oco, value, comment, followUp){ 
         var modalInstance = $modal.open({
             templateUrl: 'components/dataentry/history.html',
             controller: 'DataEntryHistoryController',
@@ -697,38 +702,90 @@ routineDataEntry.controller('dataEntryController',
                 },
                 optionCombo: function(){
                     return oco;
+                },
+                followUp: function(){
+                    return followUp;
                 }
             }
         });
         
-        modalInstance.result.then(function () {
+        modalInstance.result.then(function (status) {
+            var dataValue=status.dataValue;
+            
+            /**
+             * changing followup and comment is necessary here because if the 
+             * history window is reopened after editing the followup and the 
+             * comment we need to refresh the page inorder to see the change.
+             * But in this case when reopening the window, the appropriate data 
+             * will be replied back to it.
+             */
+            
+            if(dataValue.followUp){ 
+                $scope.dataValues[dataValue.de][dataValue.co].followUp=true;
+            }
+            if(dataValue.comment){
+                $scope.dataValues[dataValue.de][dataValue.co].comment=dataValue.comment;
+            }
         }); 
     };
     
     $scope.saveCompletness = function(orgUnit, multiOrgUnit){
-        var modalOptions = {
-            closeButtonText: 'no',
-            actionButtonText: 'yes',
-            headerText: 'mark_complete',
-            bodyText: 'are_you_sure_to_save_completeness'
-        };
-
-        ModalService.showModal({}, modalOptions).then(function(result){
-            
-            var dsr = {completeDataSetRegistrations: [{dataSet: $scope.model.selectedDataSet.id, organisationUnit: $scope.selectedOrgUnit.id, period: $scope.model.selectedPeriod.id, attributeOptionCombo: $scope.model.selectedAttributeOptionCombo}]};
-            CompletenessService.save(dsr).then(function(response){                    
-                if( response && response.status === 'SUCCESS' ){
-                    var dialogOptions = {
-                        headerText: 'success',
-                        bodyText: 'marked_complete'
-                    };
-                    DialogService.showDialog({}, dialogOptions);
-                    $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = true;
-                }                
-            }, function(response){
-                DataEntryUtils.errorNotifier( response );
+        
+        var failedHighImportanceValidationRules=[];
+        if($scope.model.failedValidationRules.length >0){
+            angular.forEach($scope.model.failedValidationRules, function(failedValidationRule){
+                var validationRule=$scope.model.validationRules[failedValidationRule];
+                if(validationRule.importance==="HIGH"){
+                    failedHighImportanceValidationRules.push(validationRule);
+                }
             });
-        });        
+            if(failedHighImportanceValidationRules.length>0){
+                var modalOptions = {
+                    closeButtonText: 'no',
+                    actionButtonText: 'no',
+                    headerText: 'failed_validation_rules',
+                    bodyText: 'following_validation_errors_exist <br/> Hello</table><p> HI</p>' 
+                };
+                
+                var modalInstance = $modal.open({
+                    templateUrl: 'views/modal-validation-list.html',
+                    controller: 'DataEntryValidationlistController',
+                    windowClass: 'modal-window-history',
+                    resolve: {
+                        failedValidationRules : function(){
+                            return failedHighImportanceValidationRules;
+                        }
+                    }
+                });
+                modalInstance.result.then(function(status){
+                    
+                });
+            }
+        }
+        else{
+            var modalOptions = {
+                closeButtonText: 'no',
+                actionButtonText: 'yes',
+                headerText: 'mark_complete',
+                bodyText: 'are_you_sure_to_save_completeness'
+            };
+            ModalService.showModal({}, modalOptions).then(function(result){
+
+                var dsr = {completeDataSetRegistrations: [{dataSet: $scope.model.selectedDataSet.id, organisationUnit: $scope.selectedOrgUnit.id, period: $scope.model.selectedPeriod.id, attributeOptionCombo: $scope.model.selectedAttributeOptionCombo}]};
+                CompletenessService.save(dsr).then(function(response){                    
+                    if( response && response.status === 'SUCCESS' ){
+                        var dialogOptions = {
+                            headerText: 'success',
+                            bodyText: 'marked_complete'
+                        };
+                        DialogService.showDialog({}, dialogOptions);
+                        $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo] = true;
+                    }                
+                }, function(response){
+                    DataEntryUtils.errorNotifier( response );
+                });
+            });
+        }        
     };
     
     $scope.deleteCompletness = function( orgUnit, multiOrgUnit){

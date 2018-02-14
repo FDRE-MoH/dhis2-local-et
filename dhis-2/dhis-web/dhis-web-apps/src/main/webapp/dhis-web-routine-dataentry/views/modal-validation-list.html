@@ -1,0 +1,20 @@
+<div class="modal-header page">
+    <h2>{{'failed_validation_rules'| translate}}</h2>
+    <h4>{{'following_validation_errors_exist'| translate}}</h4>
+</div>
+<div class="modal-body">
+    
+    <div>
+        <table>
+            <tbody ng-repeat="failedValidationRule in failedValidationRules" class="alert-danger trimmed-alert italic" style="background: transparent">
+                <tr >
+                    <td>{{failedValidationRule.instruction ? failedValidationRule.instruction : failedValidationRule.displayName}} <hr/></td>
+            
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal-footer">    
+    <button class="btn btn-default" ng-click="close()">{{'close'| translate}}</button>    
+</div>
