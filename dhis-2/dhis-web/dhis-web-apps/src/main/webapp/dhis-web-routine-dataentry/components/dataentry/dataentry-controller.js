@@ -271,7 +271,8 @@ routineDataEntry.controller('dataEntryController',
             var opts = {
                 periodType: $scope.model.selectedDataSet.periodType,
                 periodOffset: $scope.periodOffset,
-                futurePeriods: $scope.model.selectedDataSet.openFuturePeriods
+                futurePeriods: $scope.model.selectedDataSet.openFuturePeriods,
+                dataSetType: $scope.model.selectedDataSet.DataSetCategory
             };
             
             $scope.model.periods = PeriodService.getPeriods( opts );
@@ -486,7 +487,8 @@ routineDataEntry.controller('dataEntryController',
         var opts = {
             periodType: $scope.model.selectedDataSet.periodType,
             periodOffset: mode === 'NXT' ? ++$scope.periodOffset: --$scope.periodOffset,
-            futurePeriods: $scope.model.selectedDataSet.openFuturePeriods
+            futurePeriods: $scope.model.selectedDataSet.openFuturePeriods,
+            dataSetType: $scope.model.selectedDataSet.DataSetCategory
         };        
         $scope.model.periods = PeriodService.getPeriods( opts );
     };

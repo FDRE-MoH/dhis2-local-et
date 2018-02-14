@@ -1280,11 +1280,13 @@ var d2Services = angular.module('d2Services', ['ngResource'])
     
     this.getPeriods = function( opts ){
         var availablePeriods = [];
-        if(!opts.periodType){
+        if(!opts.periodType || !opts.futurePeriods || !opts.dataSetType){
             return availablePeriods;
         }
         
-        opts.futurePeriods = 1;
+        if( opts.dataSetType !== 'Plan_Setting' ){
+            opts.futurePeriods = 1;
+        }
         
         var calendarSetting = CalendarService.getSetting();
         
@@ -1297,46 +1299,50 @@ var d2Services = angular.module('d2Services', ['ngResource'])
         dhis2.period.picker = new dhis2.period.DatePicker( dhis2.period.calendar, dhis2.period.format );
         
         var d2Periods = dhis2.period.generator.generateReversedPeriods( opts.periodType, opts.periodOffset );
-        
+                
         d2Periods = dhis2.period.generator.filterOpenPeriods( opts.periodType, d2Periods, opts.futurePeriods, null, null );
         
         var today = moment(DateUtils.getToday(),'YYYY-MM-DD');
         
-        /*angular.forEach(d2Periods, function(p){
-            p.id = p.iso;
-            var st = p.endDate.split('-');
-            st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
-            if( st[1] < 10 ){
-                st[1] = '0' + st[1];
-            }
-            p.endDate = st.join('-');
-            
-            st = p.startDate.split('-');
-            st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
-            if( st[1] < 10 ){
-                st[1] = '0' + st[1];
-            }
-            p.startDate = st.join('-');
-        });*/
+        if( opts.dataSetType === 'Plan_Setting' ) {
+        	angular.forEach(d2Periods, function(p){
+	            p.id = p.iso;
+	            var st = p.endDate.split('-');
+	            st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+	            if( st[1] < 10 ){
+	                st[1] = '0' + st[1];
+	            }
+	            p.endDate = st.join('-');
+	            
+	            st = p.startDate.split('-');
+	            st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+	            if( st[1] < 10 ){
+	                st[1] = '0' + st[1];
+	            }
+	            p.startDate = st.join('-');
+	        });
+        }
+        else {
+        	d2Periods = d2Periods.filter(function(p) {
+                p.id = p.iso;
+                var st = p.endDate.split('-');
+                st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+                if( st[1] < 10 ){
+                    st[1] = '0' + st[1];
+                }
+                p.endDate = st.join('-');
+                
+                st = p.startDate.split('-');
+                st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
+                if( st[1] < 10 ){
+                    st[1] = '0' + st[1];
+                }
+                p.startDate = st.join('-');
+                
+                return today.diff(p.endDate, 'days') >= -9;
+            });        	
+        }        
         
-        d2Periods = d2Periods.filter(function(p) {
-            p.id = p.iso;
-            var st = p.endDate.split('-');
-            st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
-            if( st[1] < 10 ){
-                st[1] = '0' + st[1];
-            }
-            p.endDate = st.join('-');
-            
-            st = p.startDate.split('-');
-            st[1] = mappedMonthNames[calendarSetting.keyCalendar].indexOf( st[1] ) + 1;
-            if( st[1] < 10 ){
-                st[1] = '0' + st[1];
-            }
-            p.startDate = st.join('-');
-            
-            return today.diff(p.endDate, 'days') >= -9;
-        });
         return d2Periods;
     };
 })
