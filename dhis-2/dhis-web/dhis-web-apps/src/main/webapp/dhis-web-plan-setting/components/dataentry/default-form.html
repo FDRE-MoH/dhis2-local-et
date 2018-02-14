@@ -183,6 +183,20 @@
                                                                ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
                                                                d2-blur="saveDataValue(de.id, oco.id)">
                                                     </span>
+                                                    <span ng-switch-when="PERCENTAGE">
+                                                        <input type="number"   
+                                                               name="foo"
+                                                               d2-number-validator
+                                                               number-type={{de.valueType}}
+                                                               ng-model="dataValues[de.id][oco.id].value" 
+                                                               ng-disabled="(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || dataElementGroups[groupsByMember[de.id]].isDisabled) && !de.controlling_data_element"
+                                                               d2-tab-index
+                                                               tabindex={{tabOrder[de.id][oco.id]}}
+                                                               class="form-control" 
+                                                               ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                                               d2-blur="saveDataValue(de.id, oco.id)">
+                                                    </span>
                                                     <span ng-switch-when="TRUE_ONLY">
                                                         <input type="checkbox"   
                                                                name="foo"
@@ -394,6 +408,20 @@
                                                d2-blur="saveDataValue(de.id, oco.id)">
                                     </span>
                                     <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
+                                        <input type="number"   
+                                               name="foo"
+                                               d2-number-validator
+                                               number-type={{de.valueType}}
+                                               ng-model="dataValues[de.id][oco.id].value" 
+                                               d2-disabled="dataElementGroups[groupsByMember[de.id]].isDisabled && !de.controlling_data_element"
+                                               d2-tab-index
+                                               tabindex={{tabOrder[de.id][oco.id]}}
+                                               class="form-control" 
+                                               ng-class="getInputNotifcationClass(de.id, oco.id)" 
+                                               ng-dblclick="getAuditInfo(de, oco, dataValues[de.id][oco.id].value, dataValues[de.id][oco.id].comment)"
+                                               d2-blur="saveDataValue(de.id, oco.id)">
+                                    </span>
+                                    <span ng-switch-when="PERCENTAGE">
                                         <input type="number"   
                                                name="foo"
                                                d2-number-validator
