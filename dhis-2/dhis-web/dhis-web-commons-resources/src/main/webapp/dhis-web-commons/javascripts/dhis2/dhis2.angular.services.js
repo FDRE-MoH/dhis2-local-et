@@ -1010,7 +1010,7 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                             var match = matcher[k];
                             var operand = match.replace( dhis2.metadata.operatorRegex, '' );
                             var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
-                            var value = null;
+                            var value = 0;
                             if ( isTotal )
                             {                                
                                 if( dataValues && dataValues[operand] && dataValues[operand].total ){                                    
@@ -1037,7 +1037,7 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                             var match = matcher[k];
                             var operand = match.replace( dhis2.metadata.operatorRegex, '' );
                             var isTotal = !!( operand.indexOf( dhis2.metadata.custSeparator ) == -1 );
-                            var value = null;
+                            var value = 0;
                             if ( isTotal )
                             {                                
                                 if( dataValues && dataValues[operand] && dataValues[operand].total ){                                    
