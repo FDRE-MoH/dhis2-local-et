@@ -1276,6 +1276,11 @@ public abstract class AbstractEventService
         if ( event.getEventDate() != null )
         {
             executionDate = DateUtils.getIsoDate( calendar, event.getEventDate() );
+            
+            if( event.getDueDate() == null ) 
+            {
+            	event.setDueDate( event.getEventDate() );            	
+            }
         }
 
         Date dueDate = new Date();
