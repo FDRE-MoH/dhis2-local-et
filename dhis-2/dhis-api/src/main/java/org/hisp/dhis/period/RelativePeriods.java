@@ -620,8 +620,8 @@ public class RelativePeriods
 
         if ( isWeeksThisYear() )
         {
-        	//periods.addAll( getRelativePeriodList( new WeeklyPeriodType(), WEEKS_THIS_YEAR, date, dynamicNames, format ) );
-            periods.addAll( getRelativePeriodList( new WeeklyPeriodType(), WEEKS_THIS_YEAR, calendarDate, dynamicNames, format ) );
+        	periods.addAll( getRelativePeriodList( new WeeklyPeriodType(), WEEKS_THIS_YEAR, ( date != null ) ? date : new Date(), dynamicNames, format ) );
+            //periods.addAll( getRelativePeriodList( new WeeklyPeriodType(), WEEKS_THIS_YEAR, calendarDate, dynamicNames, format ) );
         }
 
         if ( isMonthsThisYear() )
