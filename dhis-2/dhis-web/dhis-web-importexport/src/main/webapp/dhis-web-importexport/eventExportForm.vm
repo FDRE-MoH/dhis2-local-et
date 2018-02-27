@@ -1,6 +1,8 @@
 <script type="text/javascript" src="../dhis-web-commons/oust/oust.js"></script>
 <script type="text/javascript" src="../dhis-web-commons/oust/selectionTreeSelect.js"></script>
 <script>
+    var i18n_select_startdate = '$encoder.jsEscape( $i18n.getString( "select_startdate" ), "'")';
+    var i18n_select_enddate = '$encoder.jsEscape( $i18n.getString( "select_enddate" ), "'")';
   $( function() {
     datePickerInRange( 'startDate' , 'endDate' );
 
@@ -34,6 +36,17 @@
       var startDate = $('#startDate' ).val();
       var endDate = $('#endDate' ).val();
 
+      if ( !hasText( "startDate" ) )
+        {
+            setHeaderDelayMessage( i18n_select_startdate );
+            return false;
+        }
+        if ( !hasText( "endDate" ) )
+        {
+            setHeaderDelayMessage( i18n_select_enddate );
+            return false;
+        }
+
       if( inclusion ) {
         if( "children" == inclusion ) {
           url += "&ouMode=CHILDREN";
@@ -49,7 +62,7 @@
       url += "&includeDeleted=false";
 
       url += "&idScheme=" + idscheme;
-
+      
       window.location = url;
     });
 
@@ -98,9 +111,6 @@
         }
       });
     });
-    
-    dhis2.period.picker.createInstance('#startDate');
-    dhis2.period.picker.createInstance('#endDate');
     
   });
 </script>
