@@ -130,6 +130,14 @@ public class DateUtils
     {
         return date != null ? ISO8601.print( new DateTime( date ) ) : null;
     }
+    
+    /**
+     * Returns date formatted as ISO simple
+     */
+    public static String getIso8601Simple( Date date )
+    {
+        return date != null ? ISO8601_SIMPLE.print( new DateTime( date ) ) : null;
+    }
 
     /**
      * Returns date formatted as ISO 8601, without any TZ info
@@ -774,6 +782,11 @@ public class DateUtils
     	if( date == null || calendar == null )
     	{
     		return null;
+    	}
+    	
+    	if( calendar.isIso8601() )
+    	{
+    		return parseDate( date );
     	}
     	
     	DateTimeUnit dateTimeUnit = calendar.toIso( date );    	
