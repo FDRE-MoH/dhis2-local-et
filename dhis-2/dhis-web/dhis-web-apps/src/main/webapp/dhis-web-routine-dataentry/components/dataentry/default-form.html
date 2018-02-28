@@ -74,6 +74,9 @@
                                         </div>
                                         <div ng-if="ocos.length === 1" ng-bind="de.displayFormName">                                            
                                         </div>
+										<div ng-repeat="vr in de.validationRules" class="alert alert-danger trimmed-alert small-vertical-spacing italic" ng-if="model.failedValidationRules.indexOf(vr.id) !== -1 && ocos.length ==1 ">
+                                            {{vr.instruction ? vr.instruction : vr.displayName}}
+                                        </div>
                                     </td>
                                     <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">                                        
                                         <ng-form name="innerForm">                                            
@@ -308,7 +311,7 @@
                             {{vr.instruction ? vr.instruction : vr.displayName}}
                         </div>                                    
                     </td>
-                    <td ng-bind="dataValues[de.id].total">
+                    <td ng-bind="dataValues[de.id].total" >
                     </td>
                 </tr>
                 <tr class="de-style" ng-repeat="oco in ocos">
@@ -322,6 +325,9 @@
                         </div>
                         <div ng-if="ocos.length === 1" ng-bind="de.displayFormName">
                         </div>
+						<div ng-repeat="vr in de.validationRules" class="alert alert-danger trimmed-alert small-vertical-spacing italic" ng-if="model.failedValidationRules.indexOf(vr.id) !== -1 && ocos.length ==1 ">
+							{{vr.instruction ? vr.instruction : vr.displayName}}
+						</div>
                     </td>
                     <td ng-show="section.greyedFields.indexOf(de.id+'.'+oco.id) === -1">                        
                         <ng-form name="innerForm">

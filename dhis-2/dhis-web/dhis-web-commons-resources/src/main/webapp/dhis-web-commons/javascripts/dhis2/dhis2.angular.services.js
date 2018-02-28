@@ -973,7 +973,8 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                             de.valueType === 'INTEGER' ||
                             de.valueType === 'INTEGER_POSITIVE' ||
                             de.valueType === 'INTEGER_NEGATIVE' ||
-                            de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ){
+                            de.valueType === 'INTEGER_ZERO_OR_POSITIVE' ||
+							de.valueType === 'PERCENTAGE'){
                         val = parseInt( val );
                     }
                     else if(de.valueType=== 'TRUE_ONLY'){

@@ -64,6 +64,9 @@
                                         </div>
                                         <div ng-if="ocos.length === 1" ng-bind="de.displayFormName">                                            
                                         </div>
+										<div ng-repeat="vr in de.validationRules" class="alert alert-danger trimmed-alert small-vertical-spacing italic" ng-if="model.failedValidationRules.indexOf(vr.id) !== -1 && ocos.length ==1 ">
+                                            {{vr.instruction ? vr.instruction : vr.displayName}}
+                                        </div>
                                     </td>
                                     <td>                                        
                                         <ng-form name="innerForm">                                            
@@ -302,6 +305,10 @@
                         </div>
                         <div ng-if="ocos.length === 1" ng-bind="de.displayFormName">
                         </div>
+						<div ng-repeat="vr in de.validationRules" class="alert alert-danger trimmed-alert small-vertical-spacing italic" ng-if="model.failedValidationRules.indexOf(vr.id) !== -1 && ocos.length ==1">
+                            {{vr.instruction ? vr.instruction : vr.displayName}}
+                        </div>
+						
                     </td>
                     <td>                        
                         <ng-form name="innerForm">
