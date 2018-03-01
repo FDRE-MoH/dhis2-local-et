@@ -154,6 +154,27 @@ planSetting.controller('dataEntryController',
             deg.isDisabled = true;
         });
     }
+	
+	$scope.checkDisabled = function (section,de,oco){
+		if($scope.model && $scope.model.dataSetCompletness && $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo]){//if dataset is complete return true (disabled) without checking anything.
+            return true;
+        }
+        else if(de.controlling_data_element){//if data element is a controlling data element return false (is not disabled)
+                                        //it is only disabled when the dataSet is marked complete.
+            return false;
+        }
+        
+        else if(section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1){//if the category option combo is greyed out return true;
+            return true;
+        }
+        else if($scope.controllingDataElementGroups && $scope.controllingDataElementGroups[$scope.groupsByMember[de.id]] && $scope.controllingDataElementGroups[$scope.groupsByMember[de.id]].isDisabled){
+            //return if controlling data element value is disabled.
+            return true;
+        }
+        //if the above conditions are not fullfilled return false;
+        return false;
+        //return (section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || $scope.controllingDataElementGroups[$scope.groupsByMember[de.id]].isDisabled) && !de.controlling_data_element || $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo];
+	}
     
     $scope.performAutoZero = function(section){
         var dataValueSet = {

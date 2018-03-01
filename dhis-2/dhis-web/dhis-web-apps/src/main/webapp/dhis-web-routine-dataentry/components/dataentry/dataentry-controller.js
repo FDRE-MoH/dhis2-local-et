@@ -760,11 +760,11 @@ routineDataEntry.controller('dataEntryController',
                     }
                 });
                 modalInstance.result.then(function(status){
-                    
+                    return //Nothing is expected from the user.
                 });
             }
         }
-        else{
+        if(failedHighImportanceValidationRules.length<=0){
             var modalOptions = {
                 closeButtonText: 'no',
                 actionButtonText: 'yes',
