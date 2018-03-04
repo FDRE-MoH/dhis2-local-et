@@ -534,43 +534,41 @@ planSetting.controller('dataEntryController',
                 });
                 
                 dataValueSet.dataValues.push({dataElement: deId, categoryOptionCombo: ocId, value: dataValue.value, deleted: dataValue.value === '' ? true : false});
-                
-                if( count > 0 ){
-                    var modalOptions={
-                        closeButtonText: 'no',
-                        actionButtonText: 'yes',
-                        headerText: 'auto_zero_warning',
-                        bodyText: 'are_you_sure_to_discard_all_saved_data_in_group'
-                    };
-                    ModalService.showModal({},modalOptions).then(function (){
-                        //this means user clicked yes.
-                        //save value of the controlling data element, discard all the values stored under the datElementGroup.                        
-                        $scope.dataElementGroups[$scope.groupsByMember[deId]].isDisabled=true;
-                        DataValueService.saveDataValueSet(dataValueSet).then(function(response){
-                            $scope.dataValues = Object.assign($scope.dataValues, _dataValues);
-                            var dialogOptions={
-                                headerText:'success',
-                                bodyText: 'child_data_element_groups_deleted_successfully'
-                            };
-                            DialogService.showDialog({},dialogOptions);
-                            saveSuccessStatus();
-                            processDataValue();
-                        },function (){                            
-                            var dialogOptions={
-                                headerText:'error',
-                                bodyText: 'error_deleting_dataValues_of_data_element_groups'
-                            };
-                            DialogService.showDialog({},dialogOptions);                            
-                            saveFailureStatus();
-                        });
-                        return;//return so that it won't continue to save the dataValue Object created above.
-                    },function (){
-                        //this means that the user clicked NO so no changes will be saved.
-                        $scope.dataValues[deId][ocId].value=true;
-                        return;//return so that it won't continue to save the dataValue object created above.
-                    });
-                    return;//return so that it won't continue to save the dataValue object created above.
-                }
+
+				var modalOptions={
+					closeButtonText: 'no',
+					actionButtonText: 'yes',
+					headerText: 'auto_zero_warning',
+					bodyText: 'are_you_sure_to_discard_all_saved_data_in_group'
+				};
+				ModalService.showModal({},modalOptions).then(function (){
+					//this means user clicked yes.
+					//save value of the controlling data element, discard all the values stored under the datElementGroup.                        
+					$scope.dataElementGroups[$scope.groupsByMember[deId]].isDisabled=true;
+					DataValueService.saveDataValueSet(dataValueSet).then(function(response){
+						$scope.dataValues = Object.assign($scope.dataValues, _dataValues);
+						var dialogOptions={
+							headerText:'success',
+							bodyText: 'child_data_element_groups_deleted_successfully'
+						};
+						DialogService.showDialog({},dialogOptions);
+						saveSuccessStatus();
+						processDataValue();
+					},function (){                            
+						var dialogOptions={
+							headerText:'error',
+							bodyText: 'error_deleting_dataValues_of_data_element_groups'
+						};
+						DialogService.showDialog({},dialogOptions);                            
+						saveFailureStatus();
+					});
+					return;//return so that it won't continue to save the dataValue Object created above.
+				},function (){
+					//this means that the user clicked NO so no changes will be saved.
+					$scope.dataValues[deId][ocId].value=true;
+					return;//return so that it won't continue to save the dataValue object created above.
+				});
+				return;//return so that it won't continue to save the dataValue object created above.
             }                
         }
         
