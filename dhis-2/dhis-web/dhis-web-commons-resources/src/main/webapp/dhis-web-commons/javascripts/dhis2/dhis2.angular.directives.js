@@ -756,10 +756,8 @@ var d2Directives = angular.module('d2Directives', [])
         restrict: 'A',
         link: function (scope, element, attrs) {
             
-            element.bind("onclick", function(event){
-                if(this.type==="number"){
-                    this.select();
-                }
+            element.bind("click", function(event){                
+                this.select();
             });
                 
             element.bind("keydown keypress", function (event) {                
