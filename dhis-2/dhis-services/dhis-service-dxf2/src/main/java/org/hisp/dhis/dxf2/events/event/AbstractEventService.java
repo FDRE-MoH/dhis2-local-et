@@ -716,9 +716,12 @@ public abstract class AbstractEventService
         lastUpdatedStartDate = DateUtils.getIsoDate( calendar, DateUtils.getIso8601Simple( lastUpdatedStartDate ) );
         lastUpdatedEndDate = DateUtils.getIsoDate( calendar, DateUtils.getIso8601Simple( lastUpdatedEndDate ) );
         
-        if( !pr.getCategoryCombo().isDefault() && attributeOptionCombo.isDefault() )
+        if( attributeOptionCombo.isDefault() )
         {
-        	attributeOptionCombo = null;
+        	if( pr != null && !pr.getCategoryCombo().isDefault() || ps !=null && !ps.getProgram().getCategoryCombo().isDefault() )
+        	{
+        		attributeOptionCombo = null;
+        	}        	
         }
 
         params.setProgram( pr );
