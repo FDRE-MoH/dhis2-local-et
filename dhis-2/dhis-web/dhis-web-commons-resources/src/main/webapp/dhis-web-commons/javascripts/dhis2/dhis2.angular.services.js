@@ -1078,7 +1078,7 @@ var d2Services = angular.module('d2Services', ['ngResource'])
                                 op = '<';
                                 break;
                             case 'less_than_or_equal_to':
-                                op = '>=';
+                                op = '<=';
                                 break;
                             default:
                                 op = null;
