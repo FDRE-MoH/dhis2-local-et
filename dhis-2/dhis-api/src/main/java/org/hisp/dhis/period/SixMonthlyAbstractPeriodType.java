@@ -121,7 +121,6 @@ public abstract class SixMonthlyAbstractPeriodType
         
         if( start.getMonth() < 5 )
         {
-        	--year;
         	month = baseMonth;
         }
         

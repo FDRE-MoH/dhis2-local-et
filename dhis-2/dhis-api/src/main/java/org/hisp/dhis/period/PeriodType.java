@@ -477,8 +477,9 @@ public abstract class PeriodType
         final DateTimeUnit from = cal.toIso( dateInterval.getFrom() );
         final DateTimeUnit to = cal.toIso( dateInterval.getTo() );
 
-        if(cal instanceof EthiopianCalendar) {
-        	return new Period(this,from.toJdkDate(),to.toJdkDate(),getIsoDate(dateInterval.getFrom()));
+        if( cal instanceof EthiopianCalendar ) 
+        {
+        	return new Period( this, from.toJdkDate(), to.toJdkDate(), getIsoDate( dateInterval.getFrom() ) );
         }
         
         return new Period( this, from.toJdkDate(), to.toJdkDate(), getIsoDate( from ) );

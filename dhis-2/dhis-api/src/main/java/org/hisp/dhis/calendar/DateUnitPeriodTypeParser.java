@@ -193,8 +193,9 @@ public class DateUnitPeriodTypeParser implements PeriodTypeParser
                 return null;
             }
             
-            if(calendar instanceof EthiopianCalendar) {
-            	return getEthiopianQuarterInterval(calendar,year,quarter);
+            if( calendar instanceof EthiopianCalendar ) 
+            {
+            	return getEthiopianQuarterInterval( calendar, year, quarter );
             }
 
             DateTimeUnit start = new DateTimeUnit( year, ((quarter - 1) * 3) + 1, 1, calendar.isIso8601() );
@@ -250,7 +251,7 @@ public class DateUnitPeriodTypeParser implements PeriodTypeParser
             return new DateInterval( start, end );
         }
         else if ( DateUnitType.SIX_MONTHLY_NOVEMBER == dateUnitType )
-        {
+        {        	
             int year = Integer.parseInt( matcher.group( 1 ) );
             int semester = Integer.parseInt( matcher.group( 2 ) );
 
@@ -259,7 +260,12 @@ public class DateUnitPeriodTypeParser implements PeriodTypeParser
             {
                 return null;
             }
-
+            
+            if( calendar instanceof EthiopianCalendar ) 
+            {
+            	return getEthiopianSixMonthlyNovemberInterval( calendar, year, semester );
+            }
+            
             DateTimeUnit start = new DateTimeUnit( year, semester == 1 ? 11 : 5, 1, calendar.isIso8601() );
             DateTimeUnit end = new DateTimeUnit( start );
             end = calendar.plusMonths( end, 6 );
@@ -346,27 +352,39 @@ public class DateUnitPeriodTypeParser implements PeriodTypeParser
     //--------------------------------------------------
     //				Ethiopian calendar helper
     //--------------------------------------------------
-    private DateInterval getEthiopianQuarterInterval(Calendar calendar,Integer year, Integer quarter) {
-    	int monthOffset=-2;
-    	int month=((quarter-1)*3)+1;
-    	month=month+monthOffset;
+    private DateInterval getEthiopianQuarterInterval( Calendar calendar, Integer year, Integer quarter ) 
+    {
+    	int monthOffset = -2;
+    	int month = ( ( quarter - 1 ) * 3 ) + 1;
+    	month = month + monthOffset;
     	
-    	if(month<0) {
-    		month+=12;
-    		year-=1;
+    	if( month < 0 ) 
+    	{
+    		month += 12;
+    		year -= 1;
     	}
     	
-    	DateTimeUnit start=new DateTimeUnit(year, month,1,calendar.isIso8601());
-    	DateTimeUnit end=new DateTimeUnit(start);
-    	end=calendar.plusMonths(end, 3);
-    	end=calendar.minusDays(end, 1);
+    	DateTimeUnit start = new DateTimeUnit( year, month, 1, calendar.isIso8601() );
+    	DateTimeUnit end =new DateTimeUnit( start );
+    	end = calendar.plusMonths( end, 3 );
+    	end = calendar.minusDays( end, 1 );
     	
-    	start.setDayOfWeek(calendar.weekday(start));
-    	end.setDayOfWeek(calendar.weekday(end));
+    	start.setDayOfWeek( calendar.weekday( start ) );
+    	end.setDayOfWeek( calendar.weekday( end ) );
     	
-    	DateInterval dInterval=new DateInterval(start,end);
-    	
-    	return dInterval;
-    	
+    	return new DateInterval( start, end );
+    }
+    
+    private DateInterval getEthiopianSixMonthlyNovemberInterval( Calendar calendar, Integer year, Integer semester ) 
+    {
+        DateTimeUnit start = new DateTimeUnit( semester == 1 ? year - 1 : year, semester == 1 ? 11 : 5, 1, calendar.isIso8601() );
+        DateTimeUnit end = new DateTimeUnit( start );
+        end = calendar.plusMonths( end, 6 );
+        end = calendar.minusDays( end, 1 );
+
+        start.setDayOfWeek( calendar.weekday( start ) );
+        end.setDayOfWeek( calendar.weekday( end ) );
+
+        return new DateInterval( start, end );
     }
 }

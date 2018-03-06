@@ -1226,6 +1226,10 @@ $.extend( dhis2.period.SixMonthlyNovemberGenerator.prototype, {
   $generate: function(offset) {
     var year = offset + this.calendar.today().year();
     var periods = [];
+    
+    if ( $.calendars.calendars.ethiopian && this.calendar instanceof $.calendars.calendars.ethiopian ) {
+        year = year - 1;
+    }
 
     var startDate = this.calendar.newDate( year, 11, 1 );
     var endDate = this.calendar.newDate( startDate ).set( year + 1, 'y').set( 4, 'm' );    
@@ -1236,7 +1240,13 @@ $.extend( dhis2.period.SixMonthlyNovemberGenerator.prototype, {
     period['endDate'] = endDate.formatDate( this.format );
     period['name'] = getMonthTranslation( startDate.formatDate( "MM yyyy" ) ) + ' - ' + getMonthTranslation( endDate.formatDate( "MM yyyy" ) );// + ' ' + year;
     period['id'] = 'SixMonthlyNov_' + period['startDate'];
-    period['iso'] = startDate.formatDate( "yyyy" ) + 'NovS1';
+    
+    if ( $.calendars.calendars.ethiopian && this.calendar instanceof $.calendars.calendars.ethiopian ) {
+        period['iso'] = endDate.formatDate( "yyyy" ) + 'NovS1';
+    }
+    else {
+        period['iso'] = startDate.formatDate( "yyyy" ) + 'NovS1';
+    }   
 
     period['_startDate'] = this.calendar.newDate( startDate );
     period['_endDate'] = this.calendar.newDate( endDate );
