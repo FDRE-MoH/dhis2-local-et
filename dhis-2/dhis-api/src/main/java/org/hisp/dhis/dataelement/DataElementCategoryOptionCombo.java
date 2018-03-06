@@ -43,6 +43,8 @@ import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.common.MetadataObject;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -301,6 +303,25 @@ public class DataElementCategoryOptionCombo
 
         return earliestEndDate;
     }
+    
+    public String getGeneratedName()
+    {
+    	StringBuilder builder = new StringBuilder();
+
+        if ( categoryCombo == null || categoryCombo.getCategories().isEmpty() )
+        {
+            return uid;
+        }
+        
+        for( DataElementCategoryOption option : this.getCategoryOptions() )
+        {
+        	builder.append( option.getDisplayName() ).append( ", " );        	
+        }
+        
+        builder.delete( Math.max( builder.length() - 2, 0 ), builder.length() );
+    	
+        return StringUtils.substring( builder.toString(), 0, 255 );
+    }
 
     // -------------------------------------------------------------------------
     // Getters and setters
@@ -313,41 +334,39 @@ public class DataElementCategoryOptionCombo
         {
             return name;
         }
-
-        StringBuilder builder = new StringBuilder();
-
-        if ( categoryCombo == null || categoryCombo.getCategories().isEmpty() )
-        {
-            return uid;
-        }
-
-        List<DataElementCategory> categories = categoryCombo.getCategories();
-
-        for ( DataElementCategory category : categories )
-        {
-            List<DataElementCategoryOption> options = category.getCategoryOptions();
-
-            optionLoop:
-            for ( DataElementCategoryOption option : categoryOptions )
-            {
-                if ( options.contains( option ) )
-                {
-                    builder.append( option.getDisplayName() ).append( ", " );
-
-                    continue optionLoop;
-                }
-            }
-        }
-
-        builder.delete( Math.max( builder.length() - 2, 0 ), builder.length() );
-
-        return StringUtils.substring( builder.toString(), 0, 255 );
+        
+        return getGeneratedName();
     }
 
     @Override
     public void setName( String name )
     {
         this.name = name;
+    }    
+    
+    public String getReverseGeneratedName()
+    {
+    	
+    	StringBuilder builder = new StringBuilder();
+
+        if ( categoryCombo == null || categoryCombo.getCategories().isEmpty() )
+        {
+            return uid;
+        }
+        
+        List<DataElementCategoryOption> opts = new ArrayList<>(this.getCategoryOptions());
+        
+        Collections.sort( opts, Collections.reverseOrder() );
+        
+        for(DataElementCategoryOption option :  opts )
+        {
+        	builder.append( option.getDisplayName() ).append( ", " );        	
+        }
+        
+        builder.delete( Math.max( builder.length() - 2, 0 ), builder.length() );
+    	
+        return StringUtils.substring( builder.toString(), 0, 255 );
+        
     }
 
     @Override

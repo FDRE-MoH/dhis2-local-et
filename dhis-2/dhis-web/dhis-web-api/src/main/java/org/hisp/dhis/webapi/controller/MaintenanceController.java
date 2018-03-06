@@ -206,14 +206,6 @@ public class MaintenanceController
         categoryService.addAndPruneAllOptionCombos();
     }
     
-    @RequestMapping( value = "/categoryOptionComboNameUpdate", method = { RequestMethod.PUT, RequestMethod.POST } )
-    @PreAuthorize( "hasRole('ALL') or hasRole('F_PERFORM_MAINTENANCE')" )
-    @ResponseStatus( HttpStatus.NO_CONTENT )
-    public void updateCategoryOptionComboNames()
-    {
-        categoryService.updateAllCategoryOptionComboNames();
-    }
-
     @RequestMapping( value = { "/cacheClear", "/cache" }, method = { RequestMethod.PUT, RequestMethod.POST } )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_PERFORM_MAINTENANCE')" )
     @ResponseStatus( HttpStatus.NO_CONTENT )
@@ -364,11 +356,6 @@ public class MaintenanceController
         if ( categoryOptionComboUpdate )
         {
             updateCategoryOptionCombos();
-        }
-        
-        if ( categoryOptionComboNameUpdate )
-        {
-            updateCategoryOptionComboNames();
         }
 
         if ( cacheClear )

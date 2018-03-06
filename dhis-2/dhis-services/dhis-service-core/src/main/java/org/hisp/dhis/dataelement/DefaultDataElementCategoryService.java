@@ -622,7 +622,95 @@ public class DefaultDataElementCategoryService
     @Override
     public void addAndPruneOptionCombos( DataElementCategoryCombo categoryCombo )
     {
-        if ( categoryCombo == null || !categoryCombo.isValid() )
+    	if ( categoryCombo == null || !categoryCombo.isValid() )
+        {
+            log.warn( "Category combo is null or invalid, could not update option combos: " + categoryCombo );
+            return;
+        }
+    	
+    	log.info( "Checking for option combo name consistency under category combo:  " + categoryCombo.getName() );
+    	
+    	List<DataElementCategoryOptionCombo> generatedOptionCombos = categoryCombo.generateOptionCombosList();
+    	
+    	Set<DataElementCategoryOptionCombo> persistedOptionCombos = categoryCombo.getOptionCombos();
+    	
+    	boolean modified = false;
+    	
+    	for ( DataElementCategoryOptionCombo optionCombo : generatedOptionCombos )
+        {
+    		
+            if ( persistedOptionCombos.contains( optionCombo ) )
+            {
+            	Iterator<DataElementCategoryOptionCombo> iterator = persistedOptionCombos.iterator();
+            	
+            	String newName = optionCombo.getGeneratedName();
+        		
+        		String rNewName = optionCombo.getReverseGeneratedName();
+
+                while ( iterator.hasNext() )
+                {
+                    DataElementCategoryOptionCombo oco = iterator.next();
+                    
+                    String oldName = oco.getName();            		
+
+                    if ( oco.equals( optionCombo ) )
+                    {
+                    	if( !oldName.equals( newName ) && !oldName.equals( rNewName ) )
+                		{
+                    		oco.setName( newName );
+                			
+                			updateDataElementCategoryOptionCombo( oco );
+                			
+                			log.info( "Updated option combo name from (" + oldName + ") to (" + newName + ")");
+                		}
+
+                        break;
+                    }
+                }
+            }
+            else
+            {
+            	categoryCombo.getOptionCombos().add( optionCombo );
+                addDataElementCategoryOptionCombo( optionCombo );
+
+                log.info( "Added missing category option combo: " + optionCombo + " for category combo: " + categoryCombo.getName() );
+                modified = true;            	
+            }
+        }
+    	
+    	Iterator<DataElementCategoryOptionCombo> iterator = persistedOptionCombos.iterator();
+
+        while ( iterator.hasNext() )
+        {
+            DataElementCategoryOptionCombo optionCombo = iterator.next();
+
+            if ( !generatedOptionCombos.contains( optionCombo ) )
+            {
+                try
+                {
+                    deletionManager.execute( optionCombo );
+                }
+                catch ( DeleteNotAllowedException ex )
+                {
+                    log.warn( "Not allowed to delete category option combo: " + optionCombo );
+                    continue;
+                }
+
+                iterator.remove();
+                categoryCombo.getOptionCombos().remove( optionCombo );
+                deleteDataElementCategoryOptionCombo( optionCombo );
+
+                log.info( "Deleted obsolete category option combo: " + optionCombo + " for category combo: " + categoryCombo.getName() );
+                modified = true;
+            }
+        }
+    	
+    	if( modified )
+    	{
+    		updateDataElementCategoryCombo( categoryCombo );
+    	}
+    	
+        /*if ( categoryCombo == null || !categoryCombo.isValid() )
         {
             log.warn( "Category combo is null or invalid, could not update option combos: " + categoryCombo );
             return;
@@ -675,7 +763,7 @@ public class DefaultDataElementCategoryService
         if ( modified )
         {
             updateDataElementCategoryCombo( categoryCombo );
-        }
+        }*/
     }
 
     @Override
