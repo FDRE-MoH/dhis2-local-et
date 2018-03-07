@@ -612,10 +612,6 @@ public class RelativePeriods
         {
         	//periods.add( getRelativePeriod( new SixMonthlyPeriodType(), LAST_SIXMONTH, new DateTime( date ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
             periods.add( getRelativePeriod( new SixMonthlyNovemberPeriodType(), LAST_SIXMONTH, new DateTime( calendarDate ).minusMonths( 6 ).toDate(), dynamicNames, format ) );
-        	/*Date d = ( date != null ) ? date : new Date();
-        	System.out.println("d:  " + d);
-        	System.out.println("last six month: " + new DateTime( d ).minusMonths( 6 ).toDate() );
-        	periods.add( getRelativePeriod( new SixMonthlyNovemberPeriodType(), LAST_SIXMONTH, new DateTime( d ).minusMonths( 6 ).toDate(), dynamicNames, format ) );*/
         }
 
         if ( isWeeksThisYear() )
@@ -836,7 +832,7 @@ public class RelativePeriods
      * @return a list of periods.
      */
     private Period getRelativePeriod( CalendarPeriodType periodType, String periodName, Date date, boolean dynamicNames, I18nFormat format )
-    {
+    {    	
         return setName( periodType.createPeriod( date ), periodName, dynamicNames, format );
     }
 
