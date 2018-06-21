@@ -10,12 +10,13 @@
       var format = $( '#format' ).val();
       var compression = $( '#compression' ).val();
       var program = $( '#programs' ).val();
+      var programName = $( '#programs' ).text();
       var programStage = $( '#programStages' ).val();
       var inclusion = $( '#inclusion' ).val();
       var idscheme = $( '#idscheme').val();
-      var file = "events" + format + compression;
-
-      var url = '../api/' + file + "?attachment=" + file + "&program=" + program;
+      var file = "events" + format + compression;	  
+	  
+      var url = '../api/' + file + "?program=" + program;
 
       if( programStage && programStage.length > 0 ) {
         url += "&programStage=" + programStage;
@@ -62,6 +63,11 @@
       url += "&includeDeleted=false";
 
       url += "&idScheme=" + idscheme;
+      var ouSelector = '#oustOrgUnit' + selectedOrganisationUnit[0] + " a.selected";
+      var ouName = $( ouSelector  ).text();
+      var fileName = programName.replace(/\s/g, '') + '_' + ouName.replace(/\s/g, '') + '_' + startDate + '_' + endDate + format + compression;
+      
+      url += "&attachment=" + fileName 
       
       window.location = url;
     });
