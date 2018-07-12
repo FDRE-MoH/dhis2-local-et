@@ -65,6 +65,7 @@ import org.hisp.dhis.i18n.I18nManager;
 import org.hisp.dhis.importexport.ImportStrategy;
 import org.hisp.dhis.jdbc.batchhandler.DataValueAuditBatchHandler;
 import org.hisp.dhis.jdbc.batchhandler.DataValueBatchHandler;
+import org.hisp.dhis.jdbc.batchhandler.CompleteDataSetRegistrationBatchHandler;
 import org.hisp.dhis.node.types.CollectionNode;
 import org.hisp.dhis.node.types.ComplexNode;
 import org.hisp.dhis.node.types.RootNode;
@@ -323,7 +324,7 @@ public class DefaultDataValueSetService
         decideAccess( params );
         validate( params );
 
-        dataValueSetStore.writeDataValueSetXml( params, getCompleteDate( params ), out );
+        dataValueSetStore.writeDataValueSetXml( params, out );
     }
 
     @Override
@@ -332,7 +333,7 @@ public class DefaultDataValueSetService
         decideAccess( params );
         validate( params );
 
-        dataValueSetStore.writeDataValueSetJson( params, getCompleteDate( params ), out );
+        dataValueSetStore.writeDataValueSetJson( params, out );
     }
 
     @Override
@@ -347,22 +348,7 @@ public class DefaultDataValueSetService
         decideAccess( params );
         validate( params );
 
-        dataValueSetStore.writeDataValueSetCsv( params, getCompleteDate( params ), writer );
-    }
-
-    private Date getCompleteDate( DataExportParams params )
-    {
-        if ( params.isSingleDataValueSet() )
-        {
-            DataElementCategoryOptionCombo optionCombo = categoryService.getDefaultDataElementCategoryOptionCombo(); //TODO
-
-            CompleteDataSetRegistration registration = registrationService
-                .getCompleteDataSetRegistration( params.getFirstDataSet(), params.getFirstPeriod(), params.getFirstOrganisationUnit(), optionCombo );
-
-            return registration != null ? registration.getDate() : null;
-        }
-
-        return null;
+        dataValueSetStore.writeDataValueSetCsv( params, writer );
     }
 
     // -------------------------------------------------------------------------
@@ -598,6 +584,9 @@ public class DefaultDataValueSetService
      */
     private ImportSummary saveDataValueSet( ImportOptions importOptions, TaskId id, DataValueSet dataValueSet )
     {
+    	
+    	System.out.println("DataValueSet:  " + dataValueSet.toString() );
+    	
         importOptions = ObjectUtils.firstNonNull( importOptions, ImportOptions.getDefaultImportOptions() );
 
         Clock clock = new Clock( log ).startClock().logTime( "Starting data value import, options: " + importOptions );
@@ -654,6 +643,7 @@ public class DefaultDataValueSetService
         // Create meta-data maps
         // ---------------------------------------------------------------------
 
+        CachingMap<String, DataSet> dataSetMap = new CachingMap<>();
         CachingMap<String, DataElement> dataElementMap = new CachingMap<>();
         CachingMap<String, OrganisationUnit> orgUnitMap = new CachingMap<>();
         CachingMap<String, DataElementCategoryOptionCombo> optionComboMap = new CachingMap<>();
@@ -677,15 +667,17 @@ public class DefaultDataValueSetService
         // Get meta-data maps
         // ---------------------------------------------------------------------
 
+        IdentifiableObjectCallable<DataSet> dataSetCallable = new IdentifiableObjectCallable<>(
+                identifiableObjectManager, DataSet.class, dataSetIdScheme, null );
         IdentifiableObjectCallable<DataElement> dataElementCallable = new IdentifiableObjectCallable<>(
             identifiableObjectManager, DataElement.class, dataElementIdScheme, null );
         IdentifiableObjectCallable<OrganisationUnit> orgUnitCallable = new IdentifiableObjectCallable<>(
-            identifiableObjectManager, OrganisationUnit.class, orgUnitIdScheme, trimToNull( dataValueSet.getOrgUnit() ) );
+            identifiableObjectManager, OrganisationUnit.class, orgUnitIdScheme, null );
         IdentifiableObjectCallable<DataElementCategoryOptionCombo> categoryOptionComboCallable = new CategoryOptionComboAclCallable(
             categoryService, categoryOptComboIdScheme, null );
         IdentifiableObjectCallable<DataElementCategoryOptionCombo> attributeOptionComboCallable = new CategoryOptionComboAclCallable(
             categoryService, categoryOptComboIdScheme, null );
-        IdentifiableObjectCallable<Period> periodCallable = new PeriodCallable( periodService, null, trimToNull( dataValueSet.getPeriod() ) );
+        IdentifiableObjectCallable<Period> periodCallable = new PeriodCallable( periodService, null, null );
 
         // ---------------------------------------------------------------------
         // Heat caches
@@ -693,7 +685,8 @@ public class DefaultDataValueSetService
 
         if ( importOptions.isPreheatCacheDefaultFalse() )
         {
-            dataElementMap.load( identifiableObjectManager.getAll( DataElement.class ), o -> o.getPropertyValue( dataElementIdScheme ) );
+        	//dataSetMap.load( identifiableObjectManager.getAll( DataSet.class ), o -> o.getPropertyValue( dataSetIdScheme ) );
+        	dataElementMap.load( identifiableObjectManager.getAll( DataElement.class ), o -> o.getPropertyValue( dataElementIdScheme ) );
             orgUnitMap.load( identifiableObjectManager.getAll( OrganisationUnit.class ), o -> o.getPropertyValue( orgUnitIdScheme ) );
             optionComboMap.load( identifiableObjectManager.getAll( DataElementCategoryOptionCombo.class ), o -> o.getPropertyValue( categoryOptComboIdScheme ) );
         }
@@ -701,68 +694,108 @@ public class DefaultDataValueSetService
         // ---------------------------------------------------------------------
         // Get outer meta-data
         // ---------------------------------------------------------------------
-
-        DataSet dataSet = dataValueSet.getDataSet() != null ? identifiableObjectManager.getObject( DataSet.class, dataSetIdScheme, dataValueSet.getDataSet() ) : null;
-
-        Date completeDate = parseDate( dataValueSet.getCompleteDate() );
-
-        Period outerPeriod = periodMap.get( trimToNull( dataValueSet.getPeriod() ), periodCallable );
-
-        OrganisationUnit outerOrgUnit = orgUnitMap.get( trimToNull( dataValueSet.getOrgUnit() ), orgUnitCallable );
-
+        
         DataElementCategoryOptionCombo fallbackCategoryOptionCombo = categoryService.getDefaultDataElementCategoryOptionCombo();
-
-        DataElementCategoryOptionCombo outerAttrOptionCombo = null;
-
-        if ( dataValueSet.getAttributeOptionCombo() != null )
+       
+        if ( dataValueSet.hasCompleteDataSets() )
         {
-            outerAttrOptionCombo = optionComboMap.get( trimToNull( dataValueSet.getAttributeOptionCombo() ), attributeOptionComboCallable.setId( trimToNull( dataValueSet.getAttributeOptionCombo() ) ) );
-        }
-        else if ( dataValueSet.getAttributeCategoryOptions() != null )
-        {
-            outerAttrOptionCombo = inputUtils.getAttributeOptionCombo( dataSet.getCategoryCombo(), new HashSet<String>( dataValueSet.getAttributeCategoryOptions() ), idScheme );
-        }
+        	BatchHandler<CompleteDataSetRegistration> cdsrBatchHandler = batchHandlerFactory.createBatchHandler( CompleteDataSetRegistrationBatchHandler.class ).init();
+            
+            while( dataValueSet.hasNextCompleteDataSet() )
+            {	
+            	CompleteDataSet completeDataSet = dataValueSet.getNextCompleteDataSet();        	
+            	
+            	final DataSet dataSet = dataSetMap.get( trimToNull( completeDataSet.getDataSet() ), dataSetCallable.setId( trimToNull( completeDataSet.getDataSet() ) ) );
+                final Period period = periodMap.get( trimToNull( completeDataSet.getPeriod() ), periodCallable.setId( trimToNull( completeDataSet.getPeriod() ) ) );
+                final OrganisationUnit orgUnit = orgUnitMap.get( trimToNull( completeDataSet.getOrgUnit() ), orgUnitCallable.setId( trimToNull( completeDataSet.getOrgUnit() ) ) );
+                DataElementCategoryOptionCombo attrOptionCombo = optionComboMap.get( trimToNull( completeDataSet.getAttributeOptionCombo() ), attributeOptionComboCallable.setId( trimToNull( completeDataSet.getAttributeOptionCombo() ) ) );
 
-        // ---------------------------------------------------------------------
-        // Validation
-        // ---------------------------------------------------------------------
+                // ---------------------------------------------------------------------
+                // Validation
+                // ---------------------------------------------------------------------
+                
+                if ( dataSet == null )
+                {
+                    summary.getConflicts().add( new ImportConflict( completeDataSet.getDataSet(), "Data set not found or not accessible" ) );
+                    continue;
+                }
 
-        if ( dataSet == null && trimToNull( dataValueSet.getDataSet() ) != null )
-        {
-            summary.getConflicts().add( new ImportConflict( dataValueSet.getDataSet(), "Data set not found or not accessible" ) );
-            summary.setStatus( ImportStatus.ERROR );
-        }
+                if ( period == null )
+                {
+                    summary.getConflicts().add( new ImportConflict( completeDataSet.getPeriod(), "Period not valid" ) );
+                    continue;
+                }
 
-        if ( outerOrgUnit == null && trimToNull( dataValueSet.getOrgUnit() ) != null )
-        {
-            summary.getConflicts().add( new ImportConflict( dataValueSet.getOrgUnit(), "Org unit not found or not accessible" ) );
-            summary.setStatus( ImportStatus.ERROR );
-        }
+                if ( orgUnit == null )
+                {
+                    summary.getConflicts().add( new ImportConflict( completeDataSet.getOrgUnit(), "Organisation unit not found or not accessible" ) );
+                    continue;
+                }
 
-        if ( outerAttrOptionCombo == null && trimToNull( dataValueSet.getAttributeOptionCombo() ) != null )
-        {
-            summary.getConflicts().add( new ImportConflict( dataValueSet.getAttributeOptionCombo(), "Attribute option combo not found or not accessible" ) );
-            summary.setStatus( ImportStatus.ERROR );
-        }
+                if ( attrOptionCombo == null && trimToNull( completeDataSet.getAttributeOptionCombo() ) != null )
+                {
+                    summary.getConflicts().add( new ImportConflict( completeDataSet.getAttributeOptionCombo(), "Attribute option combo not found or not accessible" ) );
+                    continue;
+                }
+                		
+                Date completeDate = completeDataSet.getCompleteDate() != null ? parseDate( completeDataSet.getCompleteDate() ) : new Date();            
+                
+                // -----------------------------------------------------------------
+                // Create Complete Data Set Registration
+                // -----------------------------------------------------------------
 
-        if ( ImportStatus.ERROR.equals( summary.getStatus() ) )
-        {
-            summary.setDescription( "Import process was aborted" );
-            notifier.notify( id, WARN, "Import process aborted", true ).addTaskSummary( id, summary );
-            dataValueSet.close();
-            return summary;
-        }
+                CompleteDataSetRegistration internalCdsr = new CompleteDataSetRegistration();
 
-        if ( dataSet != null && completeDate != null )
-        {
-            notifier.notify( id, notificationLevel, "Completing data set" );
-            handleComplete( dataSet, completeDate, outerPeriod, outerOrgUnit, fallbackCategoryOptionCombo, summary ); //TODO
-        }
-        else
-        {
-            summary.setDataSetComplete( Boolean.FALSE.toString() );
-        }
+                internalCdsr.setDataSet( dataSet );
+                internalCdsr.setPeriod( period );
+                internalCdsr.setSource( orgUnit );
+                internalCdsr.setAttributeOptionCombo( attrOptionCombo );
+                internalCdsr.setDate( completeDate );
+                
+                CompleteDataSetRegistration existingCdsr = !skipExistingCheck ? cdsrBatchHandler.findObject( internalCdsr ) : null;
+                
+                if ( !skipExistingCheck && existingCdsr != null )
+                {
+                    if ( strategy.isCreateAndUpdate() || strategy.isUpdate() )
+                    {
+                        if ( !dryRun )
+                        {
+                        	cdsrBatchHandler.updateObject( internalCdsr );
+                        }
+                    }
+                    else if ( strategy.isDelete() )
+                    {
+                    	if ( !dryRun )
+                        {
+                    		cdsrBatchHandler.deleteObject( internalCdsr );
+                        }
+                    }
+                }
+                else
+                {
+                    if ( strategy.isCreateAndUpdate() || strategy.isCreate() )
+                    {
+                    	if ( existingCdsr != null )
+                        {
+                            if ( !dryRun )
+                            {
+                            	cdsrBatchHandler.updateObject( internalCdsr );
+                        	}
+                        }
+                        else
+                        {
+                            if ( !dryRun )
+                            {
+                                cdsrBatchHandler.addObject( internalCdsr );
+                            }
+                        }
+                    }
+                }
+            }
 
+            cdsrBatchHandler.flush();
+        }
+                
         final String currentUser = currentUserService.getCurrentUsername();
         final Set<OrganisationUnit> currentOrgUnits = currentUserService.getCurrentUserOrganisationUnits();
 
@@ -791,14 +824,11 @@ public class DefaultDataValueSetService
 
             final DataElement dataElement =
                 dataElementMap.get( trimToNull( dataValue.getDataElement() ), dataElementCallable.setId( trimToNull( dataValue.getDataElement() ) ) );
-            final Period period = outerPeriod != null ? outerPeriod :
-                periodMap.get( trimToNull( dataValue.getPeriod() ), periodCallable.setId( trimToNull( dataValue.getPeriod() ) ) );
-            final OrganisationUnit orgUnit = outerOrgUnit != null ? outerOrgUnit :
-                orgUnitMap.get( trimToNull( dataValue.getOrgUnit() ), orgUnitCallable.setId( trimToNull( dataValue.getOrgUnit() ) ) );
+            final Period period = periodMap.get( trimToNull( dataValue.getPeriod() ), periodCallable.setId( trimToNull( dataValue.getPeriod() ) ) );
+            final OrganisationUnit orgUnit = orgUnitMap.get( trimToNull( dataValue.getOrgUnit() ), orgUnitCallable.setId( trimToNull( dataValue.getOrgUnit() ) ) );
             DataElementCategoryOptionCombo categoryOptionCombo =
                 optionComboMap.get( trimToNull( dataValue.getCategoryOptionCombo() ), categoryOptionComboCallable.setId( trimToNull( dataValue.getCategoryOptionCombo() ) ) );
-            DataElementCategoryOptionCombo attrOptionCombo = outerAttrOptionCombo != null ? outerAttrOptionCombo :
-                optionComboMap.get( trimToNull( dataValue.getAttributeOptionCombo() ), attributeOptionComboCallable.setId( trimToNull( dataValue.getAttributeOptionCombo() ) ) );
+            DataElementCategoryOptionCombo attrOptionCombo = optionComboMap.get( trimToNull( dataValue.getAttributeOptionCombo() ), attributeOptionComboCallable.setId( trimToNull( dataValue.getAttributeOptionCombo() ) ) );
 
             // -----------------------------------------------------------------
             // Potentially heat caches
@@ -997,7 +1027,7 @@ public class DefaultDataValueSetService
                 continue;
             }
 
-            final DataSet approvalDataSet = dataSet != null ? dataSet : dataElementDataSetMap.get( dataElement.getUid(),
+            final DataSet approvalDataSet = dataElementDataSetMap.get( dataElement.getUid(),
                 () -> dataElement.getApprovalDataSet() );
 
             if ( approvalDataSet != null ) // Data element is assigned to at least one data set
@@ -1217,7 +1247,7 @@ public class DefaultDataValueSetService
     // Supportive methods
     // -------------------------------------------------------------------------
 
-    private void handleComplete( DataSet dataSet, Date completeDate, Period period, OrganisationUnit orgUnit,
+    /*private void handleComplete( DataSet dataSet, Date completeDate, Period period, OrganisationUnit orgUnit,
         DataElementCategoryOptionCombo attributeOptionCombo, ImportSummary summary )
     {
         if ( orgUnit == null )
@@ -1255,7 +1285,7 @@ public class DefaultDataValueSetService
         }
 
         summary.setDataSetComplete( DateUtils.getMediumDateString( completeDate ) );
-    }
+    }*/
 
     /**
      * Checks whether the given data set is locked.

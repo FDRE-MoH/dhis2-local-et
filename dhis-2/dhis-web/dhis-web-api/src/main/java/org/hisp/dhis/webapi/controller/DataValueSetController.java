@@ -29,6 +29,7 @@ package org.hisp.dhis.webapi.controller;
  */
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
@@ -63,8 +64,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static org.hisp.dhis.webapi.utils.ContextUtils.*;
 
@@ -164,6 +168,7 @@ public class DataValueSetController
         @RequestParam( required = false ) Date lastUpdated,
         @RequestParam( required = false ) String lastUpdatedDuration,
         @RequestParam( required = false ) Integer limit,
+        @RequestParam( required = false ) String attachment,
         IdSchemes idSchemes, HttpServletResponse response ) throws IOException
     {
         response.setContentType( CONTENT_TYPE_JSON );
@@ -171,8 +176,20 @@ public class DataValueSetController
         DataExportParams params = dataValueSetService.getFromUrl( dataSet, dataElementGroup,
             period, startDate, endDate, orgUnit, children, orgUnitGroup, attributeOptionCombo,
             includeDeleted, lastUpdated, lastUpdatedDuration, limit, idSchemes );
+        
+        if ( !StringUtils.isEmpty( attachment ) )
+        {
+            response.addHeader( ContextUtils.HEADER_CONTENT_DISPOSITION, "attachment; filename=" + attachment );
+            response.addHeader( ContextUtils.HEADER_CONTENT_TRANSFER_ENCODING, "binary" );
+            
+            dataValueSetService.writeDataValueSetJson( params, getZipOut( response.getOutputStream(), attachment.replaceAll(".zip", "") ) );
+        }
+        
+        else
+        {
+        	dataValueSetService.writeDataValueSetJson( params, response.getOutputStream() );
+        }
 
-        dataValueSetService.writeDataValueSetJson( params, response.getOutputStream() );
     }
 
     @RequestMapping( method = RequestMethod.GET, produces = CONTENT_TYPE_CSV )
@@ -338,5 +355,13 @@ public class DataValueSetController
         }
 
         return new BufferedInputStream( new FileInputStream( tmpFile ) );
+    }
+    
+    private ZipOutputStream getZipOut( OutputStream out, String fileName )
+        throws IOException
+    {
+        ZipOutputStream zipOut = new ZipOutputStream( out );
+        zipOut.putNextEntry( new ZipEntry( fileName ) );
+        return zipOut;
     }
 }

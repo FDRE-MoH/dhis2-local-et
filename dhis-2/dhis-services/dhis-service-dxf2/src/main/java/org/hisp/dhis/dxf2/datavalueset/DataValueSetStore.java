@@ -40,11 +40,11 @@ import org.hisp.dhis.datavalue.DataExportParams;
  */
 public interface DataValueSetStore
 {
-    void writeDataValueSetXml( DataExportParams params, Date completeDate, OutputStream out );
+    void writeDataValueSetXml( DataExportParams params, OutputStream out );
 
-    void writeDataValueSetJson( DataExportParams params, Date completeDate, OutputStream out );
+    void writeDataValueSetJson( DataExportParams params, OutputStream out );
 
-    void writeDataValueSetCsv( DataExportParams params, Date completeDate, Writer writer );
+    void writeDataValueSetCsv( DataExportParams params, Writer writer );
 
     void writeDataValueSetJson( Date lastUpdated, OutputStream outputStream, IdSchemes idSchemes );
 }

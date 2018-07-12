@@ -34,7 +34,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hisp.dhis.calendar.Calendar;
-import org.hisp.dhis.common.IdScheme;
 import org.hisp.dhis.common.IdSchemes;
 import org.hisp.dhis.commons.util.TextUtils;
 import org.hisp.dhis.datavalue.DataExportParams;
@@ -75,37 +74,37 @@ public class SpringDataValueSetStore
     //--------------------------------------------------------------------------
 
     @Override
-    public void writeDataValueSetXml( DataExportParams params, Date completeDate, OutputStream out )
+    public void writeDataValueSetXml( DataExportParams params, OutputStream out )
     {
         DataValueSet dataValueSet = new StreamingXmlDataValueSet( XMLFactory.getXMLWriter( out ) );
 
         String sql = getDataValueSql( params );
 
-        writeDataValueSet( sql, params, completeDate, dataValueSet );
+        writeDataValueSet( sql, params, dataValueSet );
 
         IOUtils.closeQuietly( out );
     }
 
     @Override
-    public void writeDataValueSetJson( DataExportParams params, Date completeDate, OutputStream out )
+    public void writeDataValueSetJson( DataExportParams params, OutputStream out )
     {
         DataValueSet dataValueSet = new StreamingJsonDataValueSet( out );
 
         String sql = getDataValueSql( params );
 
-        writeDataValueSet( sql, params, completeDate, dataValueSet );
+        writeDataValueSet( sql, params, dataValueSet );
 
         IOUtils.closeQuietly( out );
     }
 
     @Override
-    public void writeDataValueSetCsv( DataExportParams params, Date completeDate, Writer writer )
+    public void writeDataValueSetCsv( DataExportParams params, Writer writer )
     {
         DataValueSet dataValueSet = new StreamingCsvDataValueSet( new CsvWriter( writer, CSV_DELIM ) );
 
         String sql = getDataValueSql( params );
 
-        writeDataValueSet( sql, params, completeDate, dataValueSet );
+        writeDataValueSet( sql, params, dataValueSet );
 
         IOUtils.closeQuietly( writer );
     }
@@ -132,24 +131,37 @@ public class SpringDataValueSetStore
             "join categoryoptioncombo aoc on (dv.attributeoptioncomboid=aoc.categoryoptioncomboid) " +
             "where dv.lastupdated >= '" + DateUtils.getLongDateString( lastUpdated ) + "'";
 
-        writeDataValueSet( sql, new DataExportParams(), null, dataValueSet );
+        writeDataValueSet( sql, new DataExportParams(), dataValueSet );
     }
 
-    private void writeDataValueSet( String sql, DataExportParams params, Date completeDate, final DataValueSet dataValueSet )
+    private void writeDataValueSet( String sql, DataExportParams params, final DataValueSet dataValueSet )
     {
-        if ( params.isSingleDataValueSet() )
-        {
-            IdSchemes idScheme = params.getOutputIdSchemes() != null ? params.getOutputIdSchemes() : new IdSchemes();
-            IdScheme ouScheme = idScheme.getOrgUnitIdScheme();
-            IdScheme dataSetScheme = idScheme.getDataSetIdScheme();
-            
-            dataValueSet.setDataSet( params.getFirstDataSet().getPropertyValue( dataSetScheme ) );
-            dataValueSet.setCompleteDate( getLongGmtDateString( completeDate ) );
-            dataValueSet.setPeriod( params.getFirstPeriod().getIsoDate() );
-            dataValueSet.setOrgUnit( params.getFirstOrganisationUnit().getPropertyValue( ouScheme ) );
-        }
+    	final Calendar calendar = PeriodType.getCalendar();
+    	
+    	String completenessSql = getCompletenessSql( params );
+    	
+    	if ( completenessSql != null )
+    	{
+        	jdbcTemplate.query( completenessSql, new RowCallbackHandler()
+            {
+                @Override
+                public void processRow( ResultSet rs ) throws SQLException
+                {
+                    CompleteDataSet completeDataSet = dataValueSet.getCompleteDataSetInstance();
+                    PeriodType pt = PeriodType.getPeriodTypeByName( rs.getString( "ptname" ) );
 
-        final Calendar calendar = PeriodType.getCalendar();
+                    completeDataSet.setDataSet( rs.getString( "cdsr_dataset" ) );
+                    completeDataSet.setPeriod( pt.createPeriod( rs.getDate( "pestart" ), calendar ).getIsoDate() );
+                    completeDataSet.setOrgUnit( rs.getString( "cdsr_orgunit" ) );                
+                    completeDataSet.setAttributeOptionCombo( rs.getString( "cdsr_aoc" ) );
+                    completeDataSet.setCompleteDate( getLongGmtDateString( rs.getTimestamp( "cdsr_cdate" ) ) );
+                    
+                    completeDataSet.close();
+                }
+            } );
+        	
+        	dataValueSet.closeCompleteDataSet();
+    	}    	
 
         jdbcTemplate.query( sql, new RowCallbackHandler()
         {
@@ -335,6 +347,90 @@ public class SpringDataValueSetStore
 
         log.debug( "Get data value set SQL: " + sql );
 
+        return sql;
+    }
+    
+    private String getCompletenessSql( DataExportParams params )
+    {
+        String orgUnits = getCommaDelimitedString( getIdentifiers( params.getOrganisationUnits() ) );
+        String orgUnitGroups = getCommaDelimitedString( getIdentifiers( params.getOrganisationUnitGroups() ) );
+    	
+    	if ( !params.hasDataSets() || !params.hasOrganisationUnits() || !params.hasStartEndDate() )
+    	{
+    		return null; 		
+    	}
+    	
+    	String sql = "select cdsr.date as cdsr_cdate, "
+    			+ "ds.uid as cdsr_dataset, "
+    			+ "ou.uid as cdsr_orgunit, "
+    			+ "pe.startdate as pestart, "
+    			+ "pt.name as ptname, "
+    			+ "aoc.uid as cdsr_aoc "
+    			+ "from completedatasetregistration cdsr "
+    			+ "inner join dataset ds on cdsr.datasetid=ds.datasetid "
+    			+ "inner join period pe on cdsr.periodid=pe.periodid "
+    			+ "inner join periodtype pt on (pe.periodtypeid=pt.periodtypeid) "
+    			+ "inner join categoryoptioncombo aoc on cdsr.attributeoptioncomboid=aoc.categoryoptioncomboid "
+    			+ "inner join organisationunit ou on cdsr.sourceid=ou.organisationunitid ";
+    	
+        //----------------------------------------------------------------------
+        // Filters
+        //----------------------------------------------------------------------
+
+        if ( params.hasOrganisationUnitGroups() )
+        {
+            sql += "left join orgunitgroupmembers ougm on (ou.organisationunitid=ougm.organisationunitid) ";
+        }
+
+        sql += "where ds.datasetid in (" + getCommaDelimitedString( getIdentifiers( params.getDataSets() ) ) + ") ";
+
+        if ( params.isIncludeChildren() )
+        {
+            sql += "and (";
+
+            for ( OrganisationUnit parent : params.getOrganisationUnits() )
+            {
+                sql += "ou.path like '" + parent.getPath() + "%' or ";
+            }
+
+            sql = TextUtils.removeLastOr( sql ) + ") ";
+        }
+        else
+        {
+            sql += "and (";
+
+            if ( params.hasOrganisationUnits() )
+            {
+                sql += "dv.sourceid in (" + orgUnits + ") ";
+            }
+
+            if ( params.hasOrganisationUnits() && params.hasOrganisationUnitGroups() )
+            {
+                sql += "or ";
+            }
+
+            if ( params.hasOrganisationUnitGroups() )
+            {
+                sql += "ougm.orgunitgroupid in (" + orgUnitGroups + ") ";
+            }
+
+            sql += ") ";
+        }
+
+        if ( params.hasStartEndDate() )
+        {
+            sql += "and (pe.startdate >= '" + getMediumDateString( params.getStartDate() ) + "' and pe.enddate <= '" + getMediumDateString( params.getEndDate() ) + "') ";
+        }
+        else if ( params.hasPeriods() )
+        {
+            sql += "and dv.periodid in (" + getCommaDelimitedString( getIdentifiers( params.getPeriods() ) ) + ") ";
+        }
+
+        if ( params.hasAttributeOptionCombos() )
+        {
+            sql += "and dv.attributeoptioncomboid in (" + getCommaDelimitedString( getIdentifiers( params.getAttributeOptionCombos() ) ) + ") ";
+        }    	
+        
         return sql;
     }
 }

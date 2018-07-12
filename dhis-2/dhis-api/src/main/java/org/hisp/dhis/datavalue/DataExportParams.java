@@ -120,6 +120,11 @@ public class DataExportParams
     {
         return dataSets != null && !dataSets.isEmpty() ? dataSets.iterator().next() : null;
     }
+    
+    public boolean hasDataSets()
+    {
+    	return dataSets != null && !dataSets.isEmpty();
+    }
 
     public Period getFirstPeriod()
     {

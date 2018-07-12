@@ -58,6 +58,7 @@ public class DataValueSet
 
     protected static final String FIELD_DATAVALUESET = "dataValueSet";
     protected static final String FIELD_DATAVALUE = "dataValue";
+    protected static final String FIELD_COMPLETEDATASET = "completeDataSet";    
     protected static final String FIELD_DATASET = "dataSet";
     protected static final String FIELD_COMPLETEDATE = "completeDate";
     protected static final String FIELD_PERIOD = "period";
@@ -86,16 +87,8 @@ public class DataValueSet
     // Properties
     //--------------------------------------------------------------------------
 
-    protected String dataSet;
-
-    protected String completeDate;
-
-    protected String period;
-
-    protected String orgUnit;
-
-    protected String attributeOptionCombo;
-
+    protected List<CompleteDataSet> completeDataSets = new ArrayList<>();
+    
     protected List<DataValue> dataValues = new ArrayList<>();
 
     protected List<String> attributeCategoryOptions;
@@ -195,65 +188,18 @@ public class DataValueSet
     {
         this.strategy = strategy;
     }
-
-    @JsonProperty
-    @JacksonXmlProperty( isAttribute = true )
-    public String getDataSet()
+    
+    @JsonProperty( value = "completeDataSets" )
+    @JacksonXmlElementWrapper( localName = "completeDataSets", useWrapping = false, namespace = DxfNamespaces.DXF_2_0 )
+    @JacksonXmlProperty( localName = "completeDataSet", namespace = DxfNamespaces.DXF_2_0 )
+    public List<CompleteDataSet> getCompleteDataSets()
     {
-        return dataSet;
+        return completeDataSets;
     }
 
-    public void setDataSet( String dataSet )
+    public void setCompleteDataSets( List<CompleteDataSet> completeDataSets )
     {
-        this.dataSet = dataSet;
-    }
-
-    @JsonProperty
-    @JacksonXmlProperty( isAttribute = true )
-    public String getCompleteDate()
-    {
-        return completeDate;
-    }
-
-    public void setCompleteDate( String completeDate )
-    {
-        this.completeDate = completeDate;
-    }
-
-    @JsonProperty
-    @JacksonXmlProperty( isAttribute = true )
-    public String getPeriod()
-    {
-        return period;
-    }
-
-    public void setPeriod( String period )
-    {
-        this.period = period;
-    }
-
-    @JsonProperty
-    @JacksonXmlProperty( isAttribute = true )
-    public String getOrgUnit()
-    {
-        return orgUnit;
-    }
-
-    public void setOrgUnit( String orgUnit )
-    {
-        this.orgUnit = orgUnit;
-    }
-
-    @JsonProperty
-    @JacksonXmlProperty( isAttribute = true )
-    public String getAttributeOptionCombo()
-    {
-        return attributeOptionCombo;
-    }
-
-    public void setAttributeOptionCombo( String attributeOptionCombo )
-    {
-        this.attributeOptionCombo = attributeOptionCombo;
+        this.completeDataSets = completeDataSets;
     }
 
     @JsonProperty( value = "dataValues" )
@@ -316,8 +262,49 @@ public class DataValueSet
     {
         return new DataValue();
     }
+    
+    private Iterator<CompleteDataSet> completeDataSetIterator;
+    
+    public void refreshCompleteDataSetIterator()
+    {
+    	completeDataSetIterator = completeDataSets.iterator();
+    }
+    
+    public boolean hasCompleteDataSets()
+    {
+    	return completeDataSets != null && !completeDataSets.isEmpty();
+    }
+
+    public boolean hasNextCompleteDataSet()
+    {
+        if ( completeDataSetIterator == null )
+        {
+            refreshCompleteDataSetIterator();
+        }
+
+        return completeDataSetIterator.hasNext();
+    }
+
+    public CompleteDataSet getNextCompleteDataSet()
+    {
+        if ( completeDataSetIterator == null )
+        {
+            refreshCompleteDataSetIterator();
+        }
+
+        return completeDataSetIterator.next();
+    }
+
+    public CompleteDataSet getCompleteDataSetInstance()
+    {
+        return new CompleteDataSet();
+    }
 
     public void close()
+    {
+    }
+    
+    public void closeCompleteDataSet()
     {
     }
 
@@ -385,6 +372,6 @@ public class DataValueSet
     @Override
     public String toString()
     {
-        return "[" + dataSet + ", " + completeDate + ", " + period + ", " + orgUnit + ", " + dataValues.size() + "]";
+        return "[" + completeDataSets.size() + ", " + dataValues.size() + "]";
     }
 }

@@ -229,8 +229,8 @@ public class DataValueSetServiceExportTest
         DataValueSet dvs = JacksonUtils.fromJson( out.toByteArray(), DataValueSet.class );
 
         assertNotNull( dvs );
-        assertNotNull( dvs.getDataSet() );
-        assertEquals( dsA.getUid(), dvs.getDataSet() );
+        //assertNotNull( dvs.getDataSet() );
+        //assertEquals( dsA.getUid(), dvs.getDataSet() );
         assertEquals( 4, dvs.getDataValues().size() );
 
         for ( org.hisp.dhis.dxf2.datavalue.DataValue dv : dvs.getDataValues() )
@@ -257,7 +257,7 @@ public class DataValueSetServiceExportTest
         DataValueSet dvs = JacksonUtils.fromJson( out.toByteArray(), DataValueSet.class );
 
         assertNotNull( dvs );
-        assertNotNull( dvs.getDataSet() );
+        //assertNotNull( dvs.getDataSet() );
         assertEquals( 2, dvs.getDataValues().size() );
 
         for ( org.hisp.dhis.dxf2.datavalue.DataValue dv : dvs.getDataValues() )
@@ -285,8 +285,8 @@ public class DataValueSetServiceExportTest
         DataValueSet dvs = JacksonUtils.fromJson( out.toByteArray(), DataValueSet.class );
 
         assertNotNull( dvs );
-        assertNotNull( dvs.getDataSet() );
-        assertEquals( dsA.getUid(), dvs.getDataSet() );
+        //assertNotNull( dvs.getDataSet() );
+        //assertEquals( dsA.getUid(), dvs.getDataSet() );
         assertEquals( 8, dvs.getDataValues().size() );
 
         for ( org.hisp.dhis.dxf2.datavalue.DataValue dv : dvs.getDataValues() )
@@ -318,10 +318,10 @@ public class DataValueSetServiceExportTest
         DataValueSet dvs = JacksonUtils.fromJson( out.toByteArray(), DataValueSet.class );
 
         assertNotNull( dvs );
-        assertNotNull( dvs.getDataSet() );
-        assertNotNull( dvs.getOrgUnit() );
-        assertEquals( dsB.getCode(), dvs.getDataSet() );
-        assertEquals( ouA.getCode(), dvs.getOrgUnit() );
+        //assertNotNull( dvs.getDataSet() );
+        //assertNotNull( dvs.getOrgUnit() );
+        //assertEquals( dsB.getCode(), dvs.getDataSet() );
+        //assertEquals( ouA.getCode(), dvs.getOrgUnit() );
         assertEquals( 2, dvs.getDataValues().size() );
 
         for ( org.hisp.dhis.dxf2.datavalue.DataValue dv : dvs.getDataValues() )
@@ -355,8 +355,8 @@ public class DataValueSetServiceExportTest
         DataValueSet dvs = JacksonUtils.fromJson( out.toByteArray(), DataValueSet.class );
         
         assertNotNull( dvs );
-        assertNotNull( dvs.getDataSet() );
-        assertEquals( dsB.getUid(), dvs.getDataSet() );
+        //assertNotNull( dvs.getDataSet() );
+        //assertEquals( dsB.getUid(), dvs.getDataSet() );
         assertEquals( 2, dvs.getDataValues().size() );
 
         for ( org.hisp.dhis.dxf2.datavalue.DataValue dv : dvs.getDataValues() )

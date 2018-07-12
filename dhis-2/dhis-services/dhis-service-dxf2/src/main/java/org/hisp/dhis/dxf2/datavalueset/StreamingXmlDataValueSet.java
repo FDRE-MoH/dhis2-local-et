@@ -112,7 +112,7 @@ public class StreamingXmlDataValueSet
         return strategy = strategy == null ? reader.getAttributeValue( FIELD_IMPORTSTRATEGY ) : strategy;
     }
 
-    @Override
+    /*@Override
     public String getDataSet()
     {
         return dataSet = dataSet == null ? reader.getAttributeValue( FIELD_DATASET ) : dataSet;
@@ -140,7 +140,19 @@ public class StreamingXmlDataValueSet
     public String getAttributeOptionCombo()
     {
         return attributeOptionCombo = attributeOptionCombo == null ? reader.getAttributeValue( FIELD_ATTRIBUTE_OPTION_COMBO ) : attributeOptionCombo;
+    }*/
+    
+    @Override
+    public boolean hasNextCompleteDataSet()
+    {
+        return reader.moveToStartElement( FIELD_COMPLETEDATASET, FIELD_DATAVALUESET );
     }
+
+    @Override
+    public CompleteDataSet getNextCompleteDataSet()
+    {
+        return new StreamingXmlCompleteDataSet( reader );
+    }    
     
     @Override
     public boolean hasNextDataValue()
@@ -188,7 +200,7 @@ public class StreamingXmlDataValueSet
         writer.writeAttribute( FIELD_DATASETIDSCHEME, dataSetIdScheme );
     }
 
-    @Override
+    /*@Override
     public void setDataSet( String dataSet )
     {
         writer.writeAttribute( FIELD_DATASET, dataSet );
@@ -210,7 +222,7 @@ public class StreamingXmlDataValueSet
     public void setOrgUnit( String orgUnit )
     {
         writer.writeAttribute( FIELD_ORGUNIT, orgUnit );
-    }
+    }*/
     
     @Override
     public DataValue getDataValueInstance()
