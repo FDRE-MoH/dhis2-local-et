@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.hisp.dhis.analytics.AnalyticsTable;
 import org.hisp.dhis.analytics.AnalyticsTableColumn;
+import org.hisp.dhis.analytics.AnalyticsUtils;
 import org.hisp.dhis.calendar.Calendar;
 import org.hisp.dhis.common.ValueType;
 import org.hisp.dhis.commons.collection.UniqueArrayList;
@@ -82,20 +83,7 @@ public class JdbcEventAnalyticsTableManager
         
         for ( Program program : programs )
         {
-            List<Integer> dataYears = getDataYears( program, earliest );
-            
-            int len = dataYears.size();
-            
-            if( len > 0 )
-            {
-            	Collections.sort( dataYears );
-            	int f = dataYears.get( 0 );
-                int l = dataYears.get( len - 1 );        
-                dataYears.add( f - 1);
-                dataYears.add( l + 1);            	
-            }            
-
-            Collections.sort( dataYears );
+        	List<Integer> dataYears = AnalyticsUtils.getDataYears( getDataYears( program, earliest ) );
             
             for ( Integer year : dataYears )
             {

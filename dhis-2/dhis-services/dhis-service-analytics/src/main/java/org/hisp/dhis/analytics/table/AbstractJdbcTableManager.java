@@ -35,6 +35,7 @@ import org.hisp.dhis.analytics.AnalyticsIndex;
 import org.hisp.dhis.analytics.AnalyticsTable;
 import org.hisp.dhis.analytics.AnalyticsTableColumn;
 import org.hisp.dhis.analytics.AnalyticsTableManager;
+import org.hisp.dhis.analytics.AnalyticsUtils;
 import org.hisp.dhis.analytics.partition.PartitionManager;
 import org.hisp.dhis.calendar.Calendar;
 import org.hisp.dhis.common.CodeGenerator;
@@ -308,20 +309,9 @@ public abstract class AbstractJdbcTableManager
         List<AnalyticsTable> tables = new UniqueArrayList<>();
         
         Calendar calendar = PeriodType.getCalendar();
-
-        int len = dataYears.size();
         
-        if( len > 0 )
-        {
-        	Collections.sort( dataYears );
-        	int f = dataYears.get( 0 );
-            int l = dataYears.get( len - 1 );        
-            dataYears.add( f - 1);
-            dataYears.add( l + 1);            	
-        }            
-
-        Collections.sort( dataYears );
-        
+        dataYears = AnalyticsUtils.getDataYears( dataYears );
+                
         String baseName = getAnalyticsTableType().getTableName();
         
         Set<Period> periods = new HashSet<Period>();
