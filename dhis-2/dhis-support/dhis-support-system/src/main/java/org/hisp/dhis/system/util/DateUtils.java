@@ -39,6 +39,8 @@ import org.hisp.dhis.period.PeriodType;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Months;
+import org.joda.time.chrono.EthiopicChronology;
+import org.joda.time.chrono.GregorianChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
@@ -779,17 +781,29 @@ public class DateUtils
      */
     public static Date getIsoDate( org.hisp.dhis.calendar.Calendar calendar, String date )
     {	    	
-    	if( date == null || calendar == null )
+    	if ( date == null || calendar == null )
     	{
     		return null;
     	}
     	
-    	if( calendar.isIso8601() )
+    	if ( calendar.isIso8601() )
     	{
     		return parseDate( date );
     	}
     	
-    	DateTimeUnit dateTimeUnit = calendar.toIso( date );    	
+    	Date isoDate = null;    	
+    	
+    	DateTime dateTime = DateTimeFormat.forPattern( "yyyy-MM-dd" ).withChronology( EthiopicChronology.getInstance() ).parseDateTime( date );
+		
+		isoDate = dateTime.withChronology( GregorianChronology.getInstance() ).toGregorianCalendar().getTime();
+		
+		System.out.println( "Date is:  " + date );
+		
+		System.out.println( "isoDate is:  " + isoDate );    	
+		
+		return isoDate;
+    	
+    	/*DateTimeUnit dateTimeUnit = calendar.toIso( date );    	
     	
     	SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd" );
     	
@@ -806,6 +820,6 @@ public class DateUtils
     		throw new IllegalArgumentException("Invalid DateTimeUnit:  " + dateTimeUnit );
     	}    	
     	
-		return parsedDate;    	
+		return parsedDate;*/    	
     }
 }

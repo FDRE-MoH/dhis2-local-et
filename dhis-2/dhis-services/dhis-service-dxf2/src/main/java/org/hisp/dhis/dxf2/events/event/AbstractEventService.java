@@ -706,19 +706,10 @@ public abstract class AbstractEventService
                 params.getDataElements().add( dataElement );
             }
         }        
-       
-        Calendar calendar = calendarService.getSystemCalendar();
         
-        startDate = DateUtils.getIsoDate( calendar, DateUtils.getIso8601Simple( startDate ) );        
-        endDate = DateUtils.getIsoDate( calendar, DateUtils.getIso8601Simple( endDate ) );        
-        dueDateStart = DateUtils.getIsoDate( calendar, DateUtils.getIso8601Simple( dueDateStart ) );
-        dueDateEnd = DateUtils.getIsoDate( calendar, DateUtils.getIso8601Simple( dueDateEnd ) );
-        lastUpdatedStartDate = DateUtils.getIsoDate( calendar, DateUtils.getIso8601Simple( lastUpdatedStartDate ) );
-        lastUpdatedEndDate = DateUtils.getIsoDate( calendar, DateUtils.getIso8601Simple( lastUpdatedEndDate ) );
-        
-        if( attributeOptionCombo.isDefault() )
+        if ( attributeOptionCombo.isDefault() )
         {
-        	if( pr != null && !pr.getCategoryCombo().isDefault() || ps !=null && !ps.getProgram().getCategoryCombo().isDefault() )
+        	if ( pr != null && !pr.getCategoryCombo().isDefault() || ps !=null && !ps.getProgram().getCategoryCombo().isDefault() )
         	{
         		attributeOptionCombo = null;
         	}        	

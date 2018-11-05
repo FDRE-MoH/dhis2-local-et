@@ -30,6 +30,7 @@ package org.hisp.dhis.webapi.controller;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import org.hibernate.exception.ConstraintViolationException;
+import org.hisp.dhis.calendar.CalendarService;
 import org.hisp.dhis.common.DeleteNotAllowedException;
 import org.hisp.dhis.common.IllegalQueryException;
 import org.hisp.dhis.common.MaintenanceModeException;
@@ -83,6 +84,9 @@ public class CrudControllerAdvice
 {
     @Autowired
     private WebMessageService webMessageService;
+    
+    @Autowired
+    private CalendarService calendarService;
 
     @InitBinder
     protected void initBinder( WebDataBinder binder )
@@ -92,7 +96,7 @@ public class CrudControllerAdvice
             @Override
             public void setAsText( String value ) throws IllegalArgumentException
             {
-                setValue( DateUtils.parseDate( value ) );
+                setValue( DateUtils.getIsoDate( calendarService.getSystemCalendar(), value ) );
             }
         } );
     }
