@@ -750,15 +750,15 @@ public class AnalyticsUtils
     {
     	List<Integer> dataYears = new ArrayList<>();
     	
-    	int len = dataYears.size();
+    	int len = years.size();
         
         if ( len > 0 )
         {
         	Collections.sort( years );
         	
-        	int firstYear = dataYears.get( 0 );
+        	int firstYear = years.get( 0 );
         	
-            int lastYear = dataYears.get( len - 1 );
+            int lastYear = years.get( len - 1 );
             
             int startYear = firstYear > 1 ? firstYear - 1 : firstYear;
             
