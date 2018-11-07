@@ -207,14 +207,14 @@ routineDataEntry.controller('dataEntryController',
                     //check if the category option is null or had a value
                     if (!$scope.dataValues[dataElement.id][categoryOptionCombo.id]) {
                         counter=counter+1;
-                        var val = {dataElement: dataElement.id, categoryOptionCombo: categoryOptionCombo.id, value: '0'};
+                        var val = {dataElement: dataElement.id, categoryOptionCombo: categoryOptionCombo.id, value: '0', period: $scope.model.selectedPeriod.id,orgUnit: $scope.selectedOrgUnit.id};
                         dataValueSet.dataValues.push(val);
 
                     }
                     //check if dataValue of thte data element and the exists but it's value is empty or null.
                     else if ($scope.dataValues[dataElement.id][categoryOptionCombo.id].value === '' || $scope.dataValues[dataElement.id][categoryOptionCombo.id].value === "" || $scope.dataValues[dataElement.id][categoryOptionCombo.id].value === null) {
                         counter=counter+1;
-                        var val = {dataElement: dataElement.id, categoryOptionCombo: categoryOptionCombo.id, value: '0'};
+                        var val = {dataElement: dataElement.id, categoryOptionCombo: categoryOptionCombo.id, value: '0', period: $scope.model.selectedPeriod.id, orgUnit: $scope.selectedOrgUnit.id};
                         dataValueSet.dataValues.push(val);
                     }
                 });
@@ -588,14 +588,14 @@ routineDataEntry.controller('dataEntryController',
                             else{
                                 val.value = "";
                                 _dataValues[_deId][key] = val;
-                                dataValueSet.dataValues.push({dataElement: _deId, categoryOptionCombo: key, value: "", deleted: true});
+                                dataValueSet.dataValues.push({dataElement: _deId, categoryOptionCombo: key, value: "", deleted: true, period: $scope.model.selectedPeriod.id,orgUnit: $scope.selectedOrgUnit.id});
                                 count++;
                             }
                         });
                     }
                 });
                 
-                dataValueSet.dataValues.push({dataElement: deId, categoryOptionCombo: ocId, value: dataValue.value, deleted: dataValue.value === '' ? true : false});
+                dataValueSet.dataValues.push({dataElement: deId, categoryOptionCombo: ocId, value: dataValue.value,orgUnit: $scope.selectedOrgUnit.id, deleted: dataValue.value === '' , period: $scope.model.selectedPeriod.id? true : false});
                 
 				var modalOptions={
 					closeButtonText: 'no',
