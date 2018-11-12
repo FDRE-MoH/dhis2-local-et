@@ -53,7 +53,12 @@ import java.util.stream.Stream;
 public class RelativePeriods
     implements Serializable
 {
-    private static final List<Period> NO = new ArrayList<>();
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3769283033138266891L;
+
+	private static final List<Period> NO = new ArrayList<>();
 
     public static final String[] MONTH_NAMES = {
         "january",
@@ -514,14 +519,18 @@ public class RelativePeriods
     public List<Period> getRelativePeriods( Date date, I18nFormat format, boolean dynamicNames )
     {
         //date = ( date != null ) ? date : new Date();
-    	
-    	org.hisp.dhis.calendar.Calendar cal=PeriodType.getCalendar();
-    	DateTimeUnit dt =cal.today();
-    	Date calendarDate=date;
-    	try {
+
+    	DateTimeUnit dt = PeriodType.getCalendar().today();
+
+    	Date calendarDate = date;
+
+    	try 
+    	{
     		SimpleDateFormat formatter=new SimpleDateFormat("dd-MM-yyyy");
-    		calendarDate=(calendarDate != null) ?calendarDate : formatter.parse(dt.getDay()+"-"+dt.getMonth()+"-"+dt.getYear());
-    	} catch (ParseException e) {
+    		calendarDate = ( calendarDate != null ) ? calendarDate : formatter.parse( dt.getDay() + "-" + dt.getMonth() + "-" + dt.getYear() );
+    	} 
+    	catch ( ParseException e ) 
+    	{
     		throw new IllegalArgumentException("DateTimeUnit "+dt+" returns invalid date");
     	}
 
@@ -832,7 +841,7 @@ public class RelativePeriods
      * @return a list of periods.
      */
     private Period getRelativePeriod( CalendarPeriodType periodType, String periodName, Date date, boolean dynamicNames, I18nFormat format )
-    {    	
+    {
         return setName( periodType.createPeriod( date ), periodName, dynamicNames, format );
     }
 

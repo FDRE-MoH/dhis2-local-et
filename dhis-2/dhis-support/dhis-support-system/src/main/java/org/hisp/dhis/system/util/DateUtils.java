@@ -797,10 +797,6 @@ public class DateUtils
 		
 		isoDate = dateTime.withChronology( GregorianChronology.getInstance() ).toGregorianCalendar().getTime();
 		
-		System.out.println( "Date is:  " + date );
-		
-		System.out.println( "isoDate is:  " + isoDate );    	
-		
 		return isoDate;
     	
     	/*DateTimeUnit dateTimeUnit = calendar.toIso( date );    	
