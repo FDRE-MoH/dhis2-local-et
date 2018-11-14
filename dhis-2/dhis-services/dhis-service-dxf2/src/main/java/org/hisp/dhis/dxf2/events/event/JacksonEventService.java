@@ -37,6 +37,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hisp.dhis.common.IdentifiableProperty;
 import org.hisp.dhis.dxf2.common.ImportOptions;
 import org.hisp.dhis.dxf2.importsummary.ImportSummaries;
 import org.hisp.dhis.program.ProgramStageInstance;
@@ -53,8 +54,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -223,6 +226,12 @@ public class JacksonEventService extends AbstractEventService
         }
         else if ( importOptions.getImportStrategy().isCreateAndUpdate() )
         {
+        	Collection<String> eventUids = new ArrayList<>( events.stream().map( Event::getEvent ).collect( Collectors.toList() ) );
+			
+			List<ProgramStageInstance> programStageInstances = manager.getObjects(  ProgramStageInstance.class, IdentifiableProperty.UID, eventUids );
+			
+			Map<String, ProgramStageInstance> mappedPsi = programStageInstances.stream().collect( Collectors.toMap( ProgramStageInstance::getUid, psi -> psi ) );
+        	
             for ( Event event : events )
             {
                 if ( StringUtils.isEmpty( event.getEvent() ) )
@@ -231,9 +240,7 @@ public class JacksonEventService extends AbstractEventService
                 }
                 else
                 {
-                    ProgramStageInstance programStageInstance = manager.getObject( ProgramStageInstance.class, importOptions.getIdSchemes().getProgramStageInstanceIdScheme(), event.getEvent() );
-
-                    if ( programStageInstance == null )
+                    if ( mappedPsi.get( event.getEvent() ) == null )
                     {
                         create.add( event );
                     }
