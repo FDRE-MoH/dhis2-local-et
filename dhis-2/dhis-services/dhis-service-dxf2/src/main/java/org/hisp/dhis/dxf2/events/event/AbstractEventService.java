@@ -246,6 +246,15 @@ public abstract class AbstractEventService
 		
 		for ( Program program : programs )
 		{    		
+			List<ProgramInstance> programInstances = programInstanceService.getProgramInstances( program, ProgramStatus.ACTIVE );
+			
+			programInstanceCache.put( program.getUid(), programInstances );
+			
+			for ( ProgramInstance programInstance : programInstances )
+			{
+				programStageInstanceCache.putAll( programInstance.getProgramStageInstances().stream().collect( Collectors.toMap( ProgramStageInstance::getUid, psi -> psi ) ) );
+			}
+			
 			programStageCache.putAll( program.getProgramStages().stream().collect( Collectors.toMap( ProgramStage::getUid, ps -> ps ) ) );
 			
     		for ( ProgramStage programStage : program.getProgramStages() )
@@ -278,14 +287,6 @@ public abstract class AbstractEventService
 		
 		List<OrganisationUnit> organisationUnits = manager.getObjects(  OrganisationUnit.class, IdentifiableProperty.UID, events.stream().map( Event::getOrgUnit ).collect( Collectors.toList() ) );
 		organisationUnitCache.putAll(  organisationUnits.stream().collect( Collectors.toMap( OrganisationUnit::getUid, ou -> ou ) ) );
-		
-		for ( Program program : programs )
-		{
-			programInstanceCache.put( program.getUid(), programInstanceService.getProgramInstances( program, ProgramStatus.ACTIVE ) );				
-		}
-		
-		List<ProgramStageInstance> programStageInstances = manager.getObjects(  ProgramStageInstance.class, IdentifiableProperty.UID, events.stream().map( Event::getEvent ).collect( Collectors.toList() ) );
-		programStageInstanceCache.putAll(  programStageInstances.stream().collect( Collectors.toMap( ProgramStageInstance::getUid, psi -> psi ) ) );
 
         for ( Event event : events )
         {
@@ -335,7 +336,7 @@ public abstract class AbstractEventService
     }
 
     protected ImportSummary addEvent( Event event, User user, ImportOptions importOptions )
-    {    	
+    {
         if ( importOptions == null )
         {
             importOptions = new ImportOptions();
@@ -446,6 +447,11 @@ public abstract class AbstractEventService
             	programInstances = programInstanceService.getProgramInstances( program, ProgramStatus.ACTIVE );
             	
             	programInstanceCache.put( program.getUid(), programInstances );
+            	
+            	for ( ProgramInstance pi : programInstances )
+    			{
+    				programStageInstanceCache.putAll( pi.getProgramStageInstances().stream().collect( Collectors.toMap( ProgramStageInstance::getUid, psi -> psi ) ) );
+    			}
             }
 
             if ( programInstances.isEmpty() )
@@ -471,8 +477,8 @@ public abstract class AbstractEventService
 
             if ( StringUtils.isNotEmpty( event.getEvent() ) )
             {
-                programStageInstance = manager.getObject( ProgramStageInstance.class, importOptions.getIdSchemes().getProgramStageInstanceIdScheme(), event.getEvent() );
-            	//programStageInstance = programStageInstanceCache.get( event.getEvent() );
+                //programStageInstance = manager.getObject( ProgramStageInstance.class, importOptions.getIdSchemes().getProgramStageInstanceIdScheme(), event.getEvent() );
+            	programStageInstance = getProgramStageInstance( importOptions.getIdSchemes().getProgramStageInstanceIdScheme(), event.getEvent() );
 
                 if ( programStageInstance == null )
                 {
@@ -957,7 +963,14 @@ public abstract class AbstractEventService
             }
         }
 
-        Program program = getProgram( importOptions.getIdSchemes().getProgramIdScheme(), event.getProgram() );
+        Program program = programStageInstance.getProgramInstance().getProgram();
+        
+        programStageCache.putAll( program.getProgramStages().stream().collect( Collectors.toMap( ProgramStage::getUid, ps -> ps ) ) );
+		
+		for ( ProgramStage programStage : program.getProgramStages() )
+		{
+			dataElementCache.putAll( programStage.getAllDataElements().stream().collect( Collectors.toMap( DataElement::getUid, de -> de ) ) );
+		}
 
         validateExpiryDays( event, program, programStageInstance );
 
@@ -1543,6 +1556,11 @@ public abstract class AbstractEventService
         programStageInstance.setOrganisationUnit( organisationUnit );
         programStageInstance.setAttributeOptionCombo( aoc );
         programStageInstance.setDeleted( event.isDeleted() );
+        
+        if ( programStageInstance.getComments() == null )
+        {
+        	programStageInstance.setComments( new ArrayList<TrackedEntityComment>() );
+        }
 
         if ( programStage.getCaptureCoordinates() )
         {
@@ -1566,9 +1584,10 @@ public abstract class AbstractEventService
         }
         else
         {
-            sessionFactory.getCurrentSession().save( programStageInstance );
-            sessionFactory.getCurrentSession().flush();
-            sessionFactory.getCurrentSession().refresh( programStageInstance );
+        	sessionFactory.getCurrentSession().update( programStageInstance );
+            //sessionFactory.getCurrentSession().save( programStageInstance );        	
+            //sessionFactory.getCurrentSession().flush();
+            //sessionFactory.getCurrentSession().refresh( programStageInstance );
         }
 
         if ( programStageInstance.isCompleted() )
@@ -1651,7 +1670,7 @@ public abstract class AbstractEventService
     		program = manager.getObject( Program.class, idScheme, id );
     		
     		programCache.put( id, program );
-    		
+
     		programStageCache.putAll( program.getProgramStages().stream().collect( Collectors.toMap( ProgramStage::getUid, ps -> ps ) ) );
 			
     		for ( ProgramStage programStage : program.getProgramStages() )
@@ -1676,6 +1695,18 @@ public abstract class AbstractEventService
     	}
     	
         return programStage;
+    }
+    
+    private ProgramStageInstance getProgramStageInstance( IdScheme idScheme, String id )
+    {
+    	ProgramStageInstance programStageInstance = programStageInstanceCache.get( id );
+    	
+    	if ( programStageInstance == null )
+    	{
+    		programStageInstance = manager.getObject( ProgramStageInstance.class, idScheme, id );
+    	}
+
+    	return programStageInstance;    	
     }
 
     private DataElement getDataElement( IdScheme idScheme, String id )
@@ -1861,12 +1892,12 @@ public abstract class AbstractEventService
 
     private void clearSession()
     {
-        organisationUnitCache.clear();
-        programCache.clear();
-        programStageCache.clear();
-        dataElementCache.clear();
-        accessibleProgramsCache.clear();
-        aocCache.clear();
+        //organisationUnitCache.clear();
+        //programCache.clear();
+        //programStageCache.clear();
+        //dataElementCache.clear();
+        //accessibleProgramsCache.clear();
+        //aocCache.clear();
 
         dbmsManager.clearSession();
     }
