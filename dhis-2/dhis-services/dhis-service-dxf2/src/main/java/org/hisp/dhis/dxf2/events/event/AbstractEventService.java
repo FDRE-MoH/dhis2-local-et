@@ -838,10 +838,10 @@ public abstract class AbstractEventService
             dueDate = DateUtils.getIsoDate( calendar, event.getDueDate() );
         }
 
-        String storedBy = getStoredBy( event, null, user );
+        String storedBy = getStoredOrCompletedBy( event.getStoredBy(), null, user );
         programStageInstance.setStoredBy( storedBy );
 
-        String completedBy = getCompletedBy( event, null, user );
+        String completedBy = getStoredOrCompletedBy( event.getCompletedBy(), null, user );
 
         if ( event.getStatus() == EventStatus.ACTIVE )
         {
@@ -980,7 +980,7 @@ public abstract class AbstractEventService
         }
 
         saveTrackedEntityComment( programStageInstance, event,
-            getStoredBy( event, null, currentUserService.getCurrentUser() ) );
+            getStoredOrCompletedBy( event.getStoredBy(), null, currentUserService.getCurrentUser() ) );
     }
 
     @Override
@@ -1298,8 +1298,8 @@ public abstract class AbstractEventService
             dueDate = DateUtils.getIsoDate( calendar, event.getDueDate() );
         }
 
-        String storedBy = getStoredBy( event, importSummary, user );
-        String completedBy = getCompletedBy( event, importSummary, user );
+        String storedBy = getStoredOrCompletedBy( event.getStoredBy(), importSummary, user );
+        String completedBy = getStoredOrCompletedBy( event.getCompletedBy(), importSummary, user );
 
         DataElementCategoryOptionCombo aoc = null;
 
@@ -1531,49 +1531,26 @@ public abstract class AbstractEventService
             programStageInstanceService.updateProgramStageInstance( programStageInstance );
         }
     }
-
-    private String getCompletedBy( Event event, ImportSummary importSummary, User fallbackUser )
+    
+    private String getStoredOrCompletedBy( String userName, ImportSummary importSummary, User fallbackUser )
     {
-        String completedBy = event.getCompletedBy();
 
-        if ( completedBy == null )
+        if ( userName == null )
         {
-            completedBy = User.getSafeUsername( fallbackUser );
+        	userName = User.getSafeUsername( fallbackUser );
         }
-        else if ( completedBy.length() >= 31 )
+        else if ( userName.length() >= 31 )
         {
             if ( importSummary != null )
             {
-                importSummary.getConflicts().add( new ImportConflict( "completed by",
-                    completedBy + " is more than 31 characters, using current username instead" ) );
+                importSummary.getConflicts().add( new ImportConflict( "Completed/Stored by",
+                    userName + " is more than 31 characters, using current username instead" ) );
             }
 
-            completedBy = User.getSafeUsername( fallbackUser );
+            userName = User.getSafeUsername( fallbackUser );
         }
 
-        return completedBy;
-    }
-
-    private String getStoredBy( Event event, ImportSummary importSummary, User fallbackUser )
-    {
-        String storedBy = event.getStoredBy();
-
-        if ( storedBy == null )
-        {
-            storedBy = User.getSafeUsername( fallbackUser );
-        }
-        else if ( storedBy.length() >= 31 )
-        {
-            if ( importSummary != null )
-            {
-                importSummary.getConflicts().add( new ImportConflict( "stored by",
-                    storedBy + " is more than 31 characters, using current username instead" ) );
-            }
-
-            storedBy = User.getSafeUsername( fallbackUser );
-        }
-
-        return storedBy;
+        return userName;
     }
 
     private Map<String, TrackedEntityDataValue> getDataElementDataValueMap(
