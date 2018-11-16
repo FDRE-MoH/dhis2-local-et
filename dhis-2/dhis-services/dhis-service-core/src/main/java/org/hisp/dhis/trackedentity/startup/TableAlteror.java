@@ -303,13 +303,13 @@ public class TableAlteror
         // executeSql( "DROP TABLE programstage_programindicators" );
 
         executeSql( "update trackedentityinstance set createdatclient=created where createdatclient is null" );
-        executeSql( "update trackedentityinstance set lastUpdatedAtAtClient=lastupdated where createdatclient is null" );
+        executeSql( "update trackedentityinstance set lastupdatedatclient=lastupdated where lastupdatedatclient is null" );
 
         executeSql( "update programinstance set createdatclient=created where createdatclient is null" );
-        executeSql( "update programinstance set lastUpdatedAtAtClient=lastupdated where createdatclient is null" );
+        executeSql( "update programinstance set lastupdatedatclient=lastupdated where lastupdatedatclient is null" );
 
         executeSql( "update programstageinstance set createdatclient=created where createdatclient is null" );
-        executeSql( "update programstageinstance set lastUpdatedAtAtClient=lastupdated where createdatclient is null" );
+        executeSql( "update programstageinstance set lastupdatedatclient=lastupdated where lastupdatedatclient is null" );
     }
 
     // -------------------------------------------------------------------------

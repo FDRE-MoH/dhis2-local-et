@@ -45,6 +45,7 @@ import org.hisp.dhis.common.GridHeader;
 import org.hisp.dhis.common.IdScheme;
 import org.hisp.dhis.common.IdSchemes;
 import org.hisp.dhis.common.IdentifiableObjectManager;
+import org.hisp.dhis.common.IdentifiableProperty;
 import org.hisp.dhis.common.IllegalQueryException;
 import org.hisp.dhis.common.OrganisationUnitSelectionMode;
 import org.hisp.dhis.common.Pager;
@@ -211,8 +212,12 @@ public abstract class AbstractEventService
     private CachingMap<String, OrganisationUnit> organisationUnitCache = new CachingMap<>();
 
     private CachingMap<String, Program> programCache = new CachingMap<>();
+    
+    private CachingMap<String, List<ProgramInstance>> programInstanceCache = new CachingMap<>();
 
     private CachingMap<String, ProgramStage> programStageCache = new CachingMap<>();
+    
+    private CachingMap<String, ProgramStageInstance> prorgramStageInstanceCache = new CachingMap<>();
 
     private CachingMap<String, DataElement> dataElementCache = new CachingMap<>();
 
@@ -229,6 +234,47 @@ public abstract class AbstractEventService
         int counter = 0;
 
         User user = currentUserService.getCurrentUser();
+        
+        
+        List<Program> programs = manager.getObjects(  Program.class, IdentifiableProperty.UID, events.stream().map( Event::getProgram ).collect( Collectors.toList() ) );
+		programCache.putAll(  programs.stream().collect( Collectors.toMap( Program::getUid, pr -> pr ) ) );
+		
+		for ( Program program : programs )
+		{    		
+			programStageCache.putAll( program.getProgramStages().stream().collect( Collectors.toMap( ProgramStage::getUid, ps -> ps ) ) );
+			
+    		for ( ProgramStage programStage : program.getProgramStages() )
+    		{
+    			dataElementCache.putAll( programStage.getAllDataElements().stream().collect( Collectors.toMap( DataElement::getUid, de -> de ) ) );
+    		}
+		}
+
+		List<String> programStageIds = new ArrayList<>();
+		
+		for ( String stageId : events.stream().map( Event::getProgramStage ).collect( Collectors.toList() ) )
+		{
+			if ( programStageCache.get( stageId ) == null )
+			{
+				programStageIds.add( stageId );
+			}
+		}
+		
+		if ( !programStageIds.isEmpty() )
+		{
+			List<ProgramStage> programStages = manager.getObjects(  ProgramStage.class, IdentifiableProperty.UID, programStageIds );
+			programStageCache.putAll(  programStages.stream().collect( Collectors.toMap( ProgramStage::getUid, ps -> ps ) ) );
+			
+			for ( ProgramStage programStage : programStages )
+			{
+				dataElementCache.putAll( programStage.getAllDataElements().stream().collect( Collectors.toMap( DataElement::getUid, de -> de ) ) );
+			}			
+		}		
+		
+		List<OrganisationUnit> organisationUnits = manager.getObjects(  OrganisationUnit.class, IdentifiableProperty.UID, events.stream().map( Event::getOrgUnit ).collect( Collectors.toList() ) );
+		organisationUnitCache.putAll(  organisationUnits.stream().collect( Collectors.toMap( OrganisationUnit::getUid, ou -> ou ) ) );
+		
+		List<ProgramStageInstance> programStageInstances = manager.getObjects(  ProgramStageInstance.class, IdentifiableProperty.UID, events.stream().map( Event::getEvent ).collect( Collectors.toList() ) );
+		prorgramStageInstanceCache.putAll(  programStageInstances.stream().collect( Collectors.toMap( ProgramStageInstance::getUid, psi -> psi ) ) );
 
         for ( Event event : events )
         {
@@ -1567,12 +1613,35 @@ public abstract class AbstractEventService
 
     private Program getProgram( IdScheme idScheme, String id )
     {
-        return programCache.get( id, () -> manager.getObject( Program.class, idScheme, id ) );
+    	Program program = programCache.get( id );
+    	
+    	if ( program == null )
+    	{
+    		program = manager.getObject( Program.class, idScheme, id );
+    		
+    		programStageCache.putAll( program.getProgramStages().stream().collect( Collectors.toMap( ProgramStage::getUid, ps -> ps ) ) );
+    		
+    		for ( ProgramStage programStage : program.getProgramStages() )
+    		{
+    			dataElementCache.putAll( programStage.getAllDataElements().stream().collect( Collectors.toMap( DataElement::getUid, de -> de ) ) );
+    		}
+    	}
+    	
+        return program;
     }
 
     private ProgramStage getProgramStage( IdScheme idScheme, String id )
     {
-        return programStageCache.get( id, () -> manager.getObject( ProgramStage.class, idScheme, id ) );
+    	ProgramStage programStage = programStageCache.get( id );
+    	
+    	if ( programStage == null )
+    	{
+    		programStage = manager.getObject( ProgramStage.class, idScheme, id );
+    		
+    		dataElementCache.putAll( programStage.getAllDataElements().stream().collect( Collectors.toMap( DataElement::getUid, de -> de ) ) );
+    	}
+    	
+    	return programStage;
     }
 
     private DataElement getDataElement( IdScheme idScheme, String id )
