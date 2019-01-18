@@ -241,7 +241,7 @@ public abstract class AbstractEventService
 
         User user = currentUserService.getCurrentUser();
 		
-		List<Program> programs = manager.getObjects(  Program.class, IdentifiableProperty.UID, events.stream().map( Event::getProgram ).collect( Collectors.toList() ) );
+		List<Program> programs = manager.getObjects(  Program.class, IdentifiableProperty.UID, events.stream().map( Event::getProgram ).collect( Collectors.toSet() ) );
 		programCache.putAll(  programs.stream().collect( Collectors.toMap( Program::getUid, pr -> pr ) ) );
 		
 		for ( Program program : programs )
@@ -263,8 +263,8 @@ public abstract class AbstractEventService
     		}
 		}
 		
-		List<String> stageIds = events.stream().map( Event::getProgramStage ).collect( Collectors.toList() );
-		List<String> programStageIds = new ArrayList<>();
+		Set<String> stageIds = events.stream().map( Event::getProgramStage ).collect( Collectors.toSet() );
+		Set<String> programStageIds = new HashSet<>();
 		
 		for ( String stageId : stageIds )
 		{
@@ -285,7 +285,7 @@ public abstract class AbstractEventService
 			}			
 		}		
 		
-		List<OrganisationUnit> organisationUnits = manager.getObjects(  OrganisationUnit.class, IdentifiableProperty.UID, events.stream().map( Event::getOrgUnit ).collect( Collectors.toList() ) );
+		List<OrganisationUnit> organisationUnits = manager.getObjects(  OrganisationUnit.class, IdentifiableProperty.UID, events.stream().map( Event::getOrgUnit ).collect( Collectors.toSet() ) );
 		organisationUnitCache.putAll(  organisationUnits.stream().collect( Collectors.toMap( OrganisationUnit::getUid, ou -> ou ) ) );
 
         for ( Event event : events )
@@ -1383,13 +1383,15 @@ public abstract class AbstractEventService
         DataElementCategoryOptionCombo aoc = null;
 
         if ( ( event.getAttributeCategoryOptions() != null && program.getCategoryCombo() != null ) || event.getAttributeOptionCombo() != null )
-        {
+        {        	
         	aoc = getDataElementCategoryOptionCombo( program, event.getAttributeCategoryOptions(), event.getAttributeOptionCombo(), importOptions.getIdSchemes().getCategoryOptionIdScheme() );
         	
         	if ( aoc == null )
             {
-                importSummary.getConflicts().add( new ImportConflict( "Invalid attribute option combo identifier:",
-                    event.getAttributeCategoryOptions() ) );
+                importSummary.getConflicts().add( new ImportConflict( "Invalid attribute option combo identifier:", event.getAttributeCategoryOptions() ) );                
+                importSummary.setStatus( ImportStatus.ERROR );
+                importSummary.incrementIgnored();
+                return importSummary;
             }
     	}
         else
@@ -1726,7 +1728,18 @@ public abstract class AbstractEventService
     {
     	DataElementCategoryOptionCombo attributeOptionCombo = null;
     	
-    	Set<String> opts = TextUtils.splitToArray( categoryOptions, TextUtils.SEMICOLON );
+    	if ( categoryOptions == null )
+    	{
+    		return attributeOptionCombo;
+    	}
+    	
+    	Set<String> opts = TextUtils.splitToArray( categoryOptions, TextUtils.SEMICOLON );    	
+    	
+    	if ( program == null || program.getCategoryCombo() == null 
+    			|| program.getCategoryCombo().getCategories().isEmpty() || program.getCategoryCombo().getCategories().size() != opts.size() )
+    	{
+    		return attributeOptionCombo;
+    	}
     	
     	Arrays.sort( opts.toArray() );
     	
