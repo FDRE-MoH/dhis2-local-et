@@ -749,6 +749,23 @@ public class DateUtils
     /**
      * Converts ISO 8601 date to Calendar date formatted as yyyy-MM-dd
      */
+    public static Date getCalendarDate( org.hisp.dhis.calendar.Calendar calendar, String value )
+    {
+    	if( value == null || calendar == null )
+    	{
+    		return null;
+    	}
+    	
+    	Date date = parseDate( value );
+    	
+    	DateTimeUnit dateTimeUnit = calendar.fromIso( date );
+    	
+    	return dateTimeUnit.toJdkDate();
+    }
+    
+    /**
+     * Converts ISO 8601 date to Calendar date formatted as yyyy-MM-dd
+     */
     public static String getCalendarDate( org.hisp.dhis.calendar.Calendar calendar, Date date )
     {	    	
     	if( date == null || calendar == null )

@@ -36,6 +36,7 @@ import org.hisp.dhis.common.IdSchemes;
 import org.hisp.dhis.common.MergeMode;
 import org.hisp.dhis.importexport.ImportStrategy;
 import org.hisp.dhis.system.notification.NotificationLevel;
+import org.hisp.dhis.user.User;
 
 /**
  * The idScheme is a general setting which will apply to all objects. The idSchemes
@@ -84,6 +85,8 @@ public class ImportOptions
 
     private NotificationLevel notificationLevel;
     
+    private User user;
+    
     //--------------------------------------------------------------------------
     // Constructors
     //--------------------------------------------------------------------------
@@ -118,6 +121,7 @@ public class ImportOptions
         options.requireAttributeOptionCombo = this.requireAttributeOptionCombo;
         options.filename = this.filename;
         options.notificationLevel = this.notificationLevel;
+        options.user = this.user;
         
         return options;
     }
@@ -158,6 +162,17 @@ public class ImportOptions
     //--------------------------------------------------------------------------
     // Get methods
     //--------------------------------------------------------------------------
+    
+    public User getUser()
+    {
+        return user;
+    }
+
+    public ImportOptions setUser( User user )
+    {
+        this.user = user;
+        return this;
+    }
 
     @JsonProperty
     @JacksonXmlProperty( namespace = DxfNamespaces.DXF_2_0 )

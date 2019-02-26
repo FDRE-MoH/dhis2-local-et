@@ -588,7 +588,7 @@ public class EventController
 
     @RequestMapping( method = RequestMethod.POST, consumes = "application/xml" )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_TRACKED_ENTITY_DATAVALUE_ADD')" )
-    public void postXmlEvent( @RequestParam( defaultValue = "CREATE" ) ImportStrategy strategy,
+    public void postXmlEvent( @RequestParam( defaultValue = "CREATE_AND_UPDATE" ) ImportStrategy strategy,
         HttpServletResponse response, HttpServletRequest request, ImportOptions importOptions ) throws Exception
     {
         importOptions.setImportStrategy( strategy );
@@ -634,7 +634,7 @@ public class EventController
 
     @RequestMapping( method = RequestMethod.POST, consumes = "application/json" )
     @PreAuthorize( "hasRole('ALL') or hasRole('F_TRACKED_ENTITY_DATAVALUE_ADD')" )
-    public void postJsonEvent( @RequestParam( defaultValue = "CREATE" ) ImportStrategy strategy,
+    public void postJsonEvent( @RequestParam( defaultValue = "CREATE_AND_UPDATE" ) ImportStrategy strategy,
         HttpServletResponse response, HttpServletRequest request, ImportOptions importOptions ) throws Exception
     {
         importOptions.setImportStrategy( strategy );
@@ -767,12 +767,7 @@ public class EventController
     public void putJsonEventSingleValue( HttpServletResponse response, HttpServletRequest request,
         @PathVariable( "uid" ) String uid, @PathVariable( "dataElementUid" ) String dataElementUid ) throws IOException, WebMessageException
     {
-        if ( !programStageInstanceService.programStageInstanceExists( uid ) )
-        {
-            throw new WebMessageException( WebMessageUtils.notFound( "Event not found for ID " + uid ) );
-        }
-
-        DataElement dataElement = dataElementService.getDataElement( dataElementUid );
+    	DataElement dataElement = dataElementService.getDataElement( dataElementUid );
 
         if ( dataElement == null )
         {

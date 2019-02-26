@@ -146,8 +146,8 @@ public class JacksonEventService extends AbstractEventService
     {
         String input = StreamUtils.copyToString( inputStream, Charset.forName( "UTF-8" ) );
         List<Event> events = parseXmlEvents( input );
-
-        return addEvents( events, taskId, importOptions );
+        
+        return processEventImport( events, importOptions, taskId );
     }
 
     @Override
@@ -162,8 +162,8 @@ public class JacksonEventService extends AbstractEventService
         String input = StreamUtils.copyToString( inputStream, Charset.forName( "UTF-8" ) );
 
         List<Event> events = parseJsonEvents( input );
-
-        return addEvents( events, taskId, importOptions );
+        
+        return processEventImport( events, importOptions, taskId );
     }
 
     // -------------------------------------------------------------------------
