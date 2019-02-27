@@ -134,7 +134,7 @@ public class DefaultTrackedEntityDataValueService
                 throw new IllegalQueryException( "Value is not valid:  " + result );
             }
 
-            createAndAddAudit( trackedEntityDataValue, trackedEntityDataValue.getStoredBy(), AuditType.UPDATE );
+            //createAndAddAudit( trackedEntityDataValue, trackedEntityDataValue.getStoredBy(), AuditType.UPDATE );
             handleFileDataValueUpdate( trackedEntityDataValue );
 
             dataValueStore.update( trackedEntityDataValue );
@@ -144,7 +144,7 @@ public class DefaultTrackedEntityDataValueService
     @Override
     public void deleteTrackedEntityDataValue( TrackedEntityDataValue dataValue )
     {
-        createAndAddAudit( dataValue, currentUserService.getCurrentUsername(), AuditType.DELETE );
+        //createAndAddAudit( dataValue, currentUserService.getCurrentUsername(), AuditType.DELETE );
 
         handleFileDataValueDelete( dataValue );
 
@@ -159,7 +159,7 @@ public class DefaultTrackedEntityDataValueService
 
         for ( TrackedEntityDataValue dataValue : dataValues )
         {
-            createAndAddAudit( dataValue, username, AuditType.DELETE );
+            //createAndAddAudit( dataValue, username, AuditType.DELETE );
             handleFileDataValueDelete( dataValue );
         }
 
