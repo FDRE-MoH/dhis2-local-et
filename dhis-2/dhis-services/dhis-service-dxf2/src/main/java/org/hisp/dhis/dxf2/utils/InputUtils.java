@@ -154,8 +154,13 @@ public class InputUtils
         // ---------------------------------------------------------------------
 
         DataElementCategoryOptionCombo attrOptCombo = null;
+        
+        if( opts != null && opts.size() != categoryCombo.getCategories().size() )
+        {
+        	throw new IllegalQueryException( "Attribute option combo does not exist for given category combo and category options" );
+        }
 
-        if ( opts != null )
+        if ( opts != null && opts.size() == categoryCombo.getCategories().size() )
         {
             Set<DataElementCategoryOption> categoryOptions = new HashSet<>();
 
@@ -187,7 +192,7 @@ public class InputUtils
         // Fall back to default category option combination
         // ---------------------------------------------------------------------
 
-        if ( attrOptCombo == null )
+        if ( attrOptCombo == null && categoryCombo.isDefault() )
         {
             attrOptCombo = categoryService.getDefaultDataElementCategoryOptionCombo();
         }
