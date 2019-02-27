@@ -892,6 +892,7 @@ public abstract class AbstractEventService
 
     private ImportSummary updateEvent( Event event, User user, boolean singleValue, ImportOptions importOptions )
     {
+    	boolean eventModified = false;
     	Calendar calendar = calendarService.getSystemCalendar();
     	
         if ( importOptions == null )
@@ -900,8 +901,7 @@ public abstract class AbstractEventService
         }
 
         ImportSummary importSummary = new ImportSummary( event.getEvent() );
-        ProgramStageInstance programStageInstance = programStageInstanceService
-            .getProgramStageInstance( event.getEvent() );
+        ProgramStageInstance programStageInstance = getProgramStageInstance( event.getEvent() );
 
         if ( programStageInstance == null || programStageInstance.getProgramInstance() == null )
         {
@@ -916,10 +916,11 @@ public abstract class AbstractEventService
         	organisationUnit = getOrganisationUnit( importOptions.getIdSchemes(), event.getOrgUnit() );
         }
 
-        if ( organisationUnit == null )
+        if ( organisationUnit != null && !programStageInstance.getOrganisationUnit().getUid().equalsIgnoreCase( organisationUnit.getUid() ) )
         {
-            organisationUnit = programStageInstance.getOrganisationUnit();
-        }
+        	programStageInstance.setOrganisationUnit( organisationUnit );
+        	eventModified = true;
+        }        
 
         Date executionDate = new Date();
 
@@ -970,7 +971,6 @@ public abstract class AbstractEventService
         }
 
         programStageInstance.setDueDate( dueDate );
-        programStageInstance.setOrganisationUnit( organisationUnit );
 
         if ( !singleValue )
         {
@@ -980,6 +980,7 @@ public abstract class AbstractEventService
                 {
                     programStageInstance.setLatitude( event.getCoordinate().getLatitude() );
                     programStageInstance.setLongitude( event.getCoordinate().getLongitude() );
+                    eventModified = true;
                 }
                 else
                 {
@@ -1002,73 +1003,114 @@ public abstract class AbstractEventService
         }
 
         validateExpiryDays( event, program, programStageInstance );
-
+        
+        DataElementCategoryOptionCombo attributeOptionCombo = null;
+        
         if ( ( event.getAttributeCategoryOptions() != null && program.getCategoryCombo() != null ) || event.getAttributeOptionCombo() != null )
         {
             IdScheme idScheme = importOptions.getIdSchemes().getCategoryOptionIdScheme();
             
-            DataElementCategoryOptionCombo attributeOptionCombo = inputUtils.getAttributeOptionCombo(
-                program.getCategoryCombo(), event.getAttributeCategoryOptions(), event.getAttributeOptionCombo(), idScheme );
-
-            if ( attributeOptionCombo == null )
+            try
             {
-                importSummary.getConflicts().add( new ImportConflict( "Invalid attribute option combo identifier:",
-                    event.getAttributeCategoryOptions() ) );
-                return importSummary.incrementIgnored();
+            	attributeOptionCombo = inputUtils.getAttributeOptionCombo( program.getCategoryCombo(),
+                    event.getAttributeCategoryOptions(), event.getAttributeOptionCombo(), idScheme );
             }
-
-            programStageInstance.setAttributeOptionCombo( attributeOptionCombo );
+            catch ( IllegalQueryException ex )
+            {
+                importSummary.getConflicts()
+                    .add( new ImportConflict( ex.getMessage(), event.getAttributeCategoryOptions() ) );
+                importSummary.setStatus( importSummary.getConflicts().isEmpty() ? ImportStatus.SUCCESS : ImportStatus.WARNING );
+                return importSummary.incrementIgnored();
+            }            
         }
-
-        programStageInstance.setDeleted( event.isDeleted() );
-
-        programStageInstanceService.updateProgramStageInstance( programStageInstance );
-        updateTrackedEntityInstance( programStageInstance );
-
-        saveTrackedEntityComment( programStageInstance, event, storedBy );
-
+        
+        if ( attributeOptionCombo == null )
+        {
+            importSummary.getConflicts().add( new ImportConflict( "Invalid attribute option combo identifier:",
+                event.getAttributeCategoryOptions() ) );
+            importSummary.setStatus( importSummary.getConflicts().isEmpty() ? ImportStatus.SUCCESS : ImportStatus.WARNING );
+            return importSummary.incrementIgnored();
+        }
+        
+        if ( programStageInstance.getAttributeOptionCombo() != null && 
+        		!programStageInstance.getAttributeOptionCombo().getUid().equalsIgnoreCase( attributeOptionCombo.getUid() ) ) 
+        {
+        	programStageInstance.setAttributeOptionCombo( attributeOptionCombo );
+        	eventModified = true;
+        }
+        
+        if ( programStageInstance.isDeleted() != event.isDeleted() )
+        {
+        	programStageInstance.setDeleted( event.isDeleted() );
+        	eventModified = true;
+        }        
+        
         Set<TrackedEntityDataValue> dataValues = new HashSet<>(
             dataValueService.getTrackedEntityDataValues( programStageInstance ) );
         Map<String, TrackedEntityDataValue> existingDataValues = getDataElementDataValueMap( dataValues );
+        
+        boolean eventValueModified = false;
 
-        for ( DataValue value : event.getDataValues() )
+        List<DataValue> eventDataValues = removeZeros( event.getDataValues() );
+        
+        for ( DataValue value : eventDataValues )
         {
             DataElement dataElement = getDataElement( importOptions.getIdSchemes().getDataElementIdScheme(),
-                value.getDataElement() );
-            TrackedEntityDataValue dataValue = dataValueService.getTrackedEntityDataValue( programStageInstance,
-                dataElement );
+                value.getDataElement() );            
 
             if ( !validateDataValue( dataElement, value.getValue(), importSummary ) )
             {
                 continue;
             }
-
-            if ( dataValue != null )
+            
+            if ( existingDataValues.containsKey( value.getDataElement() ) )
             {
-                if ( StringUtils.isEmpty( value.getValue() ) && dataElement.isFileType()
-                    && !StringUtils.isEmpty( dataValue.getValue() ) )
+            	//existing
+            	TrackedEntityDataValue existingDataValue = existingDataValues.get( value.getDataElement() );
+            	
+            	if ( existingDataValue.getValue().equals( value.getValue() ) )
+            	{
+            		// value is not changed, do not thing.
+            		dataValues.remove( existingDataValue );
+            		continue;
+            	}
+            	
+            	if ( StringUtils.isEmpty( value.getValue() ) && dataElement.isFileType()
+                        && !StringUtils.isEmpty( existingDataValue.getValue() ) )
                 {
-                    fileResourceService.deleteFileResource( dataValue.getValue() );
+                    fileResourceService.deleteFileResource( existingDataValue.getValue() );
                 }
+            	
+            	existingDataValue.setValue( value.getValue() );
+            	existingDataValue.setProvidedElsewhere( value.getProvidedElsewhere() );
+            	existingDataValue.setStoredBy( storedBy );
+                dataValueService.updateTrackedEntityDataValue( existingDataValue );
 
-                dataValue.setValue( value.getValue() );
-                dataValue.setProvidedElsewhere( value.getProvidedElsewhere() );
-                dataValueService.updateTrackedEntityDataValue( dataValue );
-
-                dataValues.remove( dataValue );
+            	//data value is part of an update. should not be removed
+                dataValues.remove( existingDataValue );
+                
+                eventValueModified = true;
             }
             else
             {
-                TrackedEntityDataValue existingDataValue = existingDataValues.get( value.getDataElement() );
-
-                saveDataValue( programStageInstance, event.getStoredBy(), dataElement, value.getValue(),
-                    value.getProvidedElsewhere(), existingDataValue, null );
+            	//new
+            	saveDataValue( programStageInstance, event.getStoredBy(), dataElement, value.getValue(),
+                        value.getProvidedElsewhere(), null, null );
+            	eventValueModified = true;
             }
-        }
+        }        
 
-        if ( !singleValue )
+        if ( !singleValue && !dataValues.isEmpty() )
         {
             dataValues.forEach( dataValueService::deleteTrackedEntityDataValue );
+            eventValueModified = true;
+        }
+        
+        if ( eventModified || eventValueModified )
+        {
+        	programStageInstanceService.updateProgramStageInstance( programStageInstance );
+            updateTrackedEntityInstance( programStageInstance );
+            saveTrackedEntityComment( programStageInstance, event, storedBy );
         }
         
         importSummary.setStatus( importSummary.getConflicts().isEmpty() ? ImportStatus.SUCCESS : ImportStatus.WARNING );
@@ -1475,11 +1517,17 @@ public abstract class AbstractEventService
             {
                 importSummary.getConflicts()
                     .add( new ImportConflict( ex.getMessage(), event.getAttributeCategoryOptions() ) );
+                importSummary.setStatus( importSummary.getConflicts().isEmpty() ? ImportStatus.SUCCESS : ImportStatus.WARNING );
+                return importSummary.incrementIgnored();
             }
         }
-        else
+        
+        if ( aoc == null )
         {
-            aoc = categoryService.getDefaultDataElementCategoryOptionCombo();
+            importSummary.getConflicts().add( new ImportConflict( "Invalid attribute option combo identifier:",
+                event.getAttributeCategoryOptions() ) );
+            importSummary.setStatus( importSummary.getConflicts().isEmpty() ? ImportStatus.SUCCESS : ImportStatus.WARNING );
+            return importSummary.incrementIgnored();
         }
 
         if ( !dryRun )
@@ -1510,8 +1558,10 @@ public abstract class AbstractEventService
             dataElementValueMap = getDataElementDataValueMap(
                 dataValueService.getTrackedEntityDataValues( programStageInstance ) );
         }
-
-        for ( DataValue dataValue : event.getDataValues() )
+        
+        List<DataValue> eventDataValues = removeZeros( event.getDataValues() );
+        
+        for ( DataValue dataValue : eventDataValues )
         {
             DataElement dataElement;
 
@@ -1775,12 +1825,15 @@ public abstract class AbstractEventService
     	{
     		program = manager.getObject( Program.class, idScheme, id );
     		
-    		programStageCache.putAll( program.getProgramStages().stream().collect( Collectors.toMap( ProgramStage::getUid, ps -> ps ) ) );
-    		
-    		for ( ProgramStage programStage : program.getProgramStages() )
+    		if ( program != null )
     		{
-    			dataElementCache.putAll( programStage.getAllDataElements().stream().collect( Collectors.toMap( DataElement::getUid, de -> de ) ) );
-    		}
+    			programStageCache.putAll( program.getProgramStages().stream().collect( Collectors.toMap( ProgramStage::getUid, ps -> ps ) ) );
+        		
+        		for ( ProgramStage programStage : program.getProgramStages() )
+        		{
+        			dataElementCache.putAll( programStage.getAllDataElements().stream().collect( Collectors.toMap( DataElement::getUid, de -> de ) ) );
+        		}
+    		}    		
     	}
     	
         return program;
@@ -1794,7 +1847,10 @@ public abstract class AbstractEventService
     	{
     		programStage = manager.getObject( ProgramStage.class, idScheme, id );
     		
-    		dataElementCache.putAll( programStage.getAllDataElements().stream().collect( Collectors.toMap( DataElement::getUid, de -> de ) ) );
+    		if ( programStage != null )
+    		{
+    			dataElementCache.putAll( programStage.getAllDataElements().stream().collect( Collectors.toMap( DataElement::getUid, de -> de ) ) );    			
+    		}
     	}
     	
     	return programStage;
@@ -1803,6 +1859,15 @@ public abstract class AbstractEventService
     private DataElement getDataElement( IdScheme idScheme, String id )
     {
         return dataElementCache.get( id, () -> manager.getObject( DataElement.class, idScheme, id ) );
+    }
+    
+    private List<DataValue> removeZeros( List<DataValue> eventDataValues )
+    {
+    	List<DataValue> dataValues = eventDataValues
+        		.stream().filter( dataValue -> !dataValue.getValue().equalsIgnoreCase( "0" ) )
+        		.collect( Collectors.toList() );
+
+    	return dataValues;
     }
 
     @Override
