@@ -252,8 +252,8 @@ public class JdbcAnalyticsTableManager
                 approvalClause +
                 "where de.valuetype in (" + valTypes + ") " +
                 "and de.domaintype = 'AGGREGATE' " +
-                "and ( ( pe.startdate >= '" + start + "' and pe.startdate <= '" + end + "' )" +
-                "or ( pe.enddate >= '" + start + "' and pe.enddate <= '" + end + "' ) )" +
+                "and pe.startdate >= '" + start + "' " +
+                "and pe.startdate <= '" + end + "' " +
                 "and dv.value is not null " +
                 "and dv.deleted is false ";
 

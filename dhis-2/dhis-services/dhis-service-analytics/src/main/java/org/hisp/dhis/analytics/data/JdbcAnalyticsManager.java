@@ -35,7 +35,11 @@ import org.hisp.dhis.analytics.AnalyticsManager;
 import org.hisp.dhis.analytics.DataQueryParams;
 import org.hisp.dhis.analytics.DataType;
 import org.hisp.dhis.analytics.MeasureFilter;
+import org.hisp.dhis.analytics.Partitions;
+import org.hisp.dhis.analytics.table.AnalyticsTableType;
+import org.hisp.dhis.analytics.table.PartitionUtils;
 import org.hisp.dhis.common.*;
+import org.hisp.dhis.commons.collection.UniqueArrayList;
 import org.hisp.dhis.commons.util.DebugUtils;
 import org.hisp.dhis.commons.util.SqlHelper;
 import org.hisp.dhis.commons.util.TextUtils;
@@ -109,6 +113,36 @@ public class JdbcAnalyticsManager
                 params = DataQueryParams.newBuilder( params )
                     .withDataPeriodsForAggregationPeriods( dataPeriodAggregationPeriodMap )
                     .build();
+                
+                Partitions parts = params.getPartitions();
+                
+                if ( !params.getPeriods().isEmpty() )
+                {
+                	Partitions partitions = PartitionUtils.getPartitions( params.getPeriods(), AnalyticsTableType.DATA_VALUE.getTableName(), null, null );                	
+                    
+                    if ( partitions.hasAny() )
+                    {
+                    	parts.getPartitions().addAll( partitions.getPartitions() );
+                    }
+                }
+                
+                if ( !params.getFilterPeriods().isEmpty() )
+                {
+                	Partitions partitions = PartitionUtils.getPartitions( params.getFilterPeriods(), AnalyticsTableType.DATA_VALUE.getTableName(), null, null );
+
+                    if ( partitions.hasAny() )
+                    {
+                    	parts.getPartitions().addAll( partitions.getPartitions() );
+                    }
+                }
+                
+                Set<String> newPartitions = new HashSet<String>( parts.getPartitions() );
+                
+                Partitions partitions = new Partitions();
+                partitions.getPartitions().addAll( newPartitions );
+                
+                params = DataQueryParams.newBuilder( params )
+                        .withPartitions( partitions ).build();
             }
 
             String sql = getSelectClause( params );
