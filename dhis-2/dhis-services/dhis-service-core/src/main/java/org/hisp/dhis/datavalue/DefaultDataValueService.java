@@ -194,9 +194,9 @@ public class DefaultDataValueService
         {
             dataValue.setLastUpdated( new Date() );
             
-            DataValueAudit dataValueAudit = new DataValueAudit( dataValue, dataValue.getAuditValue(), dataValue.getStoredBy(), AuditType.UPDATE );
+            //DataValueAudit dataValueAudit = new DataValueAudit( dataValue, dataValue.getAuditValue(), dataValue.getStoredBy(), AuditType.UPDATE );
 
-            dataValueAuditService.addDataValueAudit( dataValueAudit );
+            //dataValueAuditService.addDataValueAudit( dataValueAudit );
             dataValueStore.updateDataValue( dataValue );
         }
     }
@@ -205,9 +205,9 @@ public class DefaultDataValueService
     @Transactional
     public void deleteDataValue( DataValue dataValue )
     {
-        DataValueAudit dataValueAudit = new DataValueAudit( dataValue, dataValue.getAuditValue(), currentUserService.getCurrentUsername(), AuditType.DELETE );
+        //DataValueAudit dataValueAudit = new DataValueAudit( dataValue, dataValue.getAuditValue(), currentUserService.getCurrentUsername(), AuditType.DELETE );
 
-        dataValueAuditService.addDataValueAudit( dataValueAudit );
+        //dataValueAuditService.addDataValueAudit( dataValueAudit );
 
         if ( dataValue.getDataElement().isFileType() )
         {
