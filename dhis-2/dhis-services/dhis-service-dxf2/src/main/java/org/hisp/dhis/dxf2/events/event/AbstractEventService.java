@@ -1864,7 +1864,7 @@ public abstract class AbstractEventService
     private List<DataValue> removeZeros( List<DataValue> eventDataValues )
     {
     	List<DataValue> dataValues = eventDataValues
-        		.stream().filter( dataValue -> !dataValue.getValue().equalsIgnoreCase( "0" ) )
+        		.stream().filter( dataValue -> dataValue.getValue() != null && !dataValue.getValue().equalsIgnoreCase( "0" ) )
         		.collect( Collectors.toList() );
 
     	return dataValues;
